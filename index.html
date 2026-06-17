@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Specimen — a field guide to genes and proteins</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%2256%22%20height%3D%2256%22%20rx%3D%2212%22%20fill%3D%22%23EAEEE6%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2224%22%20fill%3D%22none%22%20stroke%3D%22%231F6F5C%22%20stroke-width%3D%221.5%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2220%22%20fill%3D%22%231F6F5C%22/%3E%3Ctext%20x%3D%2232%22%20y%3D%2234%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20font-family%3D%22Fraunces%2C%20Georgia%2C%20serif%22%20font-style%3D%22italic%22%20font-size%3D%2224%22%20fill%3D%22%23EAEEE6%22%3ES%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -211,6 +212,12 @@
     font-weight:500;
   }
   .field-body{margin:0; font-size:15.5px;}
+  .field-body.clamp{
+    display:-webkit-box;
+    -webkit-box-orient:vertical;
+    -webkit-line-clamp:4;
+    overflow:hidden;
+  }
 
   .two-col{
     display:grid;
@@ -236,6 +243,14 @@
   .pathway-list{list-style:none; margin:0; padding:0; max-height:230px; overflow-y:auto;}
   .pathway-list li{border-top:1px solid var(--line); padding:9px 0; font-size:14px;}
   .pathway-list li:first-child{border-top:none;}
+
+  .go-group{margin-bottom:14px;}
+  .go-group:last-child{margin-bottom:0;}
+  .go-group-label{font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--mute); margin:0 0 8px;}
+  .go-tags{display:flex; flex-wrap:wrap; gap:6px;}
+  .go-tag{font-family:'IBM Plex Mono', monospace; font-size:12px; border:1px solid var(--line); border-radius:var(--radius); padding:3px 9px; color:var(--ink);}
+  .go-tag.go-more{color:var(--mute); border-style:dashed; background:none; cursor:pointer;}
+  .go-tag.go-more:hover{border-color:var(--moss); color:var(--moss);}
 
   .empty-note{color:var(--mute); font-size:14px; font-style:italic; margin:0;}
 
@@ -307,6 +322,13 @@
     return String(str ?? '').replace(/[&<>"']/g, c => ({
       '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
     }[c]));
+  }
+
+  function stripCitations(text){
+    return text
+      .replace(/\s*\(\s*PubMed:\d+(?:\s*,\s*PubMed:\d+)*\s*\)/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
   }
 
   // ---------- Local storage: history + cache ----------
@@ -414,7 +436,7 @@
   }
 
   function buildUrl(query){
-    const fields = "accession,id,protein_name,gene_names,organism_name,cc_function,xref_pdb,xref_alphafolddb,xref_reactome,length";
+    const fields = "accession,id,protein_name,gene_names,organism_name,cc_function,xref_pdb,xref_alphafolddb,xref_reactome,go_p,go_f,go_c,length";
     return `https://rest.uniprot.org/uniprotkb/search?query=${encodeURIComponent(query)}&fields=${fields}&format=json&size=1`;
   }
 
@@ -478,6 +500,55 @@
     body.innerHTML = `<ul class="pathway-list">${items}</ul>`;
   }
 
+  function renderGeneOntology(entry){
+    const body = document.getElementById('go-body');
+    const xrefs = entry.uniProtKBCrossReferences || [];
+    const groups = {C: [], F: [], P: []};
+    xrefs.filter(x => x.database === 'GO').forEach(ref => {
+      const termProp = (ref.properties || []).find(p => p.key === 'GoTerm');
+      if(!termProp) return;
+      const [code, ...rest] = termProp.value.split(':');
+      const term = rest.join(':').trim();
+      if(groups[code] && term) groups[code].push(term);
+    });
+
+    const sections = [
+      {label:'location', items:groups.C},
+      {label:'activity', items:groups.F},
+      {label:'process', items:groups.P}
+    ].filter(s => s.items.length > 0);
+
+    if(sections.length === 0){
+      body.innerHTML = `<p class="empty-note">No Gene Ontology annotations found for this entry.</p>`;
+      return;
+    }
+
+    const cap = 6;
+    const groupsHtml = sections.map(s => {
+      const shown = s.items.slice(0, cap);
+      const extra = s.items.slice(cap);
+      const tags = shown.map(t => `<span class="go-tag">${esc(t)}</span>`).join('');
+      const extraTags = extra.map(t => `<span class="go-tag go-extra" hidden>${esc(t)}</span>`).join('');
+      const more = extra.length > 0 ? `<button type="button" class="go-tag go-more">+${extra.length} more</button>` : '';
+      return `<div class="go-group"><p class="go-group-label">${s.label}</p><div class="go-tags">${tags}${extraTags}${more}</div></div>`;
+    }).join('');
+
+    body.innerHTML = `${groupsHtml}<p class="meta" style="margin-top:10px;"><a href="https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=${esc(entry.primaryAccession)}" target="_blank" rel="noopener">View full annotation set on QuickGO</a></p>`;
+
+    body.querySelectorAll('.go-more').forEach(btn => {
+      const container = btn.closest('.go-tags');
+      const hiddenCount = container.querySelectorAll('.go-extra').length;
+      btn.addEventListener('click', () => {
+        const expanded = btn.dataset.expanded === 'true';
+        container.querySelectorAll('.go-extra').forEach(t => {
+          if(expanded) t.setAttribute('hidden', ''); else t.removeAttribute('hidden');
+        });
+        btn.dataset.expanded = expanded ? 'false' : 'true';
+        btn.textContent = expanded ? `+${hiddenCount} more` : 'show less';
+      });
+    });
+  }
+
   async function renderStructure(entry, accession){
     const body = document.getElementById('structure-body');
     const xrefs = entry.uniProtKBCrossReferences || [];
@@ -530,6 +601,7 @@
   }
 
   function renderEntry(entry, term, meta){
+    resultsEl.hidden = false;
     const accession = entry.primaryAccession || '—';
     const entryId = entry.uniProtkbId || '';
     const organism = entry.organism?.scientificName || 'Unknown organism';
@@ -540,6 +612,7 @@
     const length = entry.sequence?.length;
     const fnComment = (entry.comments || []).find(c => c.commentType === 'FUNCTION');
     const fnText = fnComment?.texts?.[0]?.value;
+    const fnDisplay = fnText ? stripCitations(fnText) : null;
     const freshnessHtml = meta?.fromCache
       ? `<p class="meta mono cache-note">cached ${timeAgo(meta.ts)} &middot; <button type="button" class="link-btn" id="refresh-link">refresh</button></p>`
       : '';
@@ -557,7 +630,13 @@
         <div class="rule"></div>
         <section class="field">
           <h3 class="field-label">function</h3>
-          <p class="field-body">${fnText ? esc(fnText) : 'No curated function summary is available for this entry yet.'}</p>
+          <p class="field-body clamp" id="function-text">${fnDisplay ? esc(fnDisplay) : 'No curated function summary is available for this entry yet.'}</p>
+          <button type="button" class="link-btn" id="function-toggle" style="margin-top:8px; display:none;">read more</button>
+        </section>
+        <div class="rule"></div>
+        <section class="field" id="go-field">
+          <h3 class="field-label">gene ontology</h3>
+          <div id="go-body"><p class="loading-line mono">Loading annotations…</p></div>
         </section>
         <div class="rule"></div>
         <div class="two-col">
@@ -576,7 +655,23 @@
       document.getElementById('refresh-link')?.addEventListener('click', () => forceRefresh(term));
     }
 
+    const fnEl = document.getElementById('function-text');
+    const fnToggle = document.getElementById('function-toggle');
+    if(fnEl && fnToggle && fnEl.scrollHeight > fnEl.clientHeight + 2){
+      fnToggle.style.display = 'inline-block';
+      fnToggle.addEventListener('click', () => {
+        if(fnEl.classList.contains('clamp')){
+          fnEl.classList.remove('clamp');
+          fnToggle.textContent = 'show less';
+        }else{
+          fnEl.classList.add('clamp');
+          fnToggle.textContent = 'read more';
+        }
+      });
+    }
+
     renderPathways(entry);
+    renderGeneOntology(entry);
     renderStructure(entry, accession);
   }
 
