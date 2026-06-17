@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Specimen — a field guide to genes and proteins</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EAEEE6;
+    --card:#FAFBF7;
+    --ink:#1E2A22;
+    --moss:#1F6F5C;
+    --moss-tint:#E2EEE9;
+    --rust:#B6481E;
+    --mute:#6E7568;
+    --line:rgba(30,42,34,0.16);
+    --radius:3px;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter', sans-serif;
+    line-height:1.6;
+  }
+
+  a{color:var(--moss); text-decoration:underline; text-decoration-color:var(--line);}
+  a:hover{text-decoration-color:var(--moss);}
+
+  :focus-visible{outline:2px solid var(--moss); outline-offset:2px;}
+
+  .mono{font-family:'IBM Plex Mono', monospace;}
+
+  .page{
+    max-width:860px;
+    margin:0 auto;
+    padding:56px 24px 40px;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{margin-bottom:40px;}
+  .hero .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--moss);
+    margin:0 0 10px;
+  }
+  .hero h1{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:42px;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
+  .hero p{
+    margin:0;
+    color:var(--mute);
+    font-size:16px;
+    max-width:480px;
+  }
+
+  /* ---------- Search ---------- */
+  .search-panel{margin-bottom:36px;}
+  .search-form{
+    display:flex;
+    gap:10px;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:10px;
+  }
+  .search-form input{
+    flex:1;
+    border:none;
+    background:none;
+    font-family:'Inter', sans-serif;
+    font-size:20px;
+    color:var(--ink);
+    padding:4px 2px;
+  }
+  .search-form input::placeholder{color:#9AA194;}
+  .search-form input:focus{outline:none;}
+  .search-form button{
+    background:var(--moss);
+    color:var(--card);
+    border:none;
+    padding:0 22px;
+    font-family:'Inter', sans-serif;
+    font-weight:500;
+    font-size:15px;
+    border-radius:var(--radius);
+    cursor:pointer;
+  }
+  .search-form button:hover{background:#185c4c;}
+
+  .chip-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:14px;
+  }
+  .chip-label{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--mute);
+    margin-right:4px;
+    align-self:center;
+  }
+  .chip{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    background:none;
+    border:1px solid var(--line);
+    color:var(--ink);
+    padding:5px 12px;
+    border-radius:var(--radius);
+    cursor:pointer;
+  }
+  .chip:hover{border-color:var(--moss); color:var(--moss);}
+
+  .link-btn{
+    background:none;
+    border:none;
+    padding:0;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--mute);
+    text-decoration:underline;
+    text-decoration-color:var(--line);
+    cursor:pointer;
+  }
+  .link-btn:hover{color:var(--moss); text-decoration-color:var(--moss);}
+
+  .cache-note{margin-bottom:16px;}
+
+  /* ---------- Results / Card ---------- */
+  .results{margin-bottom:48px;}
+
+  .card{
+    position:relative;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:32px 32px 28px;
+  }
+
+  .card-hole{
+    position:absolute;
+    top:18px;
+    left:18px;
+    width:11px;
+    height:11px;
+    border-radius:50%;
+    border:1.5px solid var(--line);
+    background:var(--paper);
+  }
+
+  .card-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    padding-left:30px;
+    margin-bottom:18px;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .card-top .tag{font-size:12.5px; letter-spacing:0.04em; color:var(--mute);}
+  .card-top .organism{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    font-size:15px;
+    color:var(--mute);
+  }
+
+  .entry-name{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:26px;
+    margin:0 0 6px;
+    line-height:1.3;
+  }
+  .gene-tag{
+    display:inline-block;
+    font-size:13px;
+    background:var(--moss-tint);
+    color:var(--moss);
+    padding:3px 8px;
+    border-radius:var(--radius);
+    margin-right:10px;
+    vertical-align:middle;
+    letter-spacing:0.02em;
+  }
+
+  .meta{font-size:13px; color:var(--mute); margin:0 0 4px;}
+
+  .rule{height:1px; background:var(--line); margin:20px 0;}
+
+  .field-label{
+    font-size:12px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--moss);
+    margin:0 0 10px;
+    font-weight:500;
+  }
+  .field-body{margin:0; font-size:15.5px;}
+
+  .two-col{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:28px;
+  }
+  @media (max-width:640px){
+    .two-col{grid-template-columns:1fr;}
+    .entry-name{font-size:22px;}
+    .card{padding:26px 20px 22px;}
+  }
+
+  .viewer{
+    width:100%;
+    height:230px;
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    position:relative;
+    overflow:hidden;
+    margin-bottom:10px;
+  }
+
+  .pathway-list{list-style:none; margin:0; padding:0; max-height:230px; overflow-y:auto;}
+  .pathway-list li{border-top:1px solid var(--line); padding:9px 0; font-size:14px;}
+  .pathway-list li:first-child{border-top:none;}
+
+  .empty-note{color:var(--mute); font-size:14px; font-style:italic; margin:0;}
+
+  .loading-line{color:var(--mute); font-size:14px; margin:0;}
+  @media (prefers-reduced-motion:no-preference){
+    .loading-card .loading-line, .loading-line{
+      animation:pulse 1.4s ease-in-out infinite;
+    }
+  }
+  @keyframes pulse{0%,100%{opacity:0.55;}50%{opacity:1;}}
+
+  .loading-card, .empty-card{padding:32px;}
+  .empty-card p{margin:0 0 8px;}
+  .empty-card strong{color:var(--rust);}
+
+  /* ---------- Footer ---------- */
+  .site-footer{
+    border-top:1px solid var(--line);
+    padding-top:18px;
+    font-size:12.5px;
+    color:var(--mute);
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <header class="hero">
+    <p class="eyebrow mono">specimen index</p>
+    <h1>Specimen</h1>
+    <p>A field guide to genes and proteins. Type a gene or protein name to pull its function, structure, and pathway record.</p>
+  </header>
+
+  <section class="search-panel">
+    <form class="search-form" id="search-form">
+      <input type="text" id="search-input" placeholder="TP53, insulin, CFTR…" autocomplete="off" aria-label="Gene or protein name">
+      <button type="submit">Search</button>
+    </form>
+    <div class="chip-row">
+      <span class="chip-label">try:</span>
+      <button type="button" class="chip" data-term="TP53">TP53</button>
+      <button type="button" class="chip" data-term="BRCA1">BRCA1</button>
+      <button type="button" class="chip" data-term="INS">INS</button>
+      <button type="button" class="chip" data-term="HBB">HBB</button>
+      <button type="button" class="chip" data-term="CFTR">CFTR</button>
+    </div>
+    <div class="chip-row" id="recent-panel" hidden></div>
+  </section>
+
+  <section class="results" id="results" hidden>
+    <div id="card-slot"></div>
+  </section>
+
+  <footer class="site-footer">
+    Data pulled live from UniProt, RCSB PDB, and AlphaFold DB. Search history and results are cached in your browser only — nothing leaves your device. <button type="button" class="link-btn" id="clear-all-link">Clear saved data</button>
+  </footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.0.1/3Dmol-min.js"></script>
+<script>
+  const form = document.getElementById('search-form');
+  const input = document.getElementById('search-input');
+  const resultsEl = document.getElementById('results');
+  const cardEl = document.getElementById('card-slot');
+
+  function esc(str){
+    return String(str ?? '').replace(/[&<>"']/g, c => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    }[c]));
+  }
+
+  // ---------- Local storage: history + cache ----------
+  const HISTORY_KEY = 'specimen.history.v1';
+  const CACHE_KEY = 'specimen.cache.v1';
+  const HISTORY_LIMIT = 12;
+  const CACHE_LIMIT = 60;
+
+  function safeParse(json, fallback){
+    try{ const parsed = JSON.parse(json); return parsed ?? fallback; }
+    catch(e){ return fallback; }
+  }
+
+  function loadHistory(){
+    try{ return safeParse(localStorage.getItem(HISTORY_KEY), []); }
+    catch(e){ return []; }
+  }
+  function saveHistory(list){
+    try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); }
+    catch(e){ /* storage unavailable or full — fail silently */ }
+  }
+
+  function loadCache(){
+    try{ return safeParse(localStorage.getItem(CACHE_KEY), {}); }
+    catch(e){ return {}; }
+  }
+  function saveCache(map){
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify(map)); }
+    catch(e){
+      try{
+        const keys = Object.keys(map).sort((a,b) => (map[a].ts||0) - (map[b].ts||0));
+        keys.slice(0, 10).forEach(k => delete map[k]);
+        localStorage.setItem(CACHE_KEY, JSON.stringify(map));
+      }catch(e2){ /* give up quietly — caching is a nice-to-have, not critical */ }
+    }
+  }
+
+  function cacheKeyFor(term){ return term.trim().toLowerCase(); }
+
+  function getCached(term){
+    const cache = loadCache();
+    return cache[cacheKeyFor(term)] || null;
+  }
+
+  function setCached(term, entry){
+    const cache = loadCache();
+    cache[cacheKeyFor(term)] = {entry, ts: Date.now()};
+    const keys = Object.keys(cache);
+    if(keys.length > CACHE_LIMIT){
+      keys.sort((a,b) => (cache[a].ts||0) - (cache[b].ts||0))
+        .slice(0, keys.length - CACHE_LIMIT)
+        .forEach(k => delete cache[k]);
+    }
+    saveCache(cache);
+  }
+
+  function timeAgo(ts){
+    const mins = Math.round((Date.now() - ts) / 60000);
+    if(mins < 1) return 'just now';
+    if(mins < 60) return `${mins}m ago`;
+    const hrs = Math.round(mins / 60);
+    if(hrs < 24) return `${hrs}h ago`;
+    return `${Math.round(hrs / 24)}d ago`;
+  }
+
+  function addToHistory(entry, term){
+    const accession = entry.primaryAccession;
+    const gene = entry.genes?.[0]?.geneName?.value || term;
+    const name = entry.proteinDescription?.recommendedName?.fullName?.value || entry.uniProtkbId || term;
+    let list = loadHistory().filter(h => h.accession !== accession);
+    list.unshift({accession, gene, name, term, ts: Date.now()});
+    if(list.length > HISTORY_LIMIT) list = list.slice(0, HISTORY_LIMIT);
+    saveHistory(list);
+    renderHistory();
+  }
+
+  function renderHistory(){
+    const panel = document.getElementById('recent-panel');
+    const list = loadHistory();
+    if(list.length === 0){ panel.hidden = true; panel.innerHTML = ''; return; }
+    panel.hidden = false;
+    const chips = list.map(h =>
+      `<button type="button" class="chip history-chip" data-term="${esc(h.term)}" title="${esc(h.name)}">${esc(h.gene)}</button>`
+    ).join('');
+    panel.innerHTML = `<span class="chip-label">recent:</span>${chips}<button type="button" class="link-btn" id="clear-history-link">clear</button>`;
+    panel.querySelectorAll('.history-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        input.value = btn.dataset.term;
+        runSearch(btn.dataset.term);
+      });
+    });
+    document.getElementById('clear-history-link').addEventListener('click', () => {
+      saveHistory([]);
+      renderHistory();
+    });
+  }
+
+  function bindChips(){
+    document.querySelectorAll('.chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        input.value = btn.dataset.term;
+        runSearch(btn.dataset.term);
+      });
+    });
+  }
+
+  function buildUrl(query){
+    const fields = "accession,id,protein_name,gene_names,organism_name,cc_function,xref_pdb,xref_alphafolddb,xref_reactome,length";
+    return `https://rest.uniprot.org/uniprotkb/search?query=${encodeURIComponent(query)}&fields=${fields}&format=json&size=1`;
+  }
+
+  async function fetchEntry(term){
+    const t = term.trim();
+    if(!t) return null;
+    const queries = [
+      `(gene:${t}) AND (organism_id:9606) AND (reviewed:true)`,
+      `(gene:${t}) AND (organism_id:9606)`,
+      `(${t}) AND (organism_id:9606)`,
+      `(${t})`
+    ];
+    for(const q of queries){
+      const res = await fetch(buildUrl(q));
+      if(!res.ok) continue;
+      const data = await res.json();
+      if(data.results && data.results.length > 0) return data.results[0];
+    }
+    return null;
+  }
+
+  function renderLoading(term){
+    resultsEl.hidden = false;
+    cardEl.innerHTML = `<div class="card loading-card"><p class="loading-line mono">Pulling the record for "${esc(term)}"…</p></div>`;
+  }
+
+  function renderNotFound(term){
+    cardEl.innerHTML = `
+      <div class="card empty-card">
+        <p>No specimen found for "<strong>${esc(term)}</strong>".</p>
+        <p class="meta">Double-check the spelling, or search by the official gene symbol rather than a common name — try one of the examples below.</p>
+        <div class="chip-row">
+          <button type="button" class="chip" data-term="TP53">TP53</button>
+          <button type="button" class="chip" data-term="BRCA1">BRCA1</button>
+          <button type="button" class="chip" data-term="INS">INS</button>
+        </div>
+      </div>`;
+    bindChips();
+  }
+
+  function renderNetworkError(){
+    cardEl.innerHTML = `
+      <div class="card empty-card">
+        <p>Couldn't reach UniProt just now.</p>
+        <p class="meta">This tool queries public databases directly from your browser. Try again in a moment, or check your connection.</p>
+      </div>`;
+  }
+
+  function renderPathways(entry){
+    const body = document.getElementById('pathway-body');
+    const refs = (entry.uniProtKBCrossReferences || []).filter(x => x.database === 'Reactome');
+    if(refs.length === 0){
+      body.innerHTML = `<p class="empty-note">No curated Reactome pathway annotations found for this entry.</p>`;
+      return;
+    }
+    const items = refs.map(r => {
+      const nameProp = (r.properties || []).find(p => p.key === 'PathwayName');
+      const name = nameProp?.value || r.id;
+      return `<li><a href="https://reactome.org/PathwayBrowser/#/${esc(r.id)}" target="_blank" rel="noopener">${esc(name)}</a></li>`;
+    }).join('');
+    body.innerHTML = `<ul class="pathway-list">${items}</ul>`;
+  }
+
+  async function renderStructure(entry, accession){
+    const body = document.getElementById('structure-body');
+    const xrefs = entry.uniProtKBCrossReferences || [];
+    const pdbRefs = xrefs.filter(x => x.database === 'PDB');
+    const afRef = xrefs.find(x => x.database === 'AlphaFoldDB');
+
+    if(pdbRefs.length > 0){
+      const ids = pdbRefs.map(r => r.id);
+      const links = ids.slice(0, 4)
+        .map(id => `<a href="https://www.rcsb.org/structure/${esc(id)}" target="_blank" rel="noopener">${esc(id)}</a>`)
+        .join(', ');
+      body.innerHTML = `
+        <div class="viewer" id="viewer-3d"></div>
+        <p class="meta mono">experimental structure &middot; ${links}${ids.length > 4 ? ` +${ids.length - 4} more` : ''}</p>`;
+      try{
+        const viewer = $3Dmol.createViewer(document.getElementById('viewer-3d'), {backgroundColor:'#FAFBF7'});
+        $3Dmol.download('pdb:' + ids[0], viewer, {}, function(){
+          viewer.setStyle({}, {cartoon:{color:'spectrum'}});
+          viewer.zoomTo();
+          viewer.render();
+        });
+      }catch(e){
+        body.insertAdjacentHTML('beforeend', `<p class="empty-note">Couldn't render the 3D viewer in this browser — use the links above instead.</p>`);
+      }
+      return;
+    }
+
+    if(afRef){
+      body.innerHTML = `<div class="viewer" id="viewer-3d"></div><p class="meta mono">predicted structure &middot; AlphaFold DB</p>`;
+      try{
+        const predRes = await fetch(`https://alphafold.ebi.ac.uk/api/prediction/${accession}`);
+        if(!predRes.ok) throw new Error('alphafold api error');
+        const predData = await predRes.json();
+        const modelUrl = predData?.[0]?.pdbUrl;
+        if(!modelUrl) throw new Error('no model url');
+        const modelRes = await fetch(modelUrl);
+        const pdbText = await modelRes.text();
+        const viewer = $3Dmol.createViewer(document.getElementById('viewer-3d'), {backgroundColor:'#FAFBF7'});
+        viewer.addModel(pdbText, 'pdb');
+        viewer.setStyle({}, {cartoon:{color:'spectrum'}});
+        viewer.zoomTo();
+        viewer.render();
+      }catch(e){
+        body.innerHTML = `<p class="empty-note">A predicted structure exists for this entry. View it directly on <a href="https://alphafold.ebi.ac.uk/entry/${esc(accession)}" target="_blank" rel="noopener">AlphaFold DB</a>.</p>`;
+      }
+      return;
+    }
+
+    body.innerHTML = `<p class="empty-note">No experimental or predicted structure is cross-referenced for this entry.</p>`;
+  }
+
+  function renderEntry(entry, term, meta){
+    const accession = entry.primaryAccession || '—';
+    const entryId = entry.uniProtkbId || '';
+    const organism = entry.organism?.scientificName || 'Unknown organism';
+    const geneName = entry.genes?.[0]?.geneName?.value || term;
+    const fullName = entry.proteinDescription?.recommendedName?.fullName?.value
+      || entry.proteinDescription?.submissionNames?.[0]?.fullName?.value
+      || entryId || term;
+    const length = entry.sequence?.length;
+    const fnComment = (entry.comments || []).find(c => c.commentType === 'FUNCTION');
+    const fnText = fnComment?.texts?.[0]?.value;
+    const freshnessHtml = meta?.fromCache
+      ? `<p class="meta mono cache-note">cached ${timeAgo(meta.ts)} &middot; <button type="button" class="link-btn" id="refresh-link">refresh</button></p>`
+      : '';
+
+    cardEl.innerHTML = `
+      <div class="card">
+        <div class="card-hole" aria-hidden="true"></div>
+        <div class="card-top">
+          <span class="tag mono">ACCESSION No. ${esc(accession)}</span>
+          <span class="organism">${esc(organism)}</span>
+        </div>
+        ${freshnessHtml}
+        <h2 class="entry-name"><span class="gene-tag mono">${esc(geneName)}</span>${esc(fullName)}</h2>
+        ${length ? `<p class="meta mono">sequence length: ${length} aa &middot; entry ${esc(entryId)}</p>` : ''}
+        <div class="rule"></div>
+        <section class="field">
+          <h3 class="field-label">function</h3>
+          <p class="field-body">${fnText ? esc(fnText) : 'No curated function summary is available for this entry yet.'}</p>
+        </section>
+        <div class="rule"></div>
+        <div class="two-col">
+          <section class="field" id="structure-field">
+            <h3 class="field-label">structure</h3>
+            <div id="structure-body"><p class="loading-line mono">Loading structural data…</p></div>
+          </section>
+          <section class="field" id="pathway-field">
+            <h3 class="field-label">pathways</h3>
+            <div id="pathway-body"><p class="loading-line mono">Loading pathway data…</p></div>
+          </section>
+        </div>
+      </div>`;
+
+    if(meta?.fromCache){
+      document.getElementById('refresh-link')?.addEventListener('click', () => forceRefresh(term));
+    }
+
+    renderPathways(entry);
+    renderStructure(entry, accession);
+  }
+
+  async function forceRefresh(term){
+    renderLoading(term);
+    try{
+      const entry = await fetchEntry(term);
+      if(!entry){ renderNotFound(term); return; }
+      setCached(term, entry);
+      addToHistory(entry, term);
+      renderEntry(entry, term, {fromCache:false, ts:Date.now()});
+    }catch(err){
+      renderNetworkError();
+    }
+  }
+
+  async function runSearch(term){
+    if(!term || !term.trim()) return;
+    const cached = getCached(term);
+    if(cached){
+      addToHistory(cached.entry, term);
+      renderEntry(cached.entry, term, {fromCache:true, ts:cached.ts});
+      return;
+    }
+    renderLoading(term);
+    try{
+      const entry = await fetchEntry(term);
+      if(!entry){ renderNotFound(term); return; }
+      setCached(term, entry);
+      addToHistory(entry, term);
+      renderEntry(entry, term, {fromCache:false, ts:Date.now()});
+    }catch(err){
+      renderNetworkError();
+    }
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    runSearch(input.value);
+  });
+
+  document.getElementById('clear-all-link').addEventListener('click', () => {
+    saveHistory([]);
+    saveCache({});
+    renderHistory();
+  });
+
+  bindChips();
+  renderHistory();
+</script>
+
+</body>
+</html>
