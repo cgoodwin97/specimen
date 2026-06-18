@@ -241,6 +241,65 @@
     body.innerHTML = `<ul class="pathway-list">${items}</ul>`;
   }
 
+  // Cache for GO term definitions so repeated clicks don't re-fetch
+  const goTermCache = {};
+
+  async function fetchGoDefinition(termName){
+    if(goTermCache[termName]) return goTermCache[termName];
+    try{
+      const encoded = encodeURIComponent(termName);
+      const res = await fetch(`https://www.ebi.ac.uk/QuickGO/services/ontology/go/search?query=${encoded}&limit=1`, {
+        headers:{Accept:'application/json'}
+      });
+      if(!res.ok) throw new Error('quickgo error');
+      const data = await res.json();
+      const hit = data.results?.[0];
+      if(!hit) throw new Error('no result');
+      const definition = hit.definition?.text || null;
+      const ancestors = (hit.ancestors || [])
+        .filter(a => a !== hit.id)
+        .slice(0, 3)
+        .map(a => {
+          const label = data.results?.find(r => r.id === a)?.name || a;
+          return label;
+        });
+      const result = {definition, ancestors, id: hit.id, name: hit.name};
+      goTermCache[termName] = result;
+      return result;
+    }catch(e){
+      return null;
+    }
+  }
+
+  function bindGoTag(btn, termName){
+    let defEl = null;
+    btn.addEventListener('click', async () => {
+      const isActive = btn.classList.contains('go-active');
+      if(isActive){
+        btn.classList.remove('go-active');
+        if(defEl){ defEl.remove(); defEl = null; }
+        return;
+      }
+      btn.classList.add('go-active');
+      defEl = document.createElement('div');
+      defEl.className = 'go-definition';
+      defEl.innerHTML = `<p class="go-def-term">${esc(termName)}</p><p class="go-def-text loading-line mono">Looking up definition…</p>`;
+      btn.closest('.go-group').appendChild(defEl);
+
+      const info = await fetchGoDefinition(termName);
+      if(!btn.classList.contains('go-active')){ return; }
+
+      if(!info || !info.definition){
+        defEl.innerHTML = `<p class="go-def-term">${esc(termName)}</p><p class="go-def-text empty-note">No definition found for this term.</p>`;
+        return;
+      }
+      const ancestorHtml = info.ancestors?.length
+        ? `<p class="go-def-ancestors">part of: ${info.ancestors.map(a => esc(a)).join(' › ')}</p>`
+        : '';
+      defEl.innerHTML = `<p class="go-def-term mono">${esc(info.id || termName)}</p><p class="go-def-text">${esc(info.definition)}</p>${ancestorHtml}`;
+    });
+  }
+
   function renderGeneOntology(entry){
     const body = document.getElementById('go-body');
     const xrefs = entry.uniProtKBCrossReferences || [];
@@ -268,13 +327,17 @@
     const groupsHtml = sections.map(s => {
       const shown = s.items.slice(0, cap);
       const extra = s.items.slice(cap);
-      const tags = shown.map(t => `<span class="go-tag">${esc(t)}</span>`).join('');
-      const extraTags = extra.map(t => `<span class="go-tag go-extra" hidden>${esc(t)}</span>`).join('');
+      const tags = shown.map(t => `<button type="button" class="go-tag go-clickable" data-term="${esc(t)}">${esc(t)}</button>`).join('');
+      const extraTags = extra.map(t => `<button type="button" class="go-tag go-clickable go-extra" data-term="${esc(t)}" hidden>${esc(t)}</button>`).join('');
       const more = extra.length > 0 ? `<button type="button" class="go-tag go-more">+${extra.length} more</button>` : '';
       return `<div class="go-group"><p class="go-group-label">${s.label}</p><div class="go-tags">${tags}${extraTags}${more}</div></div>`;
     }).join('');
 
-    body.innerHTML = `${groupsHtml}<p class="meta" style="margin-top:10px;"><a href="https://www.ebi.ac.uk/QuickGO/annotations?geneProductId=${esc(entry.primaryAccession)}" target="_blank" rel="noopener">View full annotation set on QuickGO</a></p>`;
+    body.innerHTML = `${groupsHtml}`;
+
+    body.querySelectorAll('.go-clickable').forEach(btn => {
+      bindGoTag(btn, btn.dataset.term);
+    });
 
     body.querySelectorAll('.go-more').forEach(btn => {
       const container = btn.closest('.go-tags');
@@ -286,6 +349,9 @@
         });
         btn.dataset.expanded = expanded ? 'false' : 'true';
         btn.textContent = expanded ? `+${hiddenCount} more` : 'show less';
+        if(!expanded){
+          container.querySelectorAll('.go-extra').forEach(btn => bindGoTag(btn, btn.dataset.term));
+        }
       });
     });
   }
