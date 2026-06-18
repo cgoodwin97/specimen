@@ -1,0 +1,271 @@
+:root{
+  --paper:#EAEEE6;
+  --card:#FAFBF7;
+  --ink:#1E2A22;
+  --moss:#1F6F5C;
+  --moss-tint:#E2EEE9;
+  --rust:#B6481E;
+  --mute:#6E7568;
+  --line:rgba(30,42,34,0.16);
+  --radius:3px;
+}
+
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Inter', sans-serif;
+  line-height:1.6;
+}
+
+a{color:var(--moss); text-decoration:underline; text-decoration-color:var(--line);}
+a:hover{text-decoration-color:var(--moss);}
+
+:focus-visible{outline:2px solid var(--moss); outline-offset:2px;}
+
+.mono{font-family:'IBM Plex Mono', monospace;}
+
+.page{
+  max-width:860px;
+  margin:0 auto;
+  padding:56px 24px 40px;
+}
+
+/* ---------- Nav ---------- */
+.site-nav{
+  display:flex;
+  align-items:baseline;
+  gap:8px;
+  font-size:12px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  margin:0 0 10px;
+}
+.site-nav a{color:var(--mute); text-decoration:none;}
+.site-nav a:hover{color:var(--moss);}
+.site-nav .nav-current{color:var(--moss);}
+.site-nav .nav-sep{color:var(--line);}
+
+/* ---------- Hero ---------- */
+.hero{margin-bottom:40px;}
+.hero h1{
+  font-family:'Fraunces', serif;
+  font-style:italic;
+  font-weight:500;
+  font-size:42px;
+  margin:0 0 10px;
+  color:var(--ink);
+}
+.hero p{
+  margin:0;
+  color:var(--mute);
+  font-size:16px;
+  max-width:480px;
+}
+
+/* ---------- Search ---------- */
+.search-panel{margin-bottom:36px;}
+.search-form{
+  display:flex;
+  gap:10px;
+  border-bottom:2px solid var(--ink);
+  padding-bottom:10px;
+}
+.search-form input{
+  flex:1;
+  border:none;
+  background:none;
+  font-family:'Inter', sans-serif;
+  font-size:20px;
+  color:var(--ink);
+  padding:4px 2px;
+}
+.search-form input::placeholder{color:#9AA194;}
+.search-form input:focus{outline:none;}
+.search-form button{
+  background:var(--moss);
+  color:var(--card);
+  border:none;
+  padding:0 22px;
+  font-family:'Inter', sans-serif;
+  font-weight:500;
+  font-size:15px;
+  border-radius:var(--radius);
+  cursor:pointer;
+}
+.search-form button:hover{background:#185c4c;}
+
+.chip-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:14px;
+}
+.chip-label{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  color:var(--mute);
+  margin-right:4px;
+  align-self:center;
+}
+.chip{
+  font-family:'IBM Plex Mono', monospace;
+  font-size:13px;
+  background:none;
+  border:1px solid var(--line);
+  color:var(--ink);
+  padding:5px 12px;
+  border-radius:var(--radius);
+  cursor:pointer;
+}
+.chip:hover{border-color:var(--moss); color:var(--moss);}
+
+.link-btn{
+  background:none;
+  border:none;
+  padding:0;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  color:var(--mute);
+  text-decoration:underline;
+  text-decoration-color:var(--line);
+  cursor:pointer;
+}
+.link-btn:hover{color:var(--moss); text-decoration-color:var(--moss);}
+
+.cache-note{margin-bottom:16px;}
+
+/* ---------- Results / Card ---------- */
+.results{margin-bottom:48px;}
+
+.card{
+  position:relative;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:32px 32px 28px;
+}
+
+.card-hole{
+  position:absolute;
+  top:18px;
+  left:18px;
+  width:11px;
+  height:11px;
+  border-radius:50%;
+  border:1.5px solid var(--line);
+  background:var(--paper);
+}
+
+.card-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  padding-left:30px;
+  margin-bottom:18px;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.card-top .tag{font-size:12.5px; letter-spacing:0.04em; color:var(--mute);}
+.card-top .organism{
+  font-family:'Fraunces', serif;
+  font-style:italic;
+  font-size:15px;
+  color:var(--mute);
+}
+
+.entry-name{
+  font-family:'Fraunces', serif;
+  font-weight:500;
+  font-size:26px;
+  margin:0 0 6px;
+  line-height:1.3;
+}
+.gene-tag{
+  display:inline-block;
+  font-size:13px;
+  background:var(--moss-tint);
+  color:var(--moss);
+  padding:3px 8px;
+  border-radius:var(--radius);
+  margin-right:10px;
+  vertical-align:middle;
+  letter-spacing:0.02em;
+}
+
+.meta{font-size:13px; color:var(--mute); margin:0 0 4px;}
+
+.rule{height:1px; background:var(--line); margin:20px 0;}
+
+.field-label{
+  font-size:12px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--moss);
+  margin:0 0 10px;
+  font-weight:500;
+}
+.field-body{margin:0; font-size:15.5px;}
+.field-body.clamp{
+  display:-webkit-box;
+  -webkit-box-orient:vertical;
+  -webkit-line-clamp:4;
+  overflow:hidden;
+}
+
+.two-col{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:28px;
+}
+@media (max-width:640px){
+  .two-col{grid-template-columns:1fr;}
+  .entry-name{font-size:22px;}
+  .card{padding:26px 20px 22px;}
+}
+
+.viewer{
+  width:100%;
+  height:230px;
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  position:relative;
+  overflow:hidden;
+  margin-bottom:10px;
+}
+
+.pathway-list{list-style:none; margin:0; padding:0; max-height:230px; overflow-y:auto;}
+.pathway-list li{border-top:1px solid var(--line); padding:9px 0; font-size:14px;}
+.pathway-list li:first-child{border-top:none;}
+
+.go-group{margin-bottom:14px;}
+.go-group:last-child{margin-bottom:0;}
+.go-group-label{font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--mute); margin:0 0 8px;}
+.go-tags{display:flex; flex-wrap:wrap; gap:6px;}
+.go-tag{font-family:'IBM Plex Mono', monospace; font-size:12px; border:1px solid var(--line); border-radius:var(--radius); padding:3px 9px; color:var(--ink);}
+.go-tag.go-more{color:var(--mute); border-style:dashed; background:none; cursor:pointer;}
+.go-tag.go-more:hover{border-color:var(--moss); color:var(--moss);}
+
+.empty-note{color:var(--mute); font-size:14px; font-style:italic; margin:0;}
+
+.loading-line{color:var(--mute); font-size:14px; margin:0;}
+@media (prefers-reduced-motion:no-preference){
+  .loading-card .loading-line, .loading-line{
+    animation:pulse 1.4s ease-in-out infinite;
+  }
+}
+@keyframes pulse{0%,100%{opacity:0.55;}50%{opacity:1;}}
+
+.loading-card, .empty-card{padding:32px;}
+.empty-card p{margin:0 0 8px;}
+.empty-card strong{color:var(--rust);}
+
+/* ---------- Footer ---------- */
+.site-footer{
+  border-top:1px solid var(--line);
+  padding-top:18px;
+  font-size:12.5px;
+  color:var(--mute);
+}
