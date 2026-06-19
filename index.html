@@ -47,7 +47,7 @@
   </section>
 
   <footer class="site-footer">
-    Data pulled live from UniProt, RCSB PDB, and AlphaFold DB, and QuickGO. <button type="button" class="link-btn" id="clear-all-link">Clear saved data</button>
+    Data pulled live from UniProt, RCSB PDB, AlphaFold DB, and QuickGO. Search results are cached for faster repeat lookups; your search history is stored in your browser only. <button type="button" class="link-btn" id="clear-all-link">Clear saved data</button>
   </footer>
 
 </div>
@@ -273,7 +273,8 @@
       const ancestorHtml = info.ancestors?.length
         ? `<p class="go-def-ancestors">part of: ${info.ancestors.map(a => esc(a)).join(' › ')}</p>`
         : '';
-      defEl.innerHTML = `<p class="go-def-term mono">${esc(info.id || termName)}</p><p class="go-def-text">${esc(info.definition)}</p>${ancestorHtml}`;
+      const idLabel = info.id ? `${info.id} — ${info.name || termName}` : termName;
+      defEl.innerHTML = `<p class="go-def-term mono">${esc(idLabel)}</p><p class="go-def-text">${esc(info.definition)}</p>${ancestorHtml}`;
     });
   }
 
