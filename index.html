@@ -177,26 +177,16 @@
   }
 
   function buildUrl(query){
-    const fields = "accession,id,protein_name,gene_names,organism_name,cc_function,xref_pdb,xref_alphafolddb,xref_reactome,go_p,go_f,go_c,length";
-    return `https://rest.uniprot.org/uniprotkb/search?query=${encodeURIComponent(query)}&fields=${fields}&format=json&size=1`;
+    return `/api/gene?q=${encodeURIComponent(query)}`;
   }
 
   async function fetchEntry(term){
     const t = term.trim();
     if(!t) return null;
-    const queries = [
-      `(gene:${t}) AND (organism_id:9606) AND (reviewed:true)`,
-      `(gene:${t}) AND (organism_id:9606)`,
-      `(${t}) AND (organism_id:9606)`,
-      `(${t})`
-    ];
-    for(const q of queries){
-      const res = await fetch(buildUrl(q));
-      if(!res.ok) continue;
-      const data = await res.json();
-      if(data.results && data.results.length > 0) return data.results[0];
-    }
-    return null;
+    const res = await fetch(buildUrl(t));
+    if(!res.ok) return null;
+    const data = await res.json();
+    return data.result || null;
   }
 
   function renderLoading(term){
@@ -247,25 +237,12 @@
   async function fetchGoDefinition(termName){
     if(goTermCache[termName]) return goTermCache[termName];
     try{
-      const encoded = encodeURIComponent(termName);
-      const res = await fetch(`https://www.ebi.ac.uk/QuickGO/services/ontology/go/search?query=${encoded}&limit=1`, {
-        headers:{Accept:'application/json'}
-      });
-      if(!res.ok) throw new Error('quickgo error');
+      const res = await fetch(`/api/go?term=${encodeURIComponent(termName)}`);
+      if(!res.ok) throw new Error('proxy error');
       const data = await res.json();
-      const hit = data.results?.[0];
-      if(!hit) throw new Error('no result');
-      const definition = hit.definition?.text || null;
-      const ancestors = (hit.ancestors || [])
-        .filter(a => a !== hit.id)
-        .slice(0, 3)
-        .map(a => {
-          const label = data.results?.find(r => r.id === a)?.name || a;
-          return label;
-        });
-      const result = {definition, ancestors, id: hit.id, name: hit.name};
-      goTermCache[termName] = result;
-      return result;
+      if(!data.result) return null;
+      goTermCache[termName] = data.result;
+      return data.result;
     }catch(e){
       return null;
     }
