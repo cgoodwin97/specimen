@@ -19,7 +19,9 @@
     <nav class="site-nav mono" aria-label="primary">
       <span class="nav-current">specimen index</span>
       <span class="nav-sep">|</span>
-      <a href="bookmarks.html">bookmarks</a>
+      <a href="saved.html">saved</a>
+      <span class="nav-sep">|</span>
+      <a href="compare.html">compare</a>
       <span class="nav-sep">|</span>
       <a href="about.html">about</a>
       <span class="nav-sep">|</span>
@@ -443,7 +445,7 @@
           <span class="tag mono">ACCESSION No. ${esc(accession)}</span>
           <span class="card-top-right">
             <span class="organism">${esc(organism)}</span>
-            <button type="button" class="bookmark-btn bookmark-icon-only${isBookmarked(accession) ? ' is-saved' : ''}" id="bookmark-toggle" aria-label="${isBookmarked(accession) ? 'Remove bookmark' : 'Add bookmark'}" title="${isBookmarked(accession) ? 'Remove bookmark' : 'Add bookmark'}">
+            <button type="button" class="bookmark-btn bookmark-icon-only${isBookmarked(accession) ? ' is-saved' : ''}" id="bookmark-toggle" aria-label="${isBookmarked(accession) ? 'Remove from saved' : 'Add to saved'}" title="${isBookmarked(accession) ? 'Remove from saved' : 'Add to saved'}">
               <span class="bookmark-icon">${isBookmarked(accession) ? '★' : '☆'}</span>
             </button>
           </span>
@@ -484,7 +486,7 @@
       const nowSaved = toggleBookmark(entry, term);
       bmBtn.classList.toggle('is-saved', nowSaved);
       bmBtn.querySelector('.bookmark-icon').textContent = nowSaved ? '★' : '☆';
-      const label = nowSaved ? 'Remove bookmark' : 'Add bookmark';
+      const label = nowSaved ? 'Remove from saved' : 'Add to saved';
       bmBtn.setAttribute('aria-label', label);
       bmBtn.setAttribute('title', label);
     });

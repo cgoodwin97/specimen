@@ -353,6 +353,115 @@ a:hover{text-decoration-color:var(--moss);}
 }
 .bookmark-empty p{margin:0 0 4px;}
 
+/* ---------- GO accordion (saved modal + compare) ---------- */
+.go-acc-row{border-top:0.5px solid var(--line);}
+.go-acc-row:first-child{border-top:none;}
+.go-acc-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  width:100%;
+  background:none;
+  border:none;
+  padding:9px 2px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.06em;
+  color:var(--mute);
+  cursor:pointer;
+  text-align:left;
+}
+.go-acc-head:hover{color:var(--moss);}
+.go-acc-chev{font-size:10px; transition:transform 0.15s;}
+.go-acc-row.expanded .go-acc-chev{transform:rotate(90deg);}
+.go-acc-body{display:none; flex-wrap:wrap; gap:5px; padding:0 2px 10px;}
+.go-acc-row.expanded .go-acc-body{display:flex;}
+.go-acc-tag{font-family:'IBM Plex Mono', monospace; font-size:11px; border:0.5px solid var(--line); border-radius:var(--radius); padding:3px 8px; color:var(--ink);}
+.go-acc-tag.go-acc-shared{background:var(--moss-tint); border-color:var(--moss); color:var(--moss);}
+
+/* ---------- Modal overlay (saved page card pop-out) ---------- */
+.modal-overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(30,42,34,0.5);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+  z-index:50;
+}
+.modal-overlay[hidden]{display:none;}
+.modal-card-wrap{
+  position:relative;
+  max-width:520px;
+  width:100%;
+  max-height:85vh;
+  overflow-y:auto;
+}
+.modal-close-btn{
+  position:absolute;
+  top:14px;
+  right:14px;
+  background:var(--card);
+  border:0.5px solid var(--line);
+  border-radius:50%;
+  width:28px;
+  height:28px;
+  font-size:16px;
+  color:var(--mute);
+  cursor:pointer;
+  z-index:2;
+}
+.modal-close-btn:hover{color:var(--moss); border-color:var(--moss);}
+
+/* ---------- Compare page ---------- */
+.compare-grid{display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:16px;}
+.compare-add{
+  background:var(--card);
+  border:1.5px dashed var(--line);
+  border-radius:var(--radius);
+  padding:24px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  min-height:200px;
+  color:var(--mute);
+}
+.compare-add input{
+  width:100%;
+  border:none;
+  border-bottom:1.5px solid var(--ink);
+  background:none;
+  font-family:'Inter', sans-serif;
+  font-size:15px;
+  padding:6px 2px;
+  color:var(--ink);
+  text-align:center;
+}
+.compare-add input:focus{outline:none;}
+.compare-add-icon{font-size:28px; color:var(--moss);}
+.compare-card{
+  position:relative;
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:18px;
+}
+.compare-remove{
+  position:absolute;
+  top:12px;
+  right:12px;
+  background:none;
+  border:none;
+  color:var(--mute);
+  font-size:16px;
+  cursor:pointer;
+}
+.compare-remove:hover{color:var(--rust);}
+
 .empty-note{color:var(--mute); font-size:14px; font-style:italic; margin:0;}
 
 .loading-line{color:var(--mute); font-size:14px; margin:0;}
