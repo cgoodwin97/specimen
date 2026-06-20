@@ -440,13 +440,15 @@
       <div class="card">
         <div class="card-hole" aria-hidden="true"></div>
         <div class="card-top">
-          <span class="tag mono">ACCESSION No. ${esc(accession)}</span>
+          <div class="card-top-left">
+            <span class="tag mono">ACCESSION No. ${esc(accession)}</span>
+            <button type="button" class="bookmark-btn mono${isBookmarked(accession) ? ' is-saved' : ''}" id="bookmark-toggle">
+              <span class="bookmark-icon">${isBookmarked(accession) ? '★' : '☆'}</span>
+              <span id="bookmark-label">${isBookmarked(accession) ? 'bookmarked' : 'bookmark'}</span>
+            </button>
+          </div>
           <span class="organism">${esc(organism)}</span>
         </div>
-        <button type="button" class="bookmark-btn mono${isBookmarked(accession) ? ' is-saved' : ''}" id="bookmark-toggle" style="margin-bottom:14px;">
-          <span class="bookmark-icon">${isBookmarked(accession) ? '★' : '☆'}</span>
-          <span id="bookmark-label">${isBookmarked(accession) ? 'bookmarked' : 'bookmark'}</span>
-        </button>
         ${freshnessHtml}
         <h2 class="entry-name"><span class="gene-tag mono">${esc(geneName)}</span>${esc(fullName)}</h2>
         ${length ? `<p class="meta mono">sequence length: ${length} aa &middot; entry ${esc(entryId)}</p>` : ''}
