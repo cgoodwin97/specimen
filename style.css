@@ -398,7 +398,7 @@ a:hover{text-decoration-color:var(--moss);}
 .modal-overlay[hidden]{display:none;}
 .modal-card-wrap{
   position:relative;
-  max-width:520px;
+  max-width:700px;
   width:100%;
   max-height:85vh;
   overflow-y:auto;
