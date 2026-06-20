@@ -250,8 +250,15 @@
           <h2 class="entry-name"><span class="gene-tag mono">${esc(geneName)}</span>${esc(fullName)}</h2>
           <div class="rule"></div>
           <section class="field">
-            <h3 class="field-label">function</h3>
-            <p class="field-body">${esc(fnDisplay)}</p>
+            <div class="go-acc-row expanded">
+              <button type="button" class="go-acc-head go-acc-head-fn">
+                <span>function</span>
+                <span class="go-acc-chev">&#9656;</span>
+              </button>
+              <div class="go-acc-body go-acc-body-fn">
+                <p class="field-body" style="margin:0;">${esc(fnDisplay)}</p>
+              </div>
+            </div>
           </section>
           <div class="rule"></div>
           <section class="field">
