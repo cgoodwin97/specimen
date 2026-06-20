@@ -379,6 +379,10 @@ a:hover{text-decoration-color:var(--moss);}
 .go-acc-row.expanded .go-acc-body{display:flex;}
 .go-acc-tag{font-family:'IBM Plex Mono', monospace; font-size:11px; border:0.5px solid var(--line); border-radius:var(--radius); padding:3px 8px; color:var(--ink);}
 .go-acc-tag.go-acc-shared{background:var(--moss-tint); border-color:var(--moss); color:var(--moss);}
+.go-acc-tag.go-acc-clickable{cursor:pointer;}
+.go-acc-tag.go-acc-clickable:hover{border-color:var(--moss); color:var(--moss);}
+.go-acc-tag.go-acc-tag-active{background:var(--moss); color:var(--card); border-color:var(--moss);}
+.go-acc-tag.go-acc-tag-active:hover{background:#185c4c; border-color:#185c4c;}
 
 /* ---------- Modal overlay (saved page card pop-out) ---------- */
 .modal-overlay{

@@ -21,8 +21,6 @@
       <span class="nav-sep">|</span>
       <span class="nav-current">saved</span>
       <span class="nav-sep">|</span>
-      <a href="compare.html">compare</a>
-      <span class="nav-sep">|</span>
       <a href="about.html">about</a>
       <span class="nav-sep">|</span>
       <a href="contact.html">contact</a>
@@ -132,6 +130,50 @@
       .trim();
   }
 
+  const goTermCache = {};
+
+  async function fetchGoDefinition(termName){
+    if(goTermCache[termName]) return goTermCache[termName];
+    try{
+      const res = await fetch('/api/go?term=' + encodeURIComponent(termName));
+      if(!res.ok) throw new Error('proxy error');
+      const data = await res.json();
+      if(!data.result) return null;
+      goTermCache[termName] = data.result;
+      return data.result;
+    }catch(e){
+      return null;
+    }
+  }
+
+  function bindGoTagDefinition(tagBtn, termName){
+    let defEl = null;
+    tagBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const isActive = tagBtn.classList.contains('go-acc-tag-active');
+      if(isActive){
+        tagBtn.classList.remove('go-acc-tag-active');
+        if(defEl){ defEl.remove(); defEl = null; }
+        return;
+      }
+      tagBtn.classList.add('go-acc-tag-active');
+      defEl = document.createElement('div');
+      defEl.className = 'go-definition';
+      defEl.innerHTML = '<p class="go-def-term loading-line mono">Looking up definition…</p>';
+      tagBtn.closest('.go-acc-body').insertAdjacentElement('afterend', defEl);
+
+      const info = await fetchGoDefinition(termName);
+      if(!tagBtn.classList.contains('go-acc-tag-active')) return;
+
+      if(!info || !info.definition){
+        defEl.innerHTML = '<p class="go-def-term mono">' + esc(termName) + '</p><p class="go-def-text empty-note">No definition found for this term.</p>';
+        return;
+      }
+      const idLabel = info.id ? (info.id + ' — ' + (info.name || termName)) : termName;
+      defEl.innerHTML = '<p class="go-def-term mono">' + esc(idLabel) + '</p><p class="go-def-text">' + esc(info.definition) + '</p>';
+    });
+  }
+
   function buildGoAccordion(entry){
     const xrefs = entry.uniProtKBCrossReferences || [];
     const groups = {C: [], F: [], P: []};
@@ -158,7 +200,7 @@
           <span class="go-acc-chev">&#9656;</span>
         </button>
         <div class="go-acc-body">
-          ${s.items.map(t => `<span class="go-acc-tag">${esc(t)}</span>`).join('')}
+          ${s.items.map(t => `<button type="button" class="go-acc-tag go-acc-clickable" data-term="${esc(t)}">${esc(t)}</button>`).join('')}
         </div>
       </div>`).join('');
   }
@@ -168,6 +210,9 @@
       head.addEventListener('click', () => {
         head.closest('.go-acc-row').classList.toggle('expanded');
       });
+    });
+    container.querySelectorAll('.go-acc-clickable').forEach(tagBtn => {
+      bindGoTagDefinition(tagBtn, tagBtn.dataset.term);
     });
   }
 
