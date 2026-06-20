@@ -170,6 +170,7 @@ a:hover{text-decoration-color:var(--moss);}
 }
 .card-top .tag{font-size:12.5px; letter-spacing:0.04em; color:var(--mute);}
 .card-top-left{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+.card-top-right{display:flex; align-items:center; gap:10px;}
 .card-top .organism{
   font-family:'Fraunces', serif;
   font-style:italic;
@@ -289,6 +290,15 @@ a:hover{text-decoration-color:var(--moss);}
 .bookmark-btn:hover{border-color:var(--moss); color:var(--moss);}
 .bookmark-btn .bookmark-icon{font-size:13px; line-height:1;}
 .bookmark-btn.is-saved{background:var(--moss-tint); border-color:var(--moss); color:var(--moss);}
+
+.bookmark-btn.bookmark-icon-only{
+  padding:0;
+  width:24px;
+  height:24px;
+  justify-content:center;
+  border-radius:50%;
+  font-size:14px;
+}
 
 .bookmark-grid{
   display:grid;

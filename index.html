@@ -440,14 +440,14 @@
       <div class="card">
         <div class="card-hole" aria-hidden="true"></div>
         <div class="card-top">
-          <div class="card-top-left">
-            <span class="tag mono">ACCESSION No. ${esc(accession)}</span>
-            <button type="button" class="bookmark-btn mono${isBookmarked(accession) ? ' is-saved' : ''}" id="bookmark-toggle">
+          <span class="tag mono">ACCESSION No. ${esc(accession)}</span>
+          <span class="card-top-right">
+            <span class="organism">${esc(organism)}</span>
+            <button type="button" class="bookmark-btn bookmark-icon-only${isBookmarked(accession) ? ' is-saved' : ''}" id="bookmark-toggle" aria-label="${isBookmarked(accession) ? 'Remove bookmark' : 'Add bookmark'}" title="${isBookmarked(accession) ? 'Remove bookmark' : 'Add bookmark'}">
               <span class="bookmark-icon">${isBookmarked(accession) ? '★' : '☆'}</span>
-              <span id="bookmark-label">${isBookmarked(accession) ? 'bookmarked' : 'bookmark'}</span>
             </button>
-          </div>
-          <span class="organism">${esc(organism)}</span>
+          </span>
+        </div>
         </div>
         ${freshnessHtml}
         <h2 class="entry-name"><span class="gene-tag mono">${esc(geneName)}</span>${esc(fullName)}</h2>
@@ -485,7 +485,9 @@
       const nowSaved = toggleBookmark(entry, term);
       bmBtn.classList.toggle('is-saved', nowSaved);
       bmBtn.querySelector('.bookmark-icon').textContent = nowSaved ? '★' : '☆';
-      document.getElementById('bookmark-label').textContent = nowSaved ? 'bookmarked' : 'bookmark';
+      const label = nowSaved ? 'Remove bookmark' : 'Add bookmark';
+      bmBtn.setAttribute('aria-label', label);
+      bmBtn.setAttribute('title', label);
     });
 
     const fnEl = document.getElementById('function-text');
