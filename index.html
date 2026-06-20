@@ -19,6 +19,8 @@
     <nav class="site-nav mono" aria-label="primary">
       <span class="nav-current">specimen index</span>
       <span class="nav-sep">|</span>
+      <a href="bookmarks.html">bookmarks</a>
+      <span class="nav-sep">|</span>
       <a href="about.html">about</a>
       <span class="nav-sep">|</span>
       <a href="contact.html">contact</a>
@@ -75,6 +77,7 @@
   // ---------- Local storage: history + cache ----------
   const HISTORY_KEY = 'specimen.history.v1';
   const CACHE_KEY = 'specimen.cache.v1';
+  const BOOKMARKS_KEY = 'specimen.bookmarks.v1';
   const HISTORY_LIMIT = 12;
   const CACHE_LIMIT = 60;
 
@@ -133,6 +136,37 @@
     const hrs = Math.round(mins / 60);
     if(hrs < 24) return `${hrs}h ago`;
     return `${Math.round(hrs / 24)}d ago`;
+  }
+
+  // ---------- Bookmarks (separate storage, never touched by Clear saved data) ----------
+  function loadBookmarks(){
+    try{ return safeParse(localStorage.getItem(BOOKMARKS_KEY), []); }
+    catch(e){ return []; }
+  }
+  function saveBookmarks(list){
+    try{ localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(list)); }
+    catch(e){ /* storage unavailable or full — fail silently */ }
+  }
+  function isBookmarked(accession){
+    return loadBookmarks().some(b => b.accession === accession);
+  }
+  function toggleBookmark(entry, term){
+    const accession = entry.primaryAccession;
+    const list = loadBookmarks();
+    const idx = list.findIndex(b => b.accession === accession);
+    if(idx >= 0){
+      list.splice(idx, 1);
+      saveBookmarks(list);
+      return false;
+    }
+    const gene = entry.genes?.[0]?.geneName?.value || term;
+    const name = entry.proteinDescription?.recommendedName?.fullName?.value
+      || entry.proteinDescription?.submissionNames?.[0]?.fullName?.value
+      || entry.uniProtkbId || term;
+    const organism = entry.organism?.scientificName || '';
+    list.unshift({accession, gene, name, organism, term, ts: Date.now()});
+    saveBookmarks(list);
+    return true;
   }
 
   function addToHistory(entry, term){
@@ -409,6 +443,10 @@
           <span class="tag mono">ACCESSION No. ${esc(accession)}</span>
           <span class="organism">${esc(organism)}</span>
         </div>
+        <button type="button" class="bookmark-btn mono${isBookmarked(accession) ? ' is-saved' : ''}" id="bookmark-toggle" style="margin-bottom:14px;">
+          <span class="bookmark-icon">${isBookmarked(accession) ? '★' : '☆'}</span>
+          <span id="bookmark-label">${isBookmarked(accession) ? 'bookmarked' : 'bookmark'}</span>
+        </button>
         ${freshnessHtml}
         <h2 class="entry-name"><span class="gene-tag mono">${esc(geneName)}</span>${esc(fullName)}</h2>
         ${length ? `<p class="meta mono">sequence length: ${length} aa &middot; entry ${esc(entryId)}</p>` : ''}
@@ -439,6 +477,14 @@
     if(meta?.fromCache){
       document.getElementById('refresh-link')?.addEventListener('click', () => forceRefresh(term));
     }
+
+    const bmBtn = document.getElementById('bookmark-toggle');
+    bmBtn?.addEventListener('click', () => {
+      const nowSaved = toggleBookmark(entry, term);
+      bmBtn.classList.toggle('is-saved', nowSaved);
+      bmBtn.querySelector('.bookmark-icon').textContent = nowSaved ? '★' : '☆';
+      document.getElementById('bookmark-label').textContent = nowSaved ? 'bookmarked' : 'bookmark';
+    });
 
     const fnEl = document.getElementById('function-text');
     const fnToggle = document.getElementById('function-toggle');
@@ -506,6 +552,13 @@
 
   bindChips();
   renderHistory();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialQuery = urlParams.get('q');
+  if(initialQuery){
+    input.value = initialQuery;
+    runSearch(initialQuery);
+  }
 </script>
 
 </body>
