@@ -467,6 +467,31 @@ a:hover{text-decoration-color:var(--moss);}
 }
 .compare-remove:hover{color:var(--rust);}
 
+/* ---------- Glossary ---------- */
+.glossary-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px;}
+.glossary-cat-card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:20px 18px;
+  text-align:left;
+  cursor:pointer;
+  font-family:'Inter', sans-serif;
+  color:var(--ink);
+}
+.glossary-cat-card:hover{border-color:var(--moss);}
+.glossary-cat-count{
+  display:inline-block;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:11px;
+  color:var(--mute);
+  margin-bottom:8px;
+}
+.glossary-cat-name{font-family:'Fraunces', serif; font-size:18px; margin:0; line-height:1.3;}
+.go-acc-body.go-acc-body-prose{display:none; flex-direction:column; padding:0 2px 12px;}
+.go-acc-row.expanded .go-acc-body-prose{display:flex;}
+.go-acc-body-prose p{margin:0; font-size:13.5px; line-height:1.6; color:var(--ink);}
+
 .empty-note{color:var(--mute); font-size:14px; font-style:italic; margin:0;}
 
 .related-genes{display:grid; grid-template-columns:repeat(5, 1fr); gap:8px;}

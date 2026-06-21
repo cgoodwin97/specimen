@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Glossary — Specimen</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%2256%22%20height%3D%2256%22%20rx%3D%2212%22%20fill%3D%22%23EAEEE6%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2224%22%20fill%3D%22none%22%20stroke%3D%22%231F6F5C%22%20stroke-width%3D%221.5%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2220%22%20fill%3D%22%231F6F5C%22/%3E%3Ctext%20x%3D%2232%22%20y%3D%2234%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20font-family%3D%22Fraunces%2C%20Georgia%2C%20serif%22%20font-style%3D%22italic%22%20font-size%3D%2224%22%20fill%3D%22%23EAEEE6%22%3ES%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page">
+
+  <header class="hero">
+    <h1>Specimen</h1>
+    <nav class="site-nav mono" aria-label="primary">
+      <a href="index.html">specimen index</a>
+      <span class="nav-sep">|</span>
+      <a href="saved.html">saved</a>
+      <span class="nav-sep">|</span>
+      <span class="nav-current">glossary</span>
+      <span class="nav-sep">|</span>
+      <a href="about.html">about</a>
+      <span class="nav-sep">|</span>
+      <a href="contact.html">contact</a>
+    </nav>
+    <p>Plain-language definitions for vocabulary that comes up across the site. Pick a category to browse its terms.</p>
+  </header>
+
+  <section class="results">
+    <div id="glossary-slot" class="glossary-grid"></div>
+  </section>
+
+  <footer class="site-footer">
+    General biology and lab vocabulary, written in plain language. Gene- and protein-specific data elsewhere on the site is pulled live from UniProt, RCSB PDB, AlphaFold DB, and QuickGO.
+  </footer>
+
+</div>
+
+<div class="modal-overlay" id="modal-overlay" hidden>
+  <div class="modal-card-wrap">
+    <button type="button" class="modal-close-btn" id="modal-close" aria-label="Close">&times;</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+  const GLOSSARY = [
+    {
+      category: "Protein Structure & Function",
+      terms: [
+        {term:"Domain", def:"A distinct, self-contained section of a protein that folds independently and often carries out a specific function, like a working sub-unit within the larger protein."},
+        {term:"Motif", def:"A short, recurring pattern in a protein's sequence or structure that's often linked to a specific function."},
+        {term:"Isoform", def:"One of several slightly different versions of a protein that come from the same gene, usually produced through alternative splicing."},
+        {term:"Substrate", def:"The molecule that an enzyme or protein acts on or binds to in order to carry out its function."},
+        {term:"Ligand", def:"A molecule that binds to a specific site on a protein, often triggering a change in the protein's activity or shape."},
+        {term:"Active site", def:"The specific region of an enzyme where substrates bind and a chemical reaction actually takes place."},
+        {term:"Binding site", def:"A region on a protein's surface shaped to attach to a specific other molecule, such as a ligand, ion, or another protein."},
+        {term:"Conformation", def:"The three-dimensional shape a protein takes on, which can shift depending on what it's bound to or doing at the moment."},
+        {term:"Homodimer / heterodimer", def:"A protein complex made of two subunits joined together — identical subunits form a homodimer, different ones form a heterodimer."},
+        {term:"Cofactor", def:"A non-protein molecule or ion, such as a metal ion or vitamin-derived molecule, that a protein needs in order to function properly."},
+        {term:"Quaternary structure", def:"The overall structure formed when multiple protein subunits combine into one larger functional complex."},
+        {term:"N-terminus / C-terminus", def:"The two ends of a protein chain — the N-terminus is the starting end, the C-terminus is the finishing end, based on how the chain is built."},
+        {term:"Folding", def:"The process by which a protein chain arranges itself into its functional three-dimensional shape."}
+      ]
+    },
+    {
+      category: "Genetics & Molecular Biology",
+      terms: [
+        {term:"Transcription factor", def:"A protein that binds to DNA and helps control whether a nearby gene is turned on or off."},
+        {term:"Ortholog", def:"A gene found in different species that evolved from a common ancestral gene and usually keeps a similar function."},
+        {term:"Paralog", def:"A gene related to another gene within the same species, usually arising from a gene duplication event."},
+        {term:"Allele", def:"One of two or more versions of a gene that can exist at the same location on a chromosome."},
+        {term:"Polymorphism", def:"A natural variation in a DNA sequence that's common enough to appear in more than one form across a population."},
+        {term:"Knockout", def:"A laboratory technique where a specific gene is deliberately disabled to study what happens without it."},
+        {term:"Locus", def:"The specific physical location of a gene on a chromosome."},
+        {term:"Genotype", def:"An organism's actual genetic makeup, as opposed to phenotype, which is how those genes are physically or observably expressed."},
+        {term:"Exon / intron", def:"An exon is a segment of a gene kept in the final processed messenger RNA and used to code for protein; an intron is a segment removed during that process."},
+        {term:"Splice variant", def:"A different version of a protein's messenger RNA created by including or excluding certain exons during processing."},
+        {term:"Genome", def:"The complete set of genetic material, including all genes, contained within an organism."},
+        {term:"Chromosome", def:"A tightly packaged structure of DNA that carries genetic information, found in the nucleus of a cell."},
+        {term:"Mutation", def:"A permanent change in a DNA sequence, which can be harmless, harmful, or occasionally beneficial."}
+      ]
+    },
+    {
+      category: "Enzymes & Catalysis",
+      terms: [
+        {term:"Kinase", def:"An enzyme that adds a phosphate group to another molecule, often a protein, to switch its activity on or off."},
+        {term:"Phosphatase", def:"An enzyme that removes a phosphate group from a molecule, often reversing what a kinase has done."},
+        {term:"Ligase", def:"An enzyme that joins two molecules together, often by forming a new chemical bond."},
+        {term:"Protease", def:"An enzyme that breaks down proteins by cutting the bonds between their amino acids."},
+        {term:"Substrate specificity", def:"How selective an enzyme is about which molecules it will act on."},
+        {term:"Catalytic activity", def:"The specific chemical reaction an enzyme speeds up or makes possible."},
+        {term:"Post-translational modification", def:"A chemical change made to a protein after it's been built, which can alter its function, location, or stability."},
+        {term:"Ubiquitination", def:"The process of attaching a small protein tag called ubiquitin to another protein, often marking it for breakdown."},
+        {term:"Phosphorylation", def:"The addition of a phosphate group to a molecule, commonly used to activate or deactivate proteins."},
+        {term:"Glycosylation", def:"The attachment of sugar molecules to a protein, which can affect its folding, stability, or function."},
+        {term:"Enzyme inhibitor", def:"A molecule that reduces or blocks an enzyme's activity."},
+        {term:"Hydrolysis", def:"A chemical reaction that breaks a bond using water, commonly used by enzymes to break down larger molecules."}
+      ]
+    },
+    {
+      category: "Cell Biology & Structures",
+      terms: [
+        {term:"Cytoplasm", def:"The gel-like substance filling a cell, where many of its internal structures and processes reside."},
+        {term:"Nucleus / nucleoplasm", def:"The nucleus is the membrane-bound structure in a cell that houses most of its DNA; the nucleoplasm is the fluid inside it."},
+        {term:"Organelle", def:"A specialized structure within a cell that carries out a specific function, similar to an organ within a body."},
+        {term:"Golgi apparatus", def:"A cell structure that packages and modifies proteins before sending them to their final destination."},
+        {term:"Endoplasmic reticulum", def:"A network of membranes in a cell involved in building proteins and lipids."},
+        {term:"Mitochondrion", def:"The cell structure responsible for producing most of the cell's usable energy."},
+        {term:"Centrosome", def:"A cell structure involved in organizing the internal scaffolding that helps cells divide."},
+        {term:"Extracellular matrix", def:"A network of proteins and other molecules surrounding cells that provides structural support."},
+        {term:"Vesicle", def:"A small, membrane-bound sac inside a cell used to transport or store molecules."},
+        {term:"Cell membrane", def:"The outer boundary of a cell, controlling what enters and exits."},
+        {term:"Cytosol", def:"The liquid component of the cytoplasm, not including the organelles suspended within it."},
+        {term:"Ribosome", def:"The cell structure responsible for building proteins from genetic instructions."},
+        {term:"Lysosome", def:"A cell structure that breaks down waste materials and unneeded molecules."}
+      ]
+    },
+    {
+      category: "Pathways & Regulation",
+      terms: [
+        {term:"Signal transduction", def:"The process by which a cell receives a signal from outside itself and converts it into an internal response."},
+        {term:"Apoptosis", def:"A controlled, programmed process by which a cell deliberately shuts itself down."},
+        {term:"Cell cycle checkpoint", def:"A control point during cell division where the cell verifies that everything is ready before proceeding to the next stage."},
+        {term:"Homeostasis", def:"The maintenance of a stable internal environment within a cell or organism despite outside changes."},
+        {term:"Pathway", def:"A series of connected steps or reactions, often involving multiple proteins, that together carry out a specific biological process."},
+        {term:"Upregulation", def:"An increase in the activity or amount of a gene or protein."},
+        {term:"Downregulation", def:"A decrease in the activity or amount of a gene or protein."},
+        {term:"Negative feedback", def:"A regulatory process where the output of a pathway works to reduce or shut down its own activity."},
+        {term:"Positive feedback", def:"A regulatory process where the output of a pathway works to increase or amplify its own activity."},
+        {term:"Gene expression", def:"The process by which information from a gene is used to build a functional product, usually a protein."},
+        {term:"Receptor", def:"A protein that detects a specific signal, often a hormone or other molecule, and triggers a response inside the cell."},
+        {term:"Cascade", def:"A chain reaction of biological events where one step triggers the next in sequence."}
+      ]
+    },
+    {
+      category: "Disease & Mutation",
+      terms: [
+        {term:"Tumor suppressor", def:"A gene or protein that normally works to prevent uncontrolled cell growth; when disabled, it can contribute to cancer."},
+        {term:"Oncogene", def:"A gene that, when mutated or overactive, can drive a cell toward uncontrolled growth and cancer."},
+        {term:"Loss-of-function mutation", def:"A mutation that reduces or eliminates a gene's normal activity."},
+        {term:"Gain-of-function mutation", def:"A mutation that gives a gene a new or enhanced activity beyond its normal role."},
+        {term:"Pathogenic variant", def:"A specific genetic change known to cause or contribute to disease."},
+        {term:"Susceptibility gene", def:"A gene whose variants are associated with an increased risk of developing a particular condition, without guaranteeing it will occur."},
+        {term:"Heterozygous", def:"Having two different versions (alleles) of a particular gene, one inherited from each parent."},
+        {term:"Homozygous", def:"Having two identical versions (alleles) of a particular gene."},
+        {term:"Penetrance", def:"The likelihood that someone carrying a particular genetic variant will actually show the associated trait or condition."},
+        {term:"Biomarker", def:"A measurable biological indicator, such as a specific protein, used to detect or track a disease or condition."},
+        {term:"Carrier", def:"Someone who has one copy of a gene variant associated with a condition but doesn't show symptoms themselves."},
+        {term:"Genetic predisposition", def:"An increased likelihood of developing a condition based on someone's genetic makeup."}
+      ]
+    },
+    {
+      category: "Genomics & Sequencing",
+      terms: [
+        {term:"DNA sequencing", def:"The process of determining the exact order of building blocks within a DNA molecule."},
+        {term:"Genome-wide association study (GWAS)", def:"A research approach that scans many genomes to find genetic variants linked to a particular trait or disease."},
+        {term:"Reference genome", def:"A standardized, representative genome sequence used as a baseline for comparison in genetic research."},
+        {term:"Annotation (genomic)", def:"The process of identifying and labeling the genes and other meaningful features within a genome sequence."},
+        {term:"Single nucleotide polymorphism (SNP)", def:"A common type of genetic variation involving a change at just one position in a DNA sequence."},
+        {term:"Coding sequence", def:"The portion of a gene that actually contains the instructions for building a protein."},
+        {term:"Non-coding DNA", def:"DNA that doesn't code for proteins but can still play regulatory or structural roles."},
+        {term:"Homology", def:"Similarity between sequences or structures due to a shared evolutionary origin."},
+        {term:"Conserved sequence", def:"A DNA or protein sequence that has stayed largely unchanged across different species over evolutionary time, often because it's functionally important."},
+        {term:"Sequence alignment", def:"A method of arranging DNA, RNA, or protein sequences to identify regions of similarity."},
+        {term:"Phylogenetics", def:"The study of evolutionary relationships between organisms or genes."},
+        {term:"Transcriptome", def:"The complete set of RNA molecules expressed by a cell or organism at a given time."},
+        {term:"Proteome", def:"The complete set of proteins expressed by a cell, tissue, or organism."}
+      ]
+    },
+    {
+      category: "Lab & Research Terms",
+      terms: [
+        {term:"In vitro", def:"A study or experiment conducted outside a living organism, such as in a test tube or culture dish."},
+        {term:"In vivo", def:"A study or experiment conducted within a living organism."},
+        {term:"Assay", def:"A laboratory procedure used to measure or detect a specific substance or biological activity."},
+        {term:"Western blot", def:"A laboratory technique used to detect a specific protein within a sample."},
+        {term:"PCR (Polymerase Chain Reaction)", def:"A laboratory technique used to make many copies of a specific piece of DNA."},
+        {term:"CRISPR", def:"A gene-editing technology that allows scientists to make precise, targeted changes to DNA."},
+        {term:"Cell line", def:"A population of cells, often originally derived from a single source, that can be grown and studied repeatedly in a lab."},
+        {term:"Model organism", def:"A non-human species studied in research because its biology offers useful insight into broader biological processes, including in humans."},
+        {term:"Antibody", def:"A protein produced by the immune system, or in a lab setting, that specifically recognizes and binds to a target molecule."},
+        {term:"Expression vector", def:"A tool used in a lab to introduce a gene into a cell so the cell produces the corresponding protein."},
+        {term:"Control group", def:"In an experiment, the group that doesn't receive the treatment being tested, used as a baseline for comparison."},
+        {term:"Peer review", def:"The process by which other experts evaluate a scientific study before it's published, to help ensure its quality and accuracy."}
+      ]
+    }
+  ];
+
+  const slot = document.getElementById('glossary-slot');
+  const overlay = document.getElementById('modal-overlay');
+  const modalContent = document.getElementById('modal-content');
+
+  function esc(str){
+    return String(str ?? '').replace(/[&<>"']/g, c => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    }[c]));
+  }
+
+  function renderCategoryCards(){
+    slot.innerHTML = GLOSSARY.map((cat, idx) => `
+      <div class="glossary-cat-card" data-idx="${idx}" tabindex="0" role="button">
+        <span class="glossary-cat-count mono">${cat.terms.length} terms</span>
+        <p class="glossary-cat-name">${esc(cat.category)}</p>
+      </div>`).join('');
+
+    slot.querySelectorAll('.glossary-cat-card').forEach(card => {
+      const open = () => openCategory(Number(card.dataset.idx));
+      card.addEventListener('click', open);
+      card.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); }
+      });
+    });
+  }
+
+  function openCategory(idx){
+    const cat = GLOSSARY[idx];
+    overlay.hidden = false;
+    document.body.style.overflow = 'hidden';
+
+    const rows = cat.terms.map((t, i) => `
+      <div class="go-acc-row">
+        <button type="button" class="go-acc-head">
+          <span>${esc(t.term)}</span>
+          <span class="go-acc-chev">&#9656;</span>
+        </button>
+        <div class="go-acc-body go-acc-body-prose">
+          <p>${esc(t.def)}</p>
+        </div>
+      </div>`).join('');
+
+    modalContent.innerHTML = `
+      <div class="card">
+        <div class="card-hole" aria-hidden="true"></div>
+        <h2 class="entry-name" style="margin-bottom:4px;">${esc(cat.category)}</h2>
+        <p class="meta mono" style="margin-bottom:14px;">${cat.terms.length} terms &middot; click any term to expand its definition</p>
+        <div class="rule"></div>
+        ${rows}
+      </div>`;
+
+    modalContent.querySelectorAll('.go-acc-head').forEach(head => {
+      head.addEventListener('click', () => {
+        head.closest('.go-acc-row').classList.toggle('expanded');
+      });
+    });
+  }
+
+  function closeModal(){
+    overlay.hidden = true;
+    modalContent.innerHTML = '';
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  overlay.addEventListener('click', (e) => {
+    if(e.target === overlay) closeModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape' && !overlay.hidden) closeModal();
+  });
+
+  renderCategoryCards();
+</script>
+
+</body>
+</html>
