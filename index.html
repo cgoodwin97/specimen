@@ -381,7 +381,7 @@
       }
 
       const chips = partners.map(p => {
-        const confidence = Math.round((p.score || 0) / 10); // STRING score is 0-1000, show as 0-100
+        const confidence = Math.round((p.score || 0) * 100); // STRING JSON score is a 0-1 decimal, show as 0-100%
         return `<button type="button" class="related-gene-btn mono" data-term="${esc(p.gene)}">${esc(p.gene)} <span class="related-gene-score">${confidence}%</span></button>`;
       }).join('');
 
@@ -389,8 +389,7 @@
 
       body.querySelectorAll('.related-gene-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          input.value = btn.dataset.term;
-          runSearch(btn.dataset.term);
+          window.open(`index.html?q=${encodeURIComponent(btn.dataset.term)}`, '_blank');
         });
       });
     }catch(e){
