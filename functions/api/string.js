@@ -1,6 +1,6 @@
 const CACHE_TTL = 60 * 60 * 24 * 30; // 30 days — interaction networks are stable
 const SPECIES_HUMAN = 9606;
-const TOP_N = 5;
+const TOP_N = 10;
 const MIN_SCORE = 400; // STRING confidence score cutoff (0-1000 scale), 400 = "medium confidence"
 const CALLER = 'https://specimen.site';
 
