@@ -368,6 +368,36 @@
     });
   }
 
+  async function renderRelatedGenes(geneName){
+    const body = document.getElementById('related-body');
+    try{
+      const res = await fetch(`/api/string?q=${encodeURIComponent(geneName)}`);
+      const data = await res.json();
+      const partners = data.result || [];
+
+      if(partners.length === 0){
+        body.innerHTML = `<p class="empty-note">No high-confidence interaction partners found for this entry.</p>`;
+        return;
+      }
+
+      const chips = partners.map(p => {
+        const confidence = Math.round((p.score || 0) / 10); // STRING score is 0-1000, show as 0-100
+        return `<button type="button" class="related-gene-btn mono" data-term="${esc(p.gene)}">${esc(p.gene)} <span class="related-gene-score">${confidence}%</span></button>`;
+      }).join('');
+
+      body.innerHTML = `<div class="related-genes">${chips}</div><p class="meta" style="margin-top:10px;">Interaction confidence via <a href="https://string-db.org" target="_blank" rel="noopener">STRING</a>.</p>`;
+
+      body.querySelectorAll('.related-gene-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          input.value = btn.dataset.term;
+          runSearch(btn.dataset.term);
+        });
+      });
+    }catch(e){
+      body.innerHTML = `<p class="empty-note">Couldn't load related genes right now.</p>`;
+    }
+  }
+
   async function renderStructure(entry, accession){
     const body = document.getElementById('structure-body');
     const xrefs = entry.uniProtKBCrossReferences || [];
@@ -473,6 +503,11 @@
             <div id="pathway-body"><p class="loading-line mono">Loading pathway data…</p></div>
           </section>
         </div>
+        <div class="rule"></div>
+        <section class="field" id="related-field">
+          <h3 class="field-label">related genes</h3>
+          <div id="related-body"><p class="loading-line mono">Loading interaction data…</p></div>
+        </section>
       </div>`;
 
     if(meta?.fromCache){
@@ -507,6 +542,7 @@
     renderPathways(entry);
     renderGeneOntology(entry);
     renderStructure(entry, accession);
+    renderRelatedGenes(geneName);
   }
 
   async function forceRefresh(term){

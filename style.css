@@ -468,6 +468,24 @@ a:hover{text-decoration-color:var(--moss);}
 
 .empty-note{color:var(--mute); font-size:14px; font-style:italic; margin:0;}
 
+.related-genes{display:flex; flex-wrap:wrap; gap:8px;}
+.related-gene-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:13px;
+  background:none;
+  border:1px solid var(--line);
+  color:var(--ink);
+  padding:5px 12px;
+  border-radius:var(--radius);
+  cursor:pointer;
+}
+.related-gene-btn:hover{border-color:var(--moss); color:var(--moss);}
+.related-gene-score{font-size:10.5px; color:var(--mute);}
+.related-gene-btn:hover .related-gene-score{color:var(--moss);}
+
 .loading-line{color:var(--mute); font-size:14px; margin:0;}
 @media (prefers-reduced-motion:no-preference){
   .loading-card .loading-line, .loading-line{
