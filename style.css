@@ -226,6 +226,7 @@ a:hover{text-decoration-color:var(--moss);}
   .two-col{grid-template-columns:1fr;}
   .entry-name{font-size:22px;}
   .card{padding:26px 20px 22px;}
+  .related-genes{grid-template-columns:repeat(2, 1fr);}
 }
 
 .viewer{
@@ -468,7 +469,7 @@ a:hover{text-decoration-color:var(--moss);}
 
 .empty-note{color:var(--mute); font-size:14px; font-style:italic; margin:0;}
 
-.related-genes{display:flex; flex-wrap:wrap; gap:8px;}
+.related-genes{display:grid; grid-template-columns:repeat(5, 1fr); gap:8px;}
 .related-gene-btn{
   display:inline-flex;
   align-items:center;
