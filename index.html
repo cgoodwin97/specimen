@@ -385,7 +385,7 @@
         return `<button type="button" class="related-gene-btn mono" data-term="${esc(p.gene)}">${esc(p.gene)} <span class="related-gene-score">${confidence}%</span></button>`;
       }).join('');
 
-      body.innerHTML = `<div class="related-genes">${chips}</div><p class="meta" style="margin-top:10px;">Interaction confidence via <a href="https://string-db.org" target="_blank" rel="noopener">STRING</a>.</p>`;
+      body.innerHTML = `<p class="meta" style="margin-bottom:10px;">Genes known to interact with this one. The percentage combines evidence from lab experiments, shared expression patterns, and other research to show how strongly linked the two genes are.</p><div class="related-genes">${chips}</div><p class="meta" style="margin-top:10px;">Data via <a href="https://string-db.org" target="_blank" rel="noopener">STRING</a>.</p>`;
 
       body.querySelectorAll('.related-gene-btn').forEach(btn => {
         btn.addEventListener('click', () => {
