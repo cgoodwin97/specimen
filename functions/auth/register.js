@@ -56,7 +56,7 @@ export async function onRequestPost({ request, env }) {
       },
     });
   } catch (e) {
-    return error(500, 'Something went wrong. Please try again.');
+    return error(500, 'Error: ' + (e?.message || String(e)));
   }
 }
 
