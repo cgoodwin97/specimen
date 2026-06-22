@@ -1,0 +1,14 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#1F6F5C"/>
+  <rect x="60" y="60" width="1080" height="510" rx="12" fill="#185c4c"/>
+  <circle cx="360" cy="315" r="148" fill="none" stroke="#EAEEE6" stroke-width="3" opacity="0.4"/>
+  <circle cx="360" cy="315" r="126" fill="#EAEEE6" opacity="0.08"/>
+  <circle cx="360" cy="315" r="126" fill="none" stroke="#EAEEE6" stroke-width="1.5" opacity="0.25"/>
+  <circle cx="360" cy="315" r="104" fill="#1F6F5C"/>
+  <text x="360" y="322" text-anchor="middle" dominant-baseline="central" font-family="Georgia,serif" font-style="italic" font-weight="500" font-size="108" fill="#EAEEE6">S</text>
+  <line x1="528" y1="140" x2="528" y2="490" stroke="#EAEEE6" stroke-width="1" opacity="0.18"/>
+  <text x="582" y="268" font-family="Georgia,serif" font-style="italic" font-weight="500" font-size="96" fill="#EAEEE6">Specimen</text>
+  <text x="586" y="346" font-family="'Courier New',monospace" font-size="26" fill="#EAEEE6" opacity="0.65" letter-spacing="0.06em">a study tool for biology</text>
+  <line x1="586" y1="382" x2="1080" y2="382" stroke="#EAEEE6" stroke-width="1" opacity="0.2"/>
+  <text x="588" y="420" font-family="'Courier New',monospace" font-size="22" fill="#EAEEE6" opacity="0.45" letter-spacing="0.12em">SPECIMEN.SITE</text>
+</svg>
