@@ -367,9 +367,24 @@
     if(e.key === 'Escape' && !overlay.hidden) closeModal();
   });
 
-  // Initial render — auth.js will call onAuthSignedIn if session exists,
-  // otherwise render() will fire from the existing call below
-  render();
+  // Check session on load independently of auth.js callback timing
+  async function initSavedPage() {
+    try {
+      const res = await fetch('/auth/me', { credentials: 'include' });
+      const data = await res.json();
+      if (data.ok && data.user) {
+        isSignedIn = true;
+        clearLink.hidden = true;
+        renderDB();
+      } else {
+        render();
+      }
+    } catch (e) {
+      render();
+    }
+  }
+
+  initSavedPage();
 </script>
 <script src="auth.js"></script>
 
