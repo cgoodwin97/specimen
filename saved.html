@@ -283,6 +283,82 @@
     document.body.style.overflow = '';
   }
 
+  // ---------- Auth-aware render ----------
+  // render() already defined above — now make it auth-aware
+  // When signed in: read from /genes/list, remove via /genes/remove
+  // When signed out: existing localStorage behavior unchanged
+
+  let isSignedIn = false;
+
+  async function renderDB() {
+    try {
+      const res = await fetch('/genes/list', { credentials: 'include' });
+      const data = await res.json();
+      if (!data.ok) { render(); return; } // fall back to localStorage
+      const list = data.genes || [];
+
+      if (list.length === 0) {
+        clearLink.hidden = true;
+        slot.innerHTML = `
+          <div class="bookmark-empty">
+            <p>Nothing saved yet.</p>
+            <p class="meta">Search for a gene on the <a href="index.html">specimen index</a> and click the star on its card to save it here.</p>
+          </div>`;
+        return;
+      }
+
+      clearLink.hidden = true; // no bulk clear for DB-backed saved genes for now
+      const cards = list.map(b => `
+        <div class="bookmark-card" data-term="${esc(b.gene)}" tabindex="0" role="button">
+          <button type="button" class="bm-remove" data-accession="${esc(b.accession)}" aria-label="Remove from saved" title="Remove from saved">&times;</button>
+          <span class="bm-gene mono">${esc(b.gene)}</span>
+          <p class="bm-name">${esc(b.name)}</p>
+          <p class="bm-meta">${b.organism ? esc(b.organism) + ' &middot; ' : ''}${esc(b.accession)}</p>
+        </div>`).join('');
+
+      slot.innerHTML = `<div class="bookmark-grid">${cards}</div>`;
+
+      slot.querySelectorAll('.bookmark-card').forEach(card => {
+        const openIt = () => openModal(card.dataset.term);
+        card.addEventListener('click', (e) => {
+          if (e.target.closest('.bm-remove')) return;
+          openIt();
+        });
+        card.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openIt(); }
+        });
+      });
+
+      slot.querySelectorAll('.bm-remove').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const accession = btn.dataset.accession;
+          await fetch('/genes/remove', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ accession }),
+          });
+          renderDB();
+        });
+      });
+    } catch (e) {
+      render(); // fall back to localStorage on any error
+    }
+  }
+
+  // React to auth state changes from auth.js
+  window.onAuthSignedIn = function () {
+    isSignedIn = true;
+    clearLink.hidden = true;
+    renderDB();
+  };
+  window.onAuthSignedOut = function () {
+    isSignedIn = false;
+    clearLink.hidden = false;
+    render();
+  };
+
   document.getElementById('modal-close').addEventListener('click', closeModal);
   overlay.addEventListener('click', function(e){
     if(e.target === overlay) closeModal();
@@ -291,8 +367,11 @@
     if(e.key === 'Escape' && !overlay.hidden) closeModal();
   });
 
+  // Initial render — auth.js will call onAuthSignedIn if session exists,
+  // otherwise render() will fire from the existing call below
   render();
 </script>
+<script src="auth.js"></script>
 
 </body>
 </html>

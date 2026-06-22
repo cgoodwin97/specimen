@@ -492,6 +492,97 @@ a:hover{text-decoration-color:var(--moss);}
 .go-acc-row.expanded .go-acc-body-prose{display:flex;}
 .go-acc-body-prose p{margin:0; font-size:13.5px; line-height:1.6; color:var(--ink);}
 
+/* ---------- Auth nav ---------- */
+.nav-auth-btn{
+  background:none;
+  border:none;
+  padding:0;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--mute);
+  cursor:pointer;
+}
+.nav-auth-btn:hover{color:var(--moss);}
+.nav-username{color:var(--moss);}
+.nav-username:hover{color:#185c4c;}
+.user-dropdown{
+  position:absolute;
+  right:0;
+  top:calc(100% + 6px);
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:4px 0;
+  min-width:100px;
+  z-index:10;
+  box-shadow:0 4px 12px rgba(30,42,34,0.1);
+}
+.user-dropdown-item{
+  display:block;
+  width:100%;
+  background:none;
+  border:none;
+  padding:8px 14px;
+  font-family:'IBM Plex Mono', monospace;
+  font-size:12px;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
+  color:var(--mute);
+  cursor:pointer;
+  text-align:left;
+}
+.user-dropdown-item:hover{color:var(--rust);}
+
+/* ---------- Auth modal fields ---------- */
+.auth-field{margin-bottom:14px;}
+.auth-input{
+  width:100%;
+  border:none;
+  border-bottom:1.5px solid var(--ink);
+  background:none;
+  font-family:'Inter', sans-serif;
+  font-size:16px;
+  padding:6px 2px;
+  color:var(--ink);
+  margin-top:4px;
+}
+.auth-input:focus{outline:none; border-bottom-color:var(--moss);}
+.auth-hint{
+  font-size:11px;
+  color:var(--mute);
+  letter-spacing:0.04em;
+  text-transform:none;
+  font-weight:400;
+  margin-left:6px;
+}
+.auth-submit{
+  width:100%;
+  background:var(--moss);
+  color:var(--card);
+  border:none;
+  padding:12px;
+  font-family:'Inter', sans-serif;
+  font-weight:500;
+  font-size:15px;
+  border-radius:var(--radius);
+  cursor:pointer;
+  margin-top:6px;
+  margin-bottom:6px;
+}
+.auth-submit:hover{background:#185c4c;}
+.auth-submit:disabled{background:var(--mute); cursor:not-allowed;}
+.auth-error{
+  background:#fdf0ed;
+  border-left:3px solid var(--rust);
+  border-radius:0 var(--radius) var(--radius) 0;
+  padding:10px 14px;
+  font-size:13px;
+  color:var(--rust);
+  margin-bottom:14px;
+}
+
 .empty-note{color:var(--mute); font-size:14px; font-style:italic; margin:0;}
 
 .related-genes{display:grid; grid-template-columns:repeat(5, 1fr); gap:8px;}

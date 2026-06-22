@@ -516,13 +516,37 @@
     }
 
     const bmBtn = document.getElementById('bookmark-toggle');
-    bmBtn?.addEventListener('click', () => {
+    bmBtn?.addEventListener('click', async () => {
       const nowSaved = toggleBookmark(entry, term);
       bmBtn.classList.toggle('is-saved', nowSaved);
       bmBtn.querySelector('.bookmark-icon').textContent = nowSaved ? '★' : '☆';
       const label = nowSaved ? 'Remove from saved' : 'Add to saved';
       bmBtn.setAttribute('aria-label', label);
       bmBtn.setAttribute('title', label);
+
+      // Also sync with DB if signed in
+      const user = window.SpecimenAuth?.currentUser();
+      if(user){
+        const accession = entry.primaryAccession;
+        const geneName = entry.genes?.[0]?.geneName?.value || term;
+        const name = entry.proteinDescription?.recommendedName?.fullName?.value
+          || entry.proteinDescription?.submissionNames?.[0]?.fullName?.value
+          || entry.uniProtkbId || term;
+        const organism = entry.organism?.scientificName || '';
+        if(nowSaved){
+          await fetch('/genes/save', {
+            method:'POST', credentials:'include',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ gene: geneName, accession, name, organism }),
+          });
+        } else {
+          await fetch('/genes/remove', {
+            method:'POST', credentials:'include',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ accession }),
+          });
+        }
+      }
     });
 
     const fnEl = document.getElementById('function-text');
@@ -601,5 +625,6 @@
   }
 </script>
 
+<script src="auth.js"></script>
 </body>
 </html>
