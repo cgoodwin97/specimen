@@ -17,7 +17,7 @@
   <header class="hero">
     <h1>Specimen</h1>
     <nav class="site-nav mono" aria-label="primary">
-      <a href="index.html">genes & proteins</a>
+      <a href="index.html">genes &amp; proteins</a>
       <span class="nav-sep">|</span>
       <span class="nav-current">cell biology</span>
       <span class="nav-sep">|</span>
@@ -25,22 +25,30 @@
       <span class="nav-sep">|</span>
       <a href="glossary.html">glossary</a>
     </nav>
-    <p>A field guide to cells, organelles, and structures. Search any cell structure to pull its function, location, and more.</p>
+    <p>A field guide to cells, organelles, and structures. Search any cell structure to pull its function, related structures, and key proteins.</p>
   </header>
 
-  <section class="results">
-    <div class="card">
-      <div class="card-hole" aria-hidden="true"></div>
-      <h2 class="entry-name" style="font-size:22px; margin-bottom:8px;">Coming soon</h2>
-      <div class="rule"></div>
-      <p class="field-body">The cell biology index is currently in development. It will let you search organelles, cell structures, and cellular components the same way you search genes and proteins — pulling function, location, related structures, and key proteins into one readable card.</p>
-      <div class="rule"></div>
-      <p class="meta">In the meantime, explore the <a href="index.html">genes & proteins index</a> or browse the <a href="glossary.html">glossary</a> for cell biology vocabulary under the Cell Biology & Structures category.</p>
+  <section class="search-panel">
+    <form class="search-form" id="cb-search-form">
+      <input type="text" id="cb-search-input" placeholder="mitochondrion, nucleus, ribosome…" autocomplete="off" aria-label="Cell structure or organelle name">
+      <button type="submit">Search</button>
+    </form>
+    <div class="chip-row">
+      <span class="chip-label">try:</span>
+      <button type="button" class="chip" data-term="mitochondrion">mitochondrion</button>
+      <button type="button" class="chip" data-term="nucleus">nucleus</button>
+      <button type="button" class="chip" data-term="ribosome">ribosome</button>
+      <button type="button" class="chip" data-term="Golgi apparatus">Golgi apparatus</button>
+      <button type="button" class="chip" data-term="lysosome">lysosome</button>
     </div>
   </section>
 
+  <section class="results" id="cb-results" hidden>
+    <div id="cb-card-slot"></div>
+  </section>
+
   <footer class="site-footer">
-    Data pulled live from UniProt, RCSB PDB, AlphaFold DB, and QuickGO. Search results are cached for faster repeat lookups; your search history is stored in your browser only.
+    Cell structure data via <a href="https://www.ebi.ac.uk/QuickGO/" target="_blank" rel="noopener">QuickGO</a> (Gene Ontology). Key proteins via UniProt. Search results are cached for faster repeat lookups.
     <span class="nav-sep" style="margin:0 6px;">|</span>
     <a href="about.html" class="link-btn">about</a>
     <span class="nav-sep" style="margin:0 6px;">|</span>
@@ -49,6 +57,159 @@
 
 </div>
 
+<script>
+  const form = document.getElementById('cb-search-form');
+  const input = document.getElementById('cb-search-input');
+  const resultsEl = document.getElementById('cb-results');
+  const cardEl = document.getElementById('cb-card-slot');
+
+  function esc(str){
+    return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function stripCitations(text){
+    if(!text) return text;
+    return text.replace(/\s*\(Citation:[^)]+\)/gi, '').replace(/\s{2,}/g, ' ').trim();
+  }
+
+  function renderLoading(term){
+    resultsEl.hidden = false;
+    cardEl.innerHTML = `<div class="card loading-card"><p class="loading-line mono">Pulling the record for "${esc(term)}"…</p></div>`;
+  }
+
+  function renderNotFound(term){
+    cardEl.innerHTML = `
+      <div class="card empty-card">
+        <p>No cell structure found for "<strong>${esc(term)}</strong>".</p>
+        <p class="meta">Try searching by the full name — for example "mitochondrion" rather than "mitochondria", or "endoplasmic reticulum" in full.</p>
+        <div class="chip-row" style="margin-top:12px;">
+          <button type="button" class="chip" data-term="mitochondrion">mitochondrion</button>
+          <button type="button" class="chip" data-term="nucleus">nucleus</button>
+          <button type="button" class="chip" data-term="ribosome">ribosome</button>
+        </div>
+      </div>`;
+    bindChips();
+  }
+
+  function renderEntry(data, term){
+    resultsEl.hidden = false;
+    const { goId, name, structureType, definition, synonyms, children, keyProteins } = data;
+    const cleanDef = stripCitations(definition) || 'No definition available for this entry.';
+
+    const synonymHtml = synonyms && synonyms.length > 0
+      ? `<p class="meta mono" style="margin:0 0 12px;">also known as: ${synonyms.map(s => esc(s)).join(' &middot; ')}</p>`
+      : '';
+
+    const relatedHtml = children && children.length > 0
+      ? `<div class="related-genes">${children.map(c =>
+          `<button type="button" class="related-gene-btn mono" data-term="${esc(c.name)}">${esc(c.name)}</button>`
+        ).join('')}</div>`
+      : `<p class="empty-note">No sub-structures found for this entry.</p>`;
+
+    const proteinsHtml = keyProteins && keyProteins.length > 0
+      ? `<div class="related-genes" style="grid-template-columns:repeat(3,1fr);">${keyProteins.map(p =>
+          `<button type="button" class="related-gene-btn mono" data-gene="${esc(p.gene)}" title="${esc(p.name)}">${esc(p.gene)}</button>`
+        ).join('')}</div>
+        <p class="meta" style="margin-top:8px; font-style:italic;">Links open in the genes &amp; proteins index.</p>`
+      : `<p class="empty-note">No key proteins found for this entry.</p>`;
+
+    cardEl.innerHTML = `
+      <div class="card">
+        <div class="card-hole" aria-hidden="true"></div>
+        <div class="card-top">
+          <span class="tag mono">STRUCTURE &middot; ${esc(structureType)}</span>
+          <span class="organism">eukaryotic cells</span>
+        </div>
+        <h2 class="entry-name"><span class="gene-tag mono">${esc(name)}</span>${esc(name.charAt(0).toUpperCase() + name.slice(1))}</h2>
+        ${synonymHtml}
+        <p class="meta mono" style="margin-bottom:0;">${esc(goId)}</p>
+        <div class="rule"></div>
+        <section class="field">
+          <h3 class="field-label">function</h3>
+          <p class="field-body clamp" id="cb-function-text">${esc(cleanDef)}</p>
+          <button type="button" class="link-btn" id="cb-function-toggle" style="margin-top:8px; display:none;">read more</button>
+        </section>
+        <div class="rule"></div>
+        <div class="two-col">
+          <section class="field">
+            <h3 class="field-label">related structures</h3>
+            ${relatedHtml}
+          </section>
+          <section class="field">
+            <h3 class="field-label">key proteins</h3>
+            ${proteinsHtml}
+          </section>
+        </div>
+      </div>`;
+
+    // Bind read more toggle
+    const fnEl = document.getElementById('cb-function-text');
+    const fnToggle = document.getElementById('cb-function-toggle');
+    if(fnEl && fnToggle && fnEl.scrollHeight > fnEl.clientHeight + 2){
+      fnToggle.style.display = 'inline-block';
+      fnToggle.addEventListener('click', () => {
+        if(fnEl.classList.contains('clamp')){
+          fnEl.classList.remove('clamp');
+          fnToggle.textContent = 'show less';
+        }else{
+          fnEl.classList.add('clamp');
+          fnToggle.textContent = 'read more';
+        }
+      });
+    }
+
+    // Bind related structure chips — search within cell biology
+    cardEl.querySelectorAll('.related-gene-btn[data-term]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        input.value = btn.dataset.term;
+        runSearch(btn.dataset.term);
+      });
+    });
+
+    // Bind key protein chips — open in genes & proteins index
+    cardEl.querySelectorAll('.related-gene-btn[data-gene]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        window.open(`index.html?q=${encodeURIComponent(btn.dataset.gene)}`, '_blank');
+      });
+    });
+  }
+
+  async function runSearch(term){
+    if(!term || !term.trim()) return;
+    renderLoading(term);
+    try{
+      const res = await fetch(`/api/cellbiology?q=${encodeURIComponent(term.trim())}`);
+      const data = await res.json();
+      if(!data.result){ renderNotFound(term); return; }
+      renderEntry(data.result, term);
+    }catch(e){
+      cardEl.innerHTML = `<div class="card empty-card"><p>Couldn't reach the server just now. Please try again.</p></div>`;
+    }
+  }
+
+  function bindChips(){
+    document.querySelectorAll('.chip[data-term]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        input.value = btn.dataset.term;
+        runSearch(btn.dataset.term);
+      });
+    });
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    runSearch(input.value);
+  });
+
+  bindChips();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialQuery = urlParams.get('q');
+  if(initialQuery){
+    input.value = initialQuery;
+    runSearch(initialQuery);
+  }
+</script>
 <script src="auth.js"></script>
 </body>
 </html>
