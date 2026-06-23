@@ -89,7 +89,7 @@
   // ---------- Gene cards ----------
   function geneCardsHtml(list){
     return list.map(b => `
-      <div class="bookmark-card" data-term="${esc(b.term)}" tabindex="0" role="button">
+      <div class="bookmark-card" data-term="${esc(b.term || b.gene)}" tabindex="0" role="button">
         <button type="button" class="bm-remove" data-accession="${esc(b.accession)}" aria-label="Remove from saved" title="Remove from saved">&times;</button>
         <span class="bm-gene mono">${esc(b.gene)}</span>
         <p class="bm-name">${esc(b.name)}</p>
