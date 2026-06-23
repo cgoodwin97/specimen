@@ -72,33 +72,6 @@
     return text.replace(/\s*\(Citation:[^)]+\)/gi, '').replace(/\s{2,}/g, ' ').trim();
   }
 
-  // ---------- Cell biology bookmarks ----------
-  const CB_BOOKMARKS_KEY = 'specimen.cb.bookmarks.v1';
-
-  function loadCbBookmarks(){
-    try{ return JSON.parse(localStorage.getItem(CB_BOOKMARKS_KEY) || '[]'); }
-    catch(e){ return []; }
-  }
-  function saveCbBookmarks(list){
-    try{ localStorage.setItem(CB_BOOKMARKS_KEY, JSON.stringify(list)); }
-    catch(e){}
-  }
-  function isCbBookmarked(goId){
-    return loadCbBookmarks().some(b => b.go_id === goId);
-  }
-  function toggleCbBookmark(goId, name, structureType, definition){
-    const list = loadCbBookmarks();
-    const idx = list.findIndex(b => b.go_id === goId);
-    if(idx >= 0){
-      list.splice(idx, 1);
-      saveCbBookmarks(list);
-      return false;
-    }
-    list.unshift({ go_id: goId, name, structure_type: structureType, definition, ts: Date.now() });
-    saveCbBookmarks(list);
-    return true;
-  }
-
   function renderLoading(term){
     resultsEl.hidden = false;
     cardEl.innerHTML = `<div class="card loading-card"><p class="loading-line mono">Pulling the record for "${esc(term)}"…</p></div>`;
@@ -118,10 +91,39 @@
     bindChips();
   }
 
+  // ---------- Student-friendly summaries by GO ID ----------
+  // Shown below the GO definition in the function section for common structures.
+  const STRUCTURE_SUMMARIES = {
+    'GO:0005739': 'The powerhouse of the cell. Mitochondria convert nutrients into ATP through cellular respiration, supplying energy for nearly every cellular process.',
+    'GO:0005634': 'The control centre of the cell. The nucleus houses the cell\'s DNA and directs gene expression, coordinating growth, metabolism, and reproduction.',
+    'GO:0005737': 'The fluid-filled interior of the cell, excluding the nucleus. The cytoplasm suspends organelles and is the site of many metabolic reactions.',
+    'GO:0005840': 'The molecular machines that build proteins. Ribosomes read messenger RNA and assemble amino acids into polypeptide chains — a process called translation.',
+    'GO:0005783': 'A network of membranes that folds, modifies, and transports proteins and lipids. The rough ER (studded with ribosomes) makes secretory proteins; the smooth ER synthesises lipids and detoxifies chemicals.',
+    'GO:0005794': 'The cell\'s postal system. The Golgi apparatus receives proteins from the ER, packages and modifies them, then ships them to their final destinations inside or outside the cell.',
+    'GO:0005764': 'The cell\'s recycling centre. Lysosomes contain digestive enzymes that break down waste materials, damaged organelles, and foreign invaders.',
+    'GO:0005773': 'A membrane-bound storage compartment. Vacuoles store water, nutrients, and waste products — especially large and prominent in plant cells where they maintain turgor pressure.',
+    'GO:0005777': 'Specialised organelles that break down fatty acids and detoxify harmful substances such as hydrogen peroxide. Particularly abundant in liver cells.',
+    'GO:0005856': 'A network of protein filaments — actin, microtubules, and intermediate filaments — that gives the cell its shape, enables movement, and acts as a transport highway for organelles.',
+    'GO:0005876': 'Protein tubes that form the cell\'s structural scaffold and act as tracks for motor proteins carrying cargo around the cell. They also form the spindle that separates chromosomes during cell division.',
+    'GO:0015629': 'Thin filaments made of actin that support the cell\'s shape, enable cell movement, and drive processes like phagocytosis and cytokinesis.',
+    'GO:0005813': 'The organising centre for microtubule growth. The centrosome duplicates before cell division and pulls chromosomes to opposite ends of the cell during mitosis.',
+    'GO:0031965': 'A double membrane enclosing the nucleus that controls what enters and leaves, with nuclear pore complexes acting as guarded gateways for molecules.',
+    'GO:0005635': 'The structural scaffold of the nucleus, maintaining its shape and anchoring chromatin and nuclear pores.',
+    'GO:0022627': 'The small subunit of the ribosome, responsible for binding messenger RNA and initiating the translation of genetic code into protein.',
+    'GO:0022625': 'The large subunit of the ribosome, where peptide bonds form between amino acids during protein synthesis.',
+    'GO:0005768': 'Membrane-bound compartments that sort and route proteins arriving from the cell surface or the Golgi, directing them to lysosomes or back to the membrane.',
+    'GO:0045335': 'Secretory vesicles that store and release substances — such as neurotransmitters or hormones — by fusing with the plasma membrane.',
+    'GO:0005886': 'The boundary of the cell. The plasma membrane controls what enters and leaves, receives signals from the environment, and mediates communication with other cells.',
+  };
+
   function renderEntry(data, term){
     resultsEl.hidden = false;
     const { goId, name, structureType, definition, synonyms, children, keyProteins } = data;
     const cleanDef = stripCitations(definition) || 'No definition available for this entry.';
+    const summary = STRUCTURE_SUMMARIES[goId] || null;
+    const summaryHtml = summary
+      ? `<p class="field-body" style="margin-top:10px; padding-top:10px; border-top:1px solid var(--line);">${esc(summary)}</p>`
+      : '';
 
     const synonymHtml = synonyms && synonyms.length > 0
       ? `<p class="meta mono" style="margin:0 0 12px;">also known as: ${synonyms.map(s => esc(s)).join(' &middot; ')}</p>`
@@ -141,19 +143,12 @@
       : `<p class="empty-note">No key proteins found for this entry.</p>`;
 
 
-    const saved = isCbBookmarked(goId);
-
     cardEl.innerHTML = `
       <div class="card">
         <div class="card-hole" aria-hidden="true"></div>
         <div class="card-top">
           <span class="tag mono">STRUCTURE &middot; ${esc(structureType)}</span>
-          <span class="card-top-right">
-            <span class="organism">eukaryotic cells</span>
-            <button type="button" class="bookmark-btn bookmark-icon-only${saved ? ' is-saved' : ''}" id="cb-bookmark-toggle" aria-label="${saved ? 'Remove from saved' : 'Add to saved'}" title="${saved ? 'Remove from saved' : 'Add to saved'}">
-              <span class="bookmark-icon">${saved ? '★' : '☆'}</span>
-            </button>
-          </span>
+          <span class="organism">eukaryotic cells</span>
         </div>
         <h2 class="entry-name"><span class="gene-tag mono">${esc(name)}</span>${esc(name.charAt(0).toUpperCase() + name.slice(1))}</h2>
         ${synonymHtml}
@@ -162,6 +157,7 @@
         <section class="field">
           <h3 class="field-label">function</h3>
           <p class="field-body clamp" id="cb-function-text">${esc(cleanDef)}</p>
+          ${summaryHtml}
           <button type="button" class="link-btn" id="cb-function-toggle" style="margin-top:8px; display:none;">read more</button>
         </section>
         <div class="rule"></div>
@@ -176,35 +172,6 @@
           </section>
         </div>
       </div>`;
-
-    // Bookmark toggle
-    const bmBtn = document.getElementById('cb-bookmark-toggle');
-    bmBtn?.addEventListener('click', async () => {
-      const nowSaved = toggleCbBookmark(goId, name, structureType, cleanDef);
-      bmBtn.classList.toggle('is-saved', nowSaved);
-      bmBtn.querySelector('.bookmark-icon').textContent = nowSaved ? '★' : '☆';
-      const label = nowSaved ? 'Remove from saved' : 'Add to saved';
-      bmBtn.setAttribute('aria-label', label);
-      bmBtn.setAttribute('title', label);
-
-      // Sync with DB if signed in
-      const user = window.SpecimenAuth?.currentUser();
-      if(user){
-        if(nowSaved){
-          await fetch('/cellbiology/save', {
-            method: 'POST', credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ go_id: goId, name, structure_type: structureType, definition: cleanDef }),
-          });
-        } else {
-          await fetch('/cellbiology/remove', {
-            method: 'POST', credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ go_id: goId }),
-          });
-        }
-      }
-    });
 
     // Bind read more toggle
     const fnEl = document.getElementById('cb-function-text');
@@ -267,10 +234,7 @@
 
   bindChips();
 
-  // Expose for saved.html
-  window.CbBookmarks = { load: loadCbBookmarks };
-
-
+  const urlParams = new URLSearchParams(window.location.search);
   const initialQuery = urlParams.get('q');
   if(initialQuery){
     input.value = initialQuery;
