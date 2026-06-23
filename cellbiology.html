@@ -91,6 +91,33 @@
     bindChips();
   }
 
+  // Curated HPA marker protein URLs for common organelles/structures
+  const HPA_MARKERS = {
+    'mitochondrion': 'https://www.proteinatlas.org/ENSG00000115547-TOMM20/subcellular',
+    'nucleus': 'https://www.proteinatlas.org/ENSG00000143815-LBR/subcellular',
+    'nucleoplasm': 'https://www.proteinatlas.org/ENSG00000143815-LBR/subcellular',
+    'golgi apparatus': 'https://www.proteinatlas.org/ENSG00000145375-GOLGA2/subcellular',
+    'endoplasmic reticulum': 'https://www.proteinatlas.org/ENSG00000166033-HTRA1/subcellular',
+    'lysosome': 'https://www.proteinatlas.org/ENSG00000167693-LAMP1/subcellular',
+    'ribosome': 'https://www.proteinatlas.org/ENSG00000122406-RPL5/subcellular',
+    'centrosome': 'https://www.proteinatlas.org/ENSG00000166033-HTRA1/subcellular',
+    'cytoplasm': 'https://www.proteinatlas.org/ENSG00000075624-ACTB/subcellular',
+    'cytosol': 'https://www.proteinatlas.org/ENSG00000075624-ACTB/subcellular',
+    'peroxisome': 'https://www.proteinatlas.org/ENSG00000116209-TSPO/subcellular',
+    'nuclear envelope': 'https://www.proteinatlas.org/ENSG00000143815-LBR/subcellular',
+    'cell membrane': 'https://www.proteinatlas.org/ENSG00000169439-SDC2/subcellular',
+    'plasma membrane': 'https://www.proteinatlas.org/ENSG00000169439-SDC2/subcellular',
+    'vesicle': 'https://www.proteinatlas.org/ENSG00000104472-CHMP4B/subcellular',
+    'cytoskeleton': 'https://www.proteinatlas.org/ENSG00000075624-ACTB/subcellular',
+    'actin cytoskeleton': 'https://www.proteinatlas.org/ENSG00000075624-ACTB/subcellular',
+    'microtubule': 'https://www.proteinatlas.org/ENSG00000163811-TUBB/subcellular',
+  };
+
+  function getMicroscopyUrl(name){
+    const key = name.toLowerCase().trim();
+    return HPA_MARKERS[key] || null;
+  }
+
   function renderEntry(data, term){
     resultsEl.hidden = false;
     const { goId, name, structureType, definition, synonyms, children, keyProteins } = data;
@@ -112,6 +139,26 @@
         ).join('')}</div>
         <p class="meta" style="margin-top:8px; font-style:italic;">Links open in the genes &amp; proteins index.</p>`
       : `<p class="empty-note">No key proteins found for this entry.</p>`;
+
+    const microscopUrl = getMicroscopyUrl(name);
+    const microscopyHtml = microscopUrl ? `
+      <div class="rule"></div>
+      <section class="field">
+        <h3 class="field-label">microscopy</h3>
+        <a href="${esc(microscopUrl)}" target="_blank" rel="noopener" class="cb-microscopy-link">
+          <div class="cb-microscopy-icon" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EAEEE6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 3h6M9 3v1M15 3v1M10 4h4M9 21H5a2 2 0 0 1-2-2v-1a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a2 2 0 0 1-2 2h-4"/>
+              <path d="M12 4v9M8 21h8"/>
+            </svg>
+          </div>
+          <div class="cb-microscopy-text">
+            <p class="cb-microscopy-title">View real cell images</p>
+            <p class="cb-microscopy-desc">Immunofluorescence microscopy of the ${esc(name)} in human cells — Human Protein Atlas</p>
+          </div>
+          <svg class="cb-microscopy-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        </a>
+      </section>` : '';
 
     cardEl.innerHTML = `
       <div class="card">
@@ -140,6 +187,7 @@
             ${proteinsHtml}
           </section>
         </div>
+        ${microscopyHtml}
       </div>`;
 
     // Bind read more toggle
