@@ -50,109 +50,236 @@
 </div>
 
 <script>
-  const BOOKMARKS_KEY = 'specimen.bookmarks.v1';
-  const slot = document.getElementById('bookmark-slot');
+  const BOOKMARKS_KEY    = 'specimen.bookmarks.v1';
+  const CB_BOOKMARKS_KEY = 'specimen.cb.bookmarks.v1';
+
+  const slot     = document.getElementById('bookmark-slot');
   const clearLink = document.getElementById('clear-bookmarks-link');
-  const overlay = document.getElementById('modal-overlay');
+  const overlay  = document.getElementById('modal-overlay');
   const modalContent = document.getElementById('modal-content');
 
   function esc(str){
     return String(str ?? '').replace(/[&<>"']/g, c => ({
-      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
     }[c]));
   }
-
   function safeParse(json, fallback){
-    try{ const parsed = JSON.parse(json); return parsed ?? fallback; }
-    catch(e){ return fallback; }
+    try{ const p = JSON.parse(json); return p ?? fallback; } catch(e){ return fallback; }
   }
 
+  // ---------- localStorage helpers ----------
   function loadBookmarks(){
-    try{ return safeParse(localStorage.getItem(BOOKMARKS_KEY), []); }
-    catch(e){ return []; }
+    try{ return safeParse(localStorage.getItem(BOOKMARKS_KEY), []); } catch(e){ return []; }
   }
   function saveBookmarks(list){
-    try{ localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(list)); }
-    catch(e){ /* fail silently */ }
+    try{ localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(list)); } catch(e){}
+  }
+  function loadCbBookmarks(){
+    try{ return safeParse(localStorage.getItem(CB_BOOKMARKS_KEY), []); } catch(e){ return []; }
+  }
+  function saveCbBookmarks(list){
+    try{ localStorage.setItem(CB_BOOKMARKS_KEY, JSON.stringify(list)); } catch(e){}
   }
 
-  function render(){
-    const list = loadBookmarks();
+  // ---------- Section heading ----------
+  function sectionHeading(title, count){
+    return `<h2 class="field-label" style="margin:0 0 14px; font-size:13px;">${title} <span class="meta mono" style="text-transform:none; letter-spacing:0; font-size:12px;">(${count})</span></h2>`;
+  }
 
-    if(list.length === 0){
-      clearLink.hidden = true;
-      slot.innerHTML = `
-        <div class="bookmark-empty">
-          <p>Nothing saved yet.</p>
-          <p class="meta">Search for a gene on the <a href="index.html">genes &amp; proteins</a> and click the star on its card to save it here.</p>
-        </div>`;
-      return;
-    }
-
-    clearLink.hidden = false;
-    const cards = list.map(b => `
+  // ---------- Gene cards ----------
+  function geneCardsHtml(list){
+    return list.map(b => `
       <div class="bookmark-card" data-term="${esc(b.term)}" tabindex="0" role="button">
         <button type="button" class="bm-remove" data-accession="${esc(b.accession)}" aria-label="Remove from saved" title="Remove from saved">&times;</button>
         <span class="bm-gene mono">${esc(b.gene)}</span>
         <p class="bm-name">${esc(b.name)}</p>
         <p class="bm-meta">${b.organism ? esc(b.organism) + ' &middot; ' : ''}${esc(b.accession)}</p>
       </div>`).join('');
+  }
 
-    slot.innerHTML = `<div class="bookmark-grid">${cards}</div>`;
-
-    slot.querySelectorAll('.bookmark-card').forEach(card => {
-      const openIt = () => openModal(card.dataset.term);
-      card.addEventListener('click', (e) => {
-        if(e.target.closest('.bm-remove')) return;
-        openIt();
-      });
-      card.addEventListener('keydown', (e) => {
-        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openIt(); }
-      });
+  function bindGeneCards(container, onRemove){
+    container.querySelectorAll('.bookmark-card').forEach(card => {
+      const openIt = () => openGeneModal(card.dataset.term);
+      card.addEventListener('click', e => { if(e.target.closest('.bm-remove')) return; openIt(); });
+      card.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openIt(); }});
     });
-
-    slot.querySelectorAll('.bm-remove').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const accession = btn.dataset.accession;
-        const updated = loadBookmarks().filter(b => b.accession !== accession);
-        saveBookmarks(updated);
-        render();
-      });
+    container.querySelectorAll('.bm-remove').forEach(btn => {
+      btn.addEventListener('click', e => { e.stopPropagation(); onRemove(btn.dataset.accession); });
     });
   }
 
+  // ---------- CB structure cards ----------
+  function cbCardsHtml(list){
+    return list.map(b => `
+      <div class="bookmark-card" data-goid="${esc(b.go_id)}" tabindex="0" role="button">
+        <button type="button" class="bm-remove" data-goid="${esc(b.go_id)}" aria-label="Remove from saved" title="Remove from saved">&times;</button>
+        <span class="bm-gene mono">${esc(b.go_id)}</span>
+        <p class="bm-name">${esc(b.name)}</p>
+        <p class="bm-meta">${b.structure_type ? esc(b.structure_type) : 'cellular component'}</p>
+      </div>`).join('');
+  }
+
+  function bindCbCards(container, onRemove){
+    container.querySelectorAll('.bookmark-card').forEach(card => {
+      const openIt = () => openCbModal(card.dataset.goid);
+      card.addEventListener('click', e => { if(e.target.closest('.bm-remove')) return; openIt(); });
+      card.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openIt(); }});
+    });
+    container.querySelectorAll('.bm-remove').forEach(btn => {
+      btn.addEventListener('click', e => { e.stopPropagation(); onRemove(btn.dataset.goid); });
+    });
+  }
+
+  // ---------- Empty state ----------
+  function emptyHtml(category, href, linkLabel){
+    return `<div class="bookmark-empty" style="margin-bottom:14px;">
+      <p>Nothing saved yet.</p>
+      <p class="meta">Search on <a href="${href}">${linkLabel}</a> and click the star on a card to save it here.</p>
+    </div>`;
+  }
+
+  // ---------- Render (localStorage, signed out) ----------
+  function render(){
+    const genes = loadBookmarks();
+    const structs = loadCbBookmarks();
+    const anyGenes = genes.length > 0;
+    const anyStructs = structs.length > 0;
+
+    clearLink.hidden = !anyGenes && !anyStructs;
+
+    let html = '';
+
+    // Genes & Proteins section
+    html += `<div style="margin-bottom:36px;">`;
+    html += sectionHeading('Genes &amp; Proteins', genes.length);
+    if(anyGenes){
+      html += `<div class="bookmark-grid" id="gene-grid">${geneCardsHtml(genes)}</div>`;
+    } else {
+      html += emptyHtml('genes', 'index.html', 'genes &amp; proteins');
+    }
+    html += `</div>`;
+
+    // Cell Biology section
+    html += `<div>`;
+    html += sectionHeading('Cell Biology', structs.length);
+    if(anyStructs){
+      html += `<div class="bookmark-grid" id="cb-grid">${cbCardsHtml(structs)}</div>`;
+    } else {
+      html += emptyHtml('cell biology', 'cellbiology.html', 'cell biology');
+    }
+    html += `</div>`;
+
+    slot.innerHTML = html;
+
+    if(anyGenes){
+      bindGeneCards(document.getElementById('gene-grid'), accession => {
+        saveBookmarks(loadBookmarks().filter(b => b.accession !== accession));
+        render();
+      });
+    }
+    if(anyStructs){
+      bindCbCards(document.getElementById('cb-grid'), goId => {
+        saveCbBookmarks(loadCbBookmarks().filter(b => b.go_id !== goId));
+        render();
+      });
+    }
+  }
+
+  // ---------- Render (DB, signed in) ----------
+  async function renderDB(){
+    // Fetch both in parallel
+    let genes = [], structs = [];
+    try{
+      const [gRes, sRes] = await Promise.all([
+        fetch('/genes/list', { credentials: 'include' }),
+        fetch('/cellbiology/list', { credentials: 'include' }),
+      ]);
+      const gData = await gRes.json();
+      const sData = await sRes.json();
+      if(gData.ok) genes = gData.genes || [];
+      if(sData.ok) structs = sData.structures || [];
+    } catch(e){
+      render(); return;
+    }
+
+    clearLink.hidden = true;
+    const anyGenes = genes.length > 0;
+    const anyStructs = structs.length > 0;
+
+    let html = '';
+
+    html += `<div style="margin-bottom:36px;">`;
+    html += sectionHeading('Genes &amp; Proteins', genes.length);
+    if(anyGenes){
+      html += `<div class="bookmark-grid" id="gene-grid">${geneCardsHtml(genes)}</div>`;
+    } else {
+      html += emptyHtml('genes', 'index.html', 'genes &amp; proteins');
+    }
+    html += `</div>`;
+
+    html += `<div>`;
+    html += sectionHeading('Cell Biology', structs.length);
+    if(anyStructs){
+      html += `<div class="bookmark-grid" id="cb-grid">${cbCardsHtml(structs)}</div>`;
+    } else {
+      html += emptyHtml('cell biology', 'cellbiology.html', 'cell biology');
+    }
+    html += `</div>`;
+
+    slot.innerHTML = html;
+
+    if(anyGenes){
+      bindGeneCards(document.getElementById('gene-grid'), async accession => {
+        await fetch('/genes/remove', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accession }),
+        });
+        renderDB();
+      });
+    }
+    if(anyStructs){
+      bindCbCards(document.getElementById('cb-grid'), async goId => {
+        await fetch('/cellbiology/remove', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ go_id: goId }),
+        });
+        renderDB();
+      });
+    }
+  }
+
+  // ---------- Clear all ----------
   clearLink.addEventListener('click', () => {
     saveBookmarks([]);
+    saveCbBookmarks([]);
     render();
   });
 
+  // ---------- Gene modal ----------
   function stripCitations(text){
     return text
       .replace(/\s*\(\s*PubMed:\d+(?:\s*,\s*PubMed:\d+)*\s*\)/gi, '')
-      .replace(/\s{2,}/g, ' ')
-      .trim();
+      .replace(/\s{2,}/g, ' ').trim();
   }
 
   const goTermCache = {};
-
   async function fetchGoDefinition(termName){
     if(goTermCache[termName]) return goTermCache[termName];
     try{
       const res = await fetch('/api/go?term=' + encodeURIComponent(termName));
-      if(!res.ok) throw new Error('proxy error');
+      if(!res.ok) throw new Error();
       const data = await res.json();
       if(!data.result) return null;
       goTermCache[termName] = data.result;
       return data.result;
-    }catch(e){
-      return null;
-    }
+    }catch(e){ return null; }
   }
 
   function bindGoTagDefinition(tagBtn, termName){
     let defEl = null;
-    tagBtn.addEventListener('click', async (e) => {
+    tagBtn.addEventListener('click', async e => {
       e.stopPropagation();
       const isActive = tagBtn.classList.contains('go-acc-tag-active');
       if(isActive){
@@ -165,24 +292,22 @@
       defEl.className = 'go-definition';
       defEl.innerHTML = '<p class="go-def-term loading-line mono">Looking up definition…</p>';
       tagBtn.closest('.go-acc-body').insertAdjacentElement('afterend', defEl);
-
       const info = await fetchGoDefinition(termName);
       if(!tagBtn.classList.contains('go-acc-tag-active')) return;
-
       if(!info || !info.definition){
-        defEl.innerHTML = '<p class="go-def-term mono">' + esc(termName) + '</p><p class="go-def-text empty-note">No definition found for this term.</p>';
+        defEl.innerHTML = `<p class="go-def-term mono">${esc(termName)}</p><p class="go-def-text empty-note">No definition found.</p>`;
         return;
       }
       const idLabel = info.id ? (info.id + ' — ' + (info.name || termName)) : termName;
-      defEl.innerHTML = '<p class="go-def-term mono">' + esc(idLabel) + '</p><p class="go-def-text">' + esc(info.definition) + '</p>';
+      defEl.innerHTML = `<p class="go-def-term mono">${esc(idLabel)}</p><p class="go-def-text">${esc(info.definition)}</p>`;
     });
   }
 
   function buildGoAccordion(entry){
     const xrefs = entry.uniProtKBCrossReferences || [];
-    const groups = {C: [], F: [], P: []};
-    xrefs.filter(x => x.database === 'GO').forEach(ref => {
-      const termProp = (ref.properties || []).find(p => p.key === 'GoTerm');
+    const groups = {C:[],F:[],P:[]};
+    xrefs.filter(x => x.database==='GO').forEach(ref => {
+      const termProp = (ref.properties||[]).find(p => p.key==='GoTerm');
       if(!termProp) return;
       const parts = termProp.value.split(':');
       const code = parts[0];
@@ -194,56 +319,39 @@
       {label:'activity', items:groups.F},
       {label:'process', items:groups.P}
     ].filter(s => s.items.length > 0);
-
-    if(sections.length === 0) return '<p class="empty-note">No Gene Ontology annotations found for this entry.</p>';
-
+    if(sections.length === 0) return '<p class="empty-note">No Gene Ontology annotations found.</p>';
     return sections.map(s => `
       <div class="go-acc-row">
-        <button type="button" class="go-acc-head">
-          <span>${s.label}</span>
-          <span class="go-acc-chev">&#9656;</span>
-        </button>
-        <div class="go-acc-body">
-          ${s.items.map(t => `<button type="button" class="go-acc-tag go-acc-clickable" data-term="${esc(t)}">${esc(t)}</button>`).join('')}
-        </div>
+        <button type="button" class="go-acc-head"><span>${s.label}</span><span class="go-acc-chev">&#9656;</span></button>
+        <div class="go-acc-body">${s.items.map(t => `<button type="button" class="go-acc-tag go-acc-clickable" data-term="${esc(t)}">${esc(t)}</button>`).join('')}</div>
       </div>`).join('');
   }
 
   function bindAccordion(container){
     container.querySelectorAll('.go-acc-head').forEach(head => {
-      head.addEventListener('click', () => {
-        head.closest('.go-acc-row').classList.toggle('expanded');
-      });
+      head.addEventListener('click', () => head.closest('.go-acc-row').classList.toggle('expanded'));
     });
-    container.querySelectorAll('.go-acc-clickable').forEach(tagBtn => {
-      bindGoTagDefinition(tagBtn, tagBtn.dataset.term);
-    });
+    container.querySelectorAll('.go-acc-clickable').forEach(btn => bindGoTagDefinition(btn, btn.dataset.term));
   }
 
-  async function openModal(term){
+  async function openGeneModal(term){
     overlay.hidden = false;
     modalContent.innerHTML = '<div class="card loading-card"><p class="loading-line mono">Pulling the saved record…</p></div>';
     document.body.style.overflow = 'hidden';
-
     try{
       const res = await fetch('/api/gene?q=' + encodeURIComponent(term));
       const data = await res.json();
       const entry = data.result;
-      if(!entry){
-        modalContent.innerHTML = '<div class="card empty-card"><p>Couldn\'t reload this entry right now.</p></div>';
-        return;
-      }
-
+      if(!entry){ modalContent.innerHTML = '<div class="card empty-card"><p>Couldn\'t reload this entry right now.</p></div>'; return; }
       const accession = entry.primaryAccession || '—';
       const organism = entry.organism?.scientificName || 'Unknown organism';
       const geneName = entry.genes?.[0]?.geneName?.value || term;
       const fullName = entry.proteinDescription?.recommendedName?.fullName?.value
         || entry.proteinDescription?.submissionNames?.[0]?.fullName?.value
         || entry.uniProtkbId || term;
-      const fnComment = (entry.comments || []).find(c => c.commentType === 'FUNCTION');
+      const fnComment = (entry.comments||[]).find(c => c.commentType==='FUNCTION');
       const fnText = fnComment?.texts?.[0]?.value;
-      const fnDisplay = fnText ? stripCitations(fnText) : 'No curated function summary is available for this entry yet.';
-
+      const fnDisplay = fnText ? stripCitations(fnText) : 'No curated function summary available.';
       modalContent.innerHTML = `
         <div class="card">
           <div class="card-hole" aria-hidden="true"></div>
@@ -255,13 +363,8 @@
           <div class="rule"></div>
           <section class="field">
             <div class="go-acc-row expanded">
-              <button type="button" class="go-acc-head go-acc-head-fn">
-                <span>function</span>
-                <span class="go-acc-chev">&#9656;</span>
-              </button>
-              <div class="go-acc-body go-acc-body-fn">
-                <p class="field-body" style="margin:0;">${esc(fnDisplay)}</p>
-              </div>
+              <button type="button" class="go-acc-head"><span>function</span><span class="go-acc-chev">&#9656;</span></button>
+              <div class="go-acc-body go-acc-body-prose"><p class="field-body" style="margin:0;">${esc(fnDisplay)}</p></div>
             </div>
           </section>
           <div class="rule"></div>
@@ -270,118 +373,94 @@
             ${buildGoAccordion(entry)}
           </section>
           <div class="rule"></div>
-          <p class="meta"><a href="index.html?q=${encodeURIComponent(term)}">Open full record on the genes &amp; proteins &rarr;</a></p>
+          <p class="meta"><a href="index.html?q=${encodeURIComponent(term)}">Open full record on genes &amp; proteins &rarr;</a></p>
         </div>`;
-
       bindAccordion(modalContent);
     }catch(e){
       modalContent.innerHTML = '<div class="card empty-card"><p>Couldn\'t reach the server just now.</p></div>';
     }
   }
 
+  // ---------- Cell biology modal ----------
+  async function openCbModal(goId){
+    overlay.hidden = false;
+    modalContent.innerHTML = '<div class="card loading-card"><p class="loading-line mono">Pulling the saved record…</p></div>';
+    document.body.style.overflow = 'hidden';
+
+    // Try to get live data first; fall back to stored definition
+    let name = goId, structureType = 'cellular component', definition = '';
+
+    // Check localStorage for stored data
+    const stored = loadCbBookmarks().find(b => b.go_id === goId);
+    if(stored){ name = stored.name; structureType = stored.structure_type || structureType; definition = stored.definition || ''; }
+
+    // Try live fetch from cell biology API
+    try{
+      const res = await fetch('/api/cellbiology?q=' + encodeURIComponent(name || goId));
+      const data = await res.json();
+      if(data.result){
+        name = data.result.name || name;
+        structureType = data.result.structureType || structureType;
+        definition = data.result.definition || definition;
+      }
+    } catch(e){ /* use stored data */ }
+
+    const cleanDef = definition
+      ? definition.replace(/\s*\(Citation:[^)]+\)/gi,'').replace(/\s{2,}/g,' ').trim()
+      : 'No definition available.';
+
+    modalContent.innerHTML = `
+      <div class="card">
+        <div class="card-hole" aria-hidden="true"></div>
+        <div class="card-top">
+          <span class="tag mono">STRUCTURE &middot; ${esc(structureType)}</span>
+          <span class="organism">eukaryotic cells</span>
+        </div>
+        <h2 class="entry-name"><span class="gene-tag mono">${esc(name)}</span>${esc(name.charAt(0).toUpperCase() + name.slice(1))}</h2>
+        <p class="meta mono" style="margin-bottom:0;">${esc(goId)}</p>
+        <div class="rule"></div>
+        <section class="field">
+          <h3 class="field-label">function</h3>
+          <p class="field-body">${esc(cleanDef)}</p>
+        </section>
+        <div class="rule"></div>
+        <p class="meta"><a href="cellbiology.html?q=${encodeURIComponent(name)}">Open full record on cell biology &rarr;</a></p>
+      </div>`;
+  }
+
+  // ---------- Modal close ----------
   function closeModal(){
     overlay.hidden = true;
     modalContent.innerHTML = '';
     document.body.style.overflow = '';
   }
 
-  // ---------- Auth-aware render ----------
-  // render() already defined above — now make it auth-aware
-  // When signed in: read from /genes/list, remove via /genes/remove
-  // When signed out: existing localStorage behavior unchanged
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  overlay.addEventListener('click', e => { if(e.target === overlay) closeModal(); });
+  document.addEventListener('keydown', e => { if(e.key==='Escape' && !overlay.hidden) closeModal(); });
 
-  let isSignedIn = false;
-
-  async function renderDB() {
-    try {
-      const res = await fetch('/genes/list', { credentials: 'include' });
-      const data = await res.json();
-      if (!data.ok) { render(); return; } // fall back to localStorage
-      const list = data.genes || [];
-
-      if (list.length === 0) {
-        clearLink.hidden = true;
-        slot.innerHTML = `
-          <div class="bookmark-empty">
-            <p>Nothing saved yet.</p>
-            <p class="meta">Search for a gene on the <a href="index.html">genes &amp; proteins</a> and click the star on its card to save it here.</p>
-          </div>`;
-        return;
-      }
-
-      clearLink.hidden = true; // no bulk clear for DB-backed saved genes for now
-      const cards = list.map(b => `
-        <div class="bookmark-card" data-term="${esc(b.gene)}" tabindex="0" role="button">
-          <button type="button" class="bm-remove" data-accession="${esc(b.accession)}" aria-label="Remove from saved" title="Remove from saved">&times;</button>
-          <span class="bm-gene mono">${esc(b.gene)}</span>
-          <p class="bm-name">${esc(b.name)}</p>
-          <p class="bm-meta">${b.organism ? esc(b.organism) + ' &middot; ' : ''}${esc(b.accession)}</p>
-        </div>`).join('');
-
-      slot.innerHTML = `<div class="bookmark-grid">${cards}</div>`;
-
-      slot.querySelectorAll('.bookmark-card').forEach(card => {
-        const openIt = () => openModal(card.dataset.term);
-        card.addEventListener('click', (e) => {
-          if (e.target.closest('.bm-remove')) return;
-          openIt();
-        });
-        card.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openIt(); }
-        });
-      });
-
-      slot.querySelectorAll('.bm-remove').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          e.stopPropagation();
-          const accession = btn.dataset.accession;
-          await fetch('/genes/remove', {
-            method: 'POST',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accession }),
-          });
-          renderDB();
-        });
-      });
-    } catch (e) {
-      render(); // fall back to localStorage on any error
-    }
-  }
-
-  // React to auth state changes from auth.js
-  window.onAuthSignedIn = function () {
-    isSignedIn = true;
+  // ---------- Auth callbacks ----------
+  window.onAuthSignedIn = function(){
     clearLink.hidden = true;
     renderDB();
   };
-  window.onAuthSignedOut = function () {
-    isSignedIn = false;
+  window.onAuthSignedOut = function(){
     clearLink.hidden = false;
     render();
   };
 
-  document.getElementById('modal-close').addEventListener('click', closeModal);
-  overlay.addEventListener('click', function(e){
-    if(e.target === overlay) closeModal();
-  });
-  document.addEventListener('keydown', function(e){
-    if(e.key === 'Escape' && !overlay.hidden) closeModal();
-  });
-
-  // Check session on load independently of auth.js callback timing
-  async function initSavedPage() {
-    try {
+  // ---------- Init ----------
+  async function initSavedPage(){
+    try{
       const res = await fetch('/auth/me', { credentials: 'include' });
       const data = await res.json();
-      if (data.ok && data.user) {
-        isSignedIn = true;
+      if(data.ok && data.user){
         clearLink.hidden = true;
         renderDB();
       } else {
         render();
       }
-    } catch (e) {
+    } catch(e){
       render();
     }
   }
