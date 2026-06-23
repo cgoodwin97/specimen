@@ -90,7 +90,8 @@ export async function onRequestGet({ request, env }) {
     // Step 3: Fetch key proteins from UniProt annotated to this GO term
     let keyProteins = [];
     try {
-      const goQuery = `(go_c:"${goId}") AND (organism_id:9606) AND (reviewed:true)`;
+      const numericId = goId.replace('GO:', '');
+      const goQuery = `(go:${numericId}) AND (organism_id:9606) AND (reviewed:true)`;
       const protRes = await fetch(
         `https://rest.uniprot.org/uniprotkb/search?query=${encodeURIComponent(goQuery)}&fields=accession,id,gene_names,protein_name&format=json&size=6`,
         { headers: { Accept: 'application/json' } }
