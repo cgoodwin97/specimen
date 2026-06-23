@@ -48,7 +48,7 @@
   </section>
 
   <footer class="site-footer">
-    Cell structure data via <a href="https://www.ebi.ac.uk/QuickGO/" target="_blank" rel="noopener">QuickGO</a> (Gene Ontology). Key proteins via UniProt. Microscopy images via <a href="https://www.proteinatlas.org" target="_blank" rel="noopener">Human Protein Atlas</a> (CC BY-SA 3.0). Search results are cached for faster repeat lookups.
+    Cell structure data via <a href="https://www.ebi.ac.uk/QuickGO/" target="_blank" rel="noopener">QuickGO</a> (Gene Ontology). Key proteins via UniProt. Search results are cached for faster repeat lookups.
     <span class="nav-sep" style="margin:0 6px;">|</span>
     <a href="about.html" class="link-btn">about</a>
     <span class="nav-sep" style="margin:0 6px;">|</span>
@@ -91,63 +91,6 @@
     bindChips();
   }
 
-  // Hardcoded HPA subcellular IF image URLs.
-  // imageUrl: direct CDN link to the blue_red_green composite confocal image
-  // marker:   protein used as the organelle marker
-  // cellLine: cell line the image was acquired in
-  // profileUrl: HPA subcellular page for this gene
-  //
-  // Only organelles with confirmed working images are included.
-  // Others are omitted cleanly — no fallback banner shown.
-  const HPA_IMAGES = {
-    'mitochondrion': {
-      imageUrl:   'https://images.proteinatlas.org/11562/50_H5_1_blue_red_green.jpg',
-      marker:     'TOMM20',
-      cellLine:   'U-2 OS',
-      profileUrl: 'https://www.proteinatlas.org/ENSG00000173726-TOMM20/subcellular'
-    },
-    'golgi apparatus': {
-      imageUrl:   'https://images.proteinatlas.org/21799/si15_G4_1_blue_red_green.jpg',
-      marker:     'GOLGA2',
-      cellLine:   'U-2 OS',
-      profileUrl: 'https://www.proteinatlas.org/ENSG00000167110-GOLGA2/subcellular'
-    },
-    'endoplasmic reticulum': {
-      imageUrl:   'https://images.proteinatlas.org/20637/190_D12_1_blue_red_green.jpg',
-      marker:     'RCN1',
-      cellLine:   'U-2 OS',
-      profileUrl: 'https://www.proteinatlas.org/ENSG00000008311-RCN1/subcellular'
-    },
-    'nucleus': {
-      imageUrl:   'https://images.proteinatlas.org/62236/1171_H7_2_blue_red_green.jpg',
-      marker:     'LBR',
-      cellLine:   'U-2 OS',
-      profileUrl: 'https://www.proteinatlas.org/ENSG00000143815-LBR/subcellular'
-    },
-    'nucleoplasm': {
-      imageUrl:   'https://images.proteinatlas.org/62236/1171_H7_2_blue_red_green.jpg',
-      marker:     'LBR',
-      cellLine:   'U-2 OS',
-      profileUrl: 'https://www.proteinatlas.org/ENSG00000143815-LBR/subcellular'
-    },
-    'nuclear envelope': {
-      imageUrl:   'https://images.proteinatlas.org/62236/1171_H7_2_blue_red_green.jpg',
-      marker:     'LBR',
-      cellLine:   'U-2 OS',
-      profileUrl: 'https://www.proteinatlas.org/ENSG00000143815-LBR/subcellular'
-    },
-    'centrosome': {
-      imageUrl:   'https://images.proteinatlas.org/34521/1773_F3_1_blue_red_green.jpg',
-      marker:     'PCNT',
-      cellLine:   'U-2 OS',
-      profileUrl: 'https://www.proteinatlas.org/ENSG00000198901-PCNT/subcellular'
-    },
-  };
-
-  function getMicroscopyData(name){
-    return HPA_IMAGES[name.toLowerCase().trim()] || null;
-  }
-
   function renderEntry(data, term){
     resultsEl.hidden = false;
     const { goId, name, structureType, definition, synonyms, children, keyProteins } = data;
@@ -170,28 +113,6 @@
         <p class="meta" style="margin-top:8px; font-style:italic;">Links open in the genes &amp; proteins index.</p>`
       : `<p class="empty-note">No key proteins found for this entry.</p>`;
 
-    const img = getMicroscopyData(name);
-    const microscopyHtml = img ? `
-      <div class="rule"></div>
-      <section class="field">
-        <h3 class="field-label">microscopy</h3>
-        <div class="cb-microscopy-image-wrap">
-          <a href="${esc(img.profileUrl)}" target="_blank" rel="noopener"
-             aria-label="View ${esc(name)} immunofluorescence images on Human Protein Atlas">
-            <img
-              src="${esc(img.imageUrl)}"
-              alt="Confocal immunofluorescence image of ${esc(name)} in ${esc(img.cellLine)}, stained with anti-${esc(img.marker)} antibody. Human Protein Atlas."
-              class="cb-microscopy-img"
-              loading="lazy"
-            >
-          </a>
-          <p class="cb-microscopy-caption">
-            ICC-IF &middot; marker: ${esc(img.marker)} &middot; ${esc(img.cellLine)}
-            <span class="cb-microscopy-sep">&middot;</span>
-            <a href="${esc(img.profileUrl)}" target="_blank" rel="noopener" class="cb-microscopy-hpa-link">Human Protein Atlas ↗</a>
-          </p>
-        </div>
-      </section>` : '';
 
     cardEl.innerHTML = `
       <div class="card">
@@ -220,7 +141,6 @@
             ${proteinsHtml}
           </section>
         </div>
-        ${microscopyHtml}
       </div>`;
 
     // Bind read more toggle
