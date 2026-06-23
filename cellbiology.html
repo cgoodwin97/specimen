@@ -9,42 +9,6 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-<style>
-  .cb-microscopy-image-wrap {
-    border: 1px solid var(--border, #d4d8d0);
-    border-radius: 8px;
-    overflow: hidden;
-    background: #0a0a0a;
-  }
-  .cb-microscopy-img {
-    display: block;
-    width: 100%;
-    height: auto;
-    max-height: 320px;
-    object-fit: cover;
-    object-position: center;
-  }
-  .cb-microscopy-caption {
-    padding: 8px 12px;
-    font-size: 12px;
-    color: var(--mute, #6E7568);
-    font-family: 'IBM Plex Mono', monospace;
-    background: var(--paper, #EAEEE6);
-    margin: 0;
-    line-height: 1.5;
-  }
-  .cb-microscopy-sep {
-    margin: 0 4px;
-    opacity: 0.5;
-  }
-  .cb-microscopy-hpa-link {
-    color: var(--moss, #1F6F5C);
-    text-decoration: none;
-  }
-  .cb-microscopy-hpa-link:hover {
-    text-decoration: underline;
-  }
-</style>
 </head>
 <body>
 
@@ -127,48 +91,64 @@
     bindChips();
   }
 
-  // Curated HPA marker proteins for common organelles/structures
-  // gene: Ensembl ID used to fetch the IF image via /api/hpaimage
-  // marker: human-readable marker protein name shown in caption
-  const HPA_MARKERS = {
-    'mitochondrion':        { gene: 'ENSG00000173726', marker: 'TOMM20' },
-    'nucleus':              { gene: 'ENSG00000143815',  marker: 'LBR' },
-    'nucleoplasm':          { gene: 'ENSG00000143815',  marker: 'LBR' },
-    'nuclear envelope':     { gene: 'ENSG00000143815',  marker: 'LBR' },
-    'golgi apparatus':      { gene: 'ENSG00000145375',  marker: 'GOLGA2' },
-    'endoplasmic reticulum':{ gene: 'ENSG00000008311',  marker: 'RCN1' },
-    'lysosome':             { gene: 'ENSG00000185896',  marker: 'LAMP1' },
-    'ribosome':             { gene: 'ENSG00000122406',  marker: 'RPL5' },
-    'centrosome':           { gene: 'ENSG00000198901',  marker: 'PCNT' },
-    'cytoplasm':            { gene: 'ENSG00000075624',  marker: 'ACTB' },
-    'cytosol':              { gene: 'ENSG00000075624',  marker: 'ACTB' },
-    'peroxisome':           { gene: 'ENSG00000116209',  marker: 'TSPO' },
-    'cell membrane':        { gene: 'ENSG00000169439',  marker: 'SDC2' },
-    'plasma membrane':      { gene: 'ENSG00000169439',  marker: 'SDC2' },
-    'vesicle':              { gene: 'ENSG00000104472',  marker: 'CHMP4B' },
-    'cytoskeleton':         { gene: 'ENSG00000075624',  marker: 'ACTB' },
-    'actin cytoskeleton':   { gene: 'ENSG00000075624',  marker: 'ACTB' },
-    'microtubule':          { gene: 'ENSG00000163811',  marker: 'TUBB' },
+  // Hardcoded HPA subcellular IF image URLs.
+  // imageUrl: direct CDN link to the blue_red_green composite confocal image
+  // marker:   protein used as the organelle marker
+  // cellLine: cell line the image was acquired in
+  // profileUrl: HPA subcellular page for this gene
+  //
+  // Only organelles with confirmed working images are included.
+  // Others are omitted cleanly — no fallback banner shown.
+  const HPA_IMAGES = {
+    'mitochondrion': {
+      imageUrl:   'https://images.proteinatlas.org/11562/50_H5_1_blue_red_green.jpg',
+      marker:     'TOMM20',
+      cellLine:   'U-2 OS',
+      profileUrl: 'https://www.proteinatlas.org/ENSG00000173726-TOMM20/subcellular'
+    },
+    'golgi apparatus': {
+      imageUrl:   'https://images.proteinatlas.org/21799/si15_G4_1_blue_red_green.jpg',
+      marker:     'GOLGA2',
+      cellLine:   'U-2 OS',
+      profileUrl: 'https://www.proteinatlas.org/ENSG00000167110-GOLGA2/subcellular'
+    },
+    'endoplasmic reticulum': {
+      imageUrl:   'https://images.proteinatlas.org/20637/190_D12_1_blue_red_green.jpg',
+      marker:     'RCN1',
+      cellLine:   'U-2 OS',
+      profileUrl: 'https://www.proteinatlas.org/ENSG00000008311-RCN1/subcellular'
+    },
+    'nucleus': {
+      imageUrl:   'https://images.proteinatlas.org/62236/1171_H7_2_blue_red_green.jpg',
+      marker:     'LBR',
+      cellLine:   'U-2 OS',
+      profileUrl: 'https://www.proteinatlas.org/ENSG00000143815-LBR/subcellular'
+    },
+    'nucleoplasm': {
+      imageUrl:   'https://images.proteinatlas.org/62236/1171_H7_2_blue_red_green.jpg',
+      marker:     'LBR',
+      cellLine:   'U-2 OS',
+      profileUrl: 'https://www.proteinatlas.org/ENSG00000143815-LBR/subcellular'
+    },
+    'nuclear envelope': {
+      imageUrl:   'https://images.proteinatlas.org/62236/1171_H7_2_blue_red_green.jpg',
+      marker:     'LBR',
+      cellLine:   'U-2 OS',
+      profileUrl: 'https://www.proteinatlas.org/ENSG00000143815-LBR/subcellular'
+    },
+    'centrosome': {
+      imageUrl:   'https://images.proteinatlas.org/34521/1773_F3_1_blue_red_green.jpg',
+      marker:     'PCNT',
+      cellLine:   'U-2 OS',
+      profileUrl: 'https://www.proteinatlas.org/ENSG00000198901-PCNT/subcellular'
+    },
   };
 
-  function getHpaMarker(name){
-    return HPA_MARKERS[name.toLowerCase().trim()] || null;
+  function getMicroscopyData(name){
+    return HPA_IMAGES[name.toLowerCase().trim()] || null;
   }
 
-  // Fetch a real HPA subcellular IF image URL via our server-side proxy.
-  // Returns { imageUrl, geneName, cellLine, profileUrl } or null on failure.
-  async function fetchHpaImage(ensgId){
-    try {
-      const res = await fetch(`/api/hpaimage?gene=${encodeURIComponent(ensgId)}`);
-      if(!res.ok) return null;
-      const data = await res.json();
-      return data.imageUrl ? data : null;
-    } catch(_){
-      return null;
-    }
-  }
-
-  async function renderEntry(data, term){
+  function renderEntry(data, term){
     resultsEl.hidden = false;
     const { goId, name, structureType, definition, synonyms, children, keyProteins } = data;
     const cleanDef = stripCitations(definition) || 'No definition available for this entry.';
@@ -190,61 +170,28 @@
         <p class="meta" style="margin-top:8px; font-style:italic;">Links open in the genes &amp; proteins index.</p>`
       : `<p class="empty-note">No key proteins found for this entry.</p>`;
 
-    // Attempt to fetch a real HPA immunofluorescence image
-    const hpaMarker = getHpaMarker(name);
-    let microscopyHtml = '';
-
-    if(hpaMarker){
-      const hpaData = await fetchHpaImage(hpaMarker.gene);
-      if(hpaData){
-        const profileUrl = esc(hpaData.profileUrl);
-        const imageUrl   = esc(hpaData.imageUrl);
-        const cellLine   = esc(hpaData.cellLine || 'human cell line');
-        const marker     = esc(hpaMarker.marker);
-        const structName = esc(name);
-        microscopyHtml = `
+    const img = getMicroscopyData(name);
+    const microscopyHtml = img ? `
       <div class="rule"></div>
       <section class="field">
         <h3 class="field-label">microscopy</h3>
         <div class="cb-microscopy-image-wrap">
-          <a href="${profileUrl}" target="_blank" rel="noopener" aria-label="View ${structName} immunofluorescence images on Human Protein Atlas">
+          <a href="${esc(img.profileUrl)}" target="_blank" rel="noopener"
+             aria-label="View ${esc(name)} immunofluorescence images on Human Protein Atlas">
             <img
-              src="${imageUrl}"
-              alt="Immunofluorescence confocal image of ${structName} in ${cellLine}, stained with anti-${marker} antibody. Human Protein Atlas."
+              src="${esc(img.imageUrl)}"
+              alt="Confocal immunofluorescence image of ${esc(name)} in ${esc(img.cellLine)}, stained with anti-${esc(img.marker)} antibody. Human Protein Atlas."
               class="cb-microscopy-img"
               loading="lazy"
             >
           </a>
           <p class="cb-microscopy-caption">
-            Immunofluorescence (ICC-IF) · marker: ${marker} · ${cellLine}
-            <span class="cb-microscopy-sep">·</span>
-            <a href="${profileUrl}" target="_blank" rel="noopener" class="cb-microscopy-hpa-link">Human Protein Atlas ↗</a>
+            ICC-IF &middot; marker: ${esc(img.marker)} &middot; ${esc(img.cellLine)}
+            <span class="cb-microscopy-sep">&middot;</span>
+            <a href="${esc(img.profileUrl)}" target="_blank" rel="noopener" class="cb-microscopy-hpa-link">Human Protein Atlas ↗</a>
           </p>
         </div>
-      </section>`;
-      } else {
-        // Image fetch failed — fall back to the link banner
-        const profileUrl = `https://www.proteinatlas.org/${esc(hpaMarker.gene)}-${esc(hpaMarker.marker)}/subcellular`;
-        microscopyHtml = `
-      <div class="rule"></div>
-      <section class="field">
-        <h3 class="field-label">microscopy</h3>
-        <a href="${profileUrl}" target="_blank" rel="noopener" class="cb-microscopy-link">
-          <div class="cb-microscopy-icon" aria-hidden="true">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#EAEEE6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 3h6M9 3v1M15 3v1M10 4h4M9 21H5a2 2 0 0 1-2-2v-1a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5v1a2 2 0 0 1-2 2h-4"/>
-              <path d="M12 4v9M8 21h8"/>
-            </svg>
-          </div>
-          <div class="cb-microscopy-text">
-            <p class="cb-microscopy-title">View real cell images</p>
-            <p class="cb-microscopy-desc">Immunofluorescence microscopy of the ${esc(name)} in human cells — Human Protein Atlas</p>
-          </div>
-          <svg class="cb-microscopy-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        </a>
-      </section>`;
-      }
-    }
+      </section>` : '';
 
     cardEl.innerHTML = `
       <div class="card">
@@ -315,7 +262,7 @@
       const res = await fetch(`/api/cellbiology?q=${encodeURIComponent(term.trim())}`);
       const data = await res.json();
       if(!data.result){ renderNotFound(term); return; }
-      await renderEntry(data.result, term);
+      renderEntry(data.result, term);
     }catch(e){
       cardEl.innerHTML = `<div class="card empty-card"><p>Couldn't reach the server just now. Please try again.</p></div>`;
     }
