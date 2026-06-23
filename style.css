@@ -604,31 +604,33 @@ a:hover{text-decoration-color:var(--moss);}
 .related-gene-btn:hover .related-gene-score{color:var(--moss);}
 
 /* ---------- Cell biology microscopy panel ---------- */
-.cb-microscopy-link{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  padding:12px;
-  border:0.5px solid var(--line);
+.cb-microscopy-image-wrap{
+  border:1px solid var(--line);
   border-radius:var(--radius);
-  text-decoration:none;
-  color:var(--ink);
+  overflow:hidden;
+  background:#0a0a0a;
 }
-.cb-microscopy-link:hover{border-color:var(--moss);}
-.cb-microscopy-icon{
-  width:56px;
-  height:56px;
-  border-radius:var(--radius);
-  background:var(--moss);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  flex-shrink:0;
+.cb-microscopy-img{
+  display:block;
+  width:100%;
+  height:auto;
+  max-height:320px;
+  object-fit:cover;
+  object-position:center;
 }
-.cb-microscopy-text{flex:1;}
-.cb-microscopy-title{margin:0 0 3px; font-size:14px; font-weight:500; color:var(--moss);}
-.cb-microscopy-desc{margin:0; font-size:12px; color:var(--mute);}
-.cb-microscopy-arrow{color:var(--mute); flex-shrink:0;}
+.cb-microscopy-caption{
+  padding:7px 12px;
+  font-size:11.5px;
+  font-family:'IBM Plex Mono', monospace;
+  color:var(--mute);
+  background:var(--paper);
+  margin:0;
+  line-height:1.5;
+  border-top:1px solid var(--line);
+}
+.cb-microscopy-sep{margin:0 5px; opacity:0.4;}
+.cb-microscopy-hpa-link{color:var(--moss); text-decoration:none;}
+.cb-microscopy-hpa-link:hover{text-decoration:underline;}
 
 .loading-line{color:var(--mute); font-size:14px; margin:0;}
 @media (prefers-reduced-motion:no-preference){
