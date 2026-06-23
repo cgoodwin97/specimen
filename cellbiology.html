@@ -101,14 +101,14 @@
       : '';
 
     const relatedHtml = children && children.length > 0
-      ? `<div class="related-genes">${children.map(c =>
-          `<button type="button" class="related-gene-btn mono" data-term="${esc(c.name)}">${esc(c.name)}</button>`
+      ? `<div class="go-tags">${children.map(c =>
+          `<button type="button" class="go-tag go-acc-clickable" data-term="${esc(c.name)}">${esc(c.name)}</button>`
         ).join('')}</div>`
       : `<p class="empty-note">No sub-structures found for this entry.</p>`;
 
     const proteinsHtml = keyProteins && keyProteins.length > 0
-      ? `<div class="related-genes" style="grid-template-columns:repeat(3,1fr);">${keyProteins.map(p =>
-          `<button type="button" class="related-gene-btn mono" data-gene="${esc(p.gene)}" title="${esc(p.name)}">${esc(p.gene)}</button>`
+      ? `<div class="go-tags">${keyProteins.map(p =>
+          `<button type="button" class="go-tag go-acc-clickable" data-gene="${esc(p.gene)}" title="${esc(p.name)}">${esc(p.gene)}</button>`
         ).join('')}</div>
         <p class="meta" style="margin-top:8px; font-style:italic;">Links open in the genes &amp; proteins index.</p>`
       : `<p class="empty-note">No key proteins found for this entry.</p>`;
@@ -159,7 +159,7 @@
     }
 
     // Bind related structure chips — search within cell biology
-    cardEl.querySelectorAll('.related-gene-btn[data-term]').forEach(btn => {
+    cardEl.querySelectorAll('.go-acc-clickable[data-term]').forEach(btn => {
       btn.addEventListener('click', () => {
         input.value = btn.dataset.term;
         runSearch(btn.dataset.term);
@@ -167,7 +167,7 @@
     });
 
     // Bind key protein chips — open in genes & proteins index
-    cardEl.querySelectorAll('.related-gene-btn[data-gene]').forEach(btn => {
+    cardEl.querySelectorAll('.go-acc-clickable[data-gene]').forEach(btn => {
       btn.addEventListener('click', () => {
         window.open(`index.html?q=${encodeURIComponent(btn.dataset.gene)}`, '_blank');
       });
