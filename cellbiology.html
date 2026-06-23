@@ -72,6 +72,36 @@
     return text.replace(/\s*\(Citation:[^)]+\)/gi, '').replace(/\s{2,}/g, ' ').trim();
   }
 
+  // ---------- Cell biology bookmarks ----------
+  const CB_BOOKMARKS_KEY = 'specimen.cb.bookmarks.v1';
+
+  function loadCbBookmarks(){
+    try{ return JSON.parse(localStorage.getItem(CB_BOOKMARKS_KEY) || '[]'); }
+    catch(e){ return []; }
+  }
+  function saveCbBookmarks(list){
+    try{ localStorage.setItem(CB_BOOKMARKS_KEY, JSON.stringify(list)); }
+    catch(e){}
+  }
+  function isCbBookmarked(goId){
+    return loadCbBookmarks().some(b => b.go_id === goId);
+  }
+  function toggleCbBookmark(goId, name, structureType, definition){
+    const list = loadCbBookmarks();
+    const idx = list.findIndex(b => b.go_id === goId);
+    if(idx >= 0){
+      list.splice(idx, 1);
+      saveCbBookmarks(list);
+      return false;
+    }
+    list.unshift({ go_id: goId, name, structure_type: structureType, definition, ts: Date.now() });
+    saveCbBookmarks(list);
+    return true;
+  }
+
+  // Expose for saved.html
+  window.CbBookmarks = { load: loadCbBookmarks };
+
   function renderLoading(term){
     resultsEl.hidden = false;
     cardEl.innerHTML = `<div class="card loading-card"><p class="loading-line mono">Pulling the record for "${esc(term)}"…</p></div>`;
@@ -143,12 +173,19 @@
       : `<p class="empty-note">No key proteins found for this entry.</p>`;
 
 
+    const saved = isCbBookmarked(goId);
+
     cardEl.innerHTML = `
       <div class="card">
         <div class="card-hole" aria-hidden="true"></div>
         <div class="card-top">
           <span class="tag mono">STRUCTURE &middot; ${esc(structureType)}</span>
-          <span class="organism">eukaryotic cells</span>
+          <span class="card-top-right">
+            <span class="organism">eukaryotic cells</span>
+            <button type="button" class="bookmark-btn bookmark-icon-only${saved ? ' is-saved' : ''}" id="cb-bookmark-toggle" aria-label="${saved ? 'Remove from saved' : 'Add to saved'}" title="${saved ? 'Remove from saved' : 'Add to saved'}">
+              <span class="bookmark-icon">${saved ? '★' : '☆'}</span>
+            </button>
+          </span>
         </div>
         <h2 class="entry-name"><span class="gene-tag mono">${esc(name)}</span>${esc(name.charAt(0).toUpperCase() + name.slice(1))}</h2>
         ${synonymHtml}
@@ -172,6 +209,35 @@
           </section>
         </div>
       </div>`;
+
+    // Bookmark toggle
+    const bmBtn = document.getElementById('cb-bookmark-toggle');
+    bmBtn?.addEventListener('click', async () => {
+      const nowSaved = toggleCbBookmark(goId, name, structureType, cleanDef);
+      bmBtn.classList.toggle('is-saved', nowSaved);
+      bmBtn.querySelector('.bookmark-icon').textContent = nowSaved ? '★' : '☆';
+      const label = nowSaved ? 'Remove from saved' : 'Add to saved';
+      bmBtn.setAttribute('aria-label', label);
+      bmBtn.setAttribute('title', label);
+
+      // Sync with DB if signed in
+      const user = window.SpecimenAuth?.currentUser();
+      if(user){
+        if(nowSaved){
+          await fetch('/cellbiology/save', {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ go_id: goId, name, structure_type: structureType, definition: cleanDef }),
+          });
+        } else {
+          await fetch('/cellbiology/remove', {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ go_id: goId }),
+          });
+        }
+      }
+    });
 
     // Bind read more toggle
     const fnEl = document.getElementById('cb-function-text');
