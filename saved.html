@@ -381,6 +381,30 @@
     }
   }
 
+  // ---------- Student-friendly summaries (mirrors cellbiology.html) ----------
+  const STRUCTURE_SUMMARIES = {
+    'GO:0005739': 'The powerhouse of the cell. Mitochondria convert nutrients into ATP through cellular respiration, supplying energy for nearly every cellular process.',
+    'GO:0005634': 'The control centre of the cell. The nucleus houses the cell\'s DNA and directs gene expression, coordinating growth, metabolism, and reproduction.',
+    'GO:0005737': 'The fluid-filled interior of the cell, excluding the nucleus. The cytoplasm suspends organelles and is the site of many metabolic reactions.',
+    'GO:0005840': 'The molecular machines that build proteins. Ribosomes read messenger RNA and assemble amino acids into polypeptide chains — a process called translation.',
+    'GO:0005783': 'A network of membranes that folds, modifies, and transports proteins and lipids. The rough ER (studded with ribosomes) makes secretory proteins; the smooth ER synthesises lipids and detoxifies chemicals.',
+    'GO:0005794': 'The cell\'s postal system. The Golgi apparatus receives proteins from the ER, packages and modifies them, then ships them to their final destinations inside or outside the cell.',
+    'GO:0005764': 'The cell\'s recycling centre. Lysosomes contain digestive enzymes that break down waste materials, damaged organelles, and foreign invaders.',
+    'GO:0005773': 'A membrane-bound storage compartment. Vacuoles store water, nutrients, and waste products — especially large and prominent in plant cells where they maintain turgor pressure.',
+    'GO:0005777': 'Specialised organelles that break down fatty acids and detoxify harmful substances such as hydrogen peroxide. Particularly abundant in liver cells.',
+    'GO:0005856': 'A network of protein filaments — actin, microtubules, and intermediate filaments — that gives the cell its shape, enables movement, and acts as a transport highway for organelles.',
+    'GO:0005876': 'Protein tubes that form the cell\'s structural scaffold and act as tracks for motor proteins carrying cargo around the cell. They also form the spindle that separates chromosomes during cell division.',
+    'GO:0015629': 'Thin filaments made of actin that support the cell\'s shape, enable cell movement, and drive processes like phagocytosis and cytokinesis.',
+    'GO:0005813': 'The organising centre for microtubule growth. The centrosome duplicates before cell division and pulls chromosomes to opposite ends of the cell during mitosis.',
+    'GO:0031965': 'A double membrane enclosing the nucleus that controls what enters and leaves, with nuclear pore complexes acting as guarded gateways for molecules.',
+    'GO:0005635': 'The structural scaffold of the nucleus, maintaining its shape and anchoring chromatin and nuclear pores.',
+    'GO:0022627': 'The small subunit of the ribosome, responsible for binding messenger RNA and initiating the translation of genetic code into protein.',
+    'GO:0022625': 'The large subunit of the ribosome, where peptide bonds form between amino acids during protein synthesis.',
+    'GO:0005768': 'Membrane-bound compartments that sort and route proteins arriving from the cell surface or the Golgi, directing them to lysosomes or back to the membrane.',
+    'GO:0045335': 'Secretory vesicles that store and release substances — such as neurotransmitters or hormones — by fusing with the plasma membrane.',
+    'GO:0005886': 'The boundary of the cell. The plasma membrane controls what enters and leaves, receives signals from the environment, and mediates communication with other cells.',
+  };
+
   // ---------- Cell biology modal ----------
   async function openCbModal(goId){
     overlay.hidden = false;
@@ -409,6 +433,11 @@
       ? definition.replace(/\s*\(Citation:[^)]+\)/gi,'').replace(/\s{2,}/g,' ').trim()
       : 'No definition available.';
 
+    const summary = STRUCTURE_SUMMARIES[goId] || null;
+    const summaryHtml = summary
+      ? `<p class="field-body" style="margin-top:10px; padding-top:10px; border-top:1px solid var(--line);">${esc(summary)}</p>`
+      : '';
+
     modalContent.innerHTML = `
       <div class="card">
         <div class="card-hole" aria-hidden="true"></div>
@@ -422,6 +451,7 @@
         <section class="field">
           <h3 class="field-label">function</h3>
           <p class="field-body">${esc(cleanDef)}</p>
+          ${summaryHtml}
         </section>
         <div class="rule"></div>
         <p class="meta"><a href="cellbiology.html?q=${encodeURIComponent(name)}">Open full record on cell biology &rarr;</a></p>
@@ -470,4 +500,5 @@
 <script src="auth.js"></script>
 
 </body>
+</html>
 </html>
