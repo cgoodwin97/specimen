@@ -17,7 +17,9 @@
   <header class="hero">
     <h1>Specimen</h1>
     <nav class="site-nav mono" aria-label="primary">
-      <a href="index.html">genes &amp; proteins</a>
+      <a href="index.html">home</a>
+      <span class="nav-sep">|</span>
+      <a href="genes.html">genes &amp; proteins</a>
       <span class="nav-sep">|</span>
       <span class="nav-current">cell biology</span>
       <span class="nav-sep">|</span>
@@ -71,9 +73,7 @@
   <footer class="site-footer">
     Cell structure data via <a href="https://www.ebi.ac.uk/QuickGO/" target="_blank" rel="noopener">QuickGO</a> (Gene Ontology). Key proteins via UniProt. Search results are cached for faster repeat lookups.
     <span class="nav-sep" style="margin:0 6px;">|</span>
-    <a href="about.html" class="link-btn">about</a>
-    <span class="nav-sep" style="margin:0 6px;">|</span>
-    <a href="contact.html" class="link-btn">contact</a>
+    <a href="mailto:colin@specimen.site" class="link-btn">colin@specimen.site</a>
   </footer>
 
 </div>
@@ -299,7 +299,7 @@
     // Bind key protein chips — open in genes & proteins index
     cardEl.querySelectorAll('.go-clickable[data-gene]').forEach(btn => {
       btn.addEventListener('click', () => {
-        window.open(`index.html?q=${encodeURIComponent(btn.dataset.gene)}`, '_blank');
+        window.open(`genes.html?q=${encodeURIComponent(btn.dataset.gene)}`, '_blank');
       });
     });
   }

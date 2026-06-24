@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Genes &amp; Proteins — Specimen</title>
+<meta name="description" content="Specimen — a study tool for biology.">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://specimen.site">
+<meta property="og:title" content="Specimen">
+<meta property="og:description" content="A study tool for biology.">
+<meta property="og:image" content="https://specimen.site/og-image.png">
+<meta property="og:site_name" content="Specimen">
+
+<!-- Twitter / X card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Specimen">
+<meta name="twitter:description" content="A study tool for biology.">
+<meta name="twitter:image" content="https://specimen.site/og-image.png">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%2256%22%20height%3D%2256%22%20rx%3D%2212%22%20fill%3D%22%23EAEEE6%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2224%22%20fill%3D%22none%22%20stroke%3D%22%231F6F5C%22%20stroke-width%3D%221.5%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2220%22%20fill%3D%22%231F6F5C%22/%3E%3Ctext%20x%3D%2232%22%20y%3D%2234%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20font-family%3D%22Fraunces%2C%20Georgia%2C%20serif%22%20font-style%3D%22italic%22%20font-size%3D%2224%22%20fill%3D%22%23EAEEE6%22%3ES%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page">
+
+  <header class="hero">
+    <h1>Specimen</h1>
+    <nav class="site-nav mono" aria-label="primary">
+      <a href="index.html">home</a>
+      <span class="nav-sep">|</span>
+      <span class="nav-current">genes &amp; proteins</span>
+      <span class="nav-sep">|</span>
+      <a href="cellbiology.html">cell biology</a>
+      <span class="nav-sep">|</span>
+      <a href="saved.html">saved</a>
+      <span class="nav-sep">|</span>
+      <a href="glossary.html">glossary</a>
+    </nav>
+    <p>A field guide to genes and proteins. Type a gene or protein name to pull its function, structure, and pathway record.</p>
+  </header>
+
+  <section class="search-panel">
+    <form class="search-form" id="search-form">
+      <input type="text" id="search-input" placeholder="TP53, insulin, CFTR…" autocomplete="off" aria-label="Gene or protein name">
+      <button type="submit">Search</button>
+    </form>
+    <div class="chip-row">
+      <span class="chip-label">try:</span>
+      <button type="button" class="chip" data-term="TP53">TP53</button>
+      <button type="button" class="chip" data-term="BRCA1">BRCA1</button>
+      <button type="button" class="chip" data-term="INS">INS</button>
+      <button type="button" class="chip" data-term="HBB">HBB</button>
+      <button type="button" class="chip" data-term="CFTR">CFTR</button>
+    </div>
+    <div class="chip-row" id="recent-panel" hidden></div>
+  </section>
+
+  <section class="results" id="results" hidden>
+    <div id="card-slot"></div>
+  </section>
+
+  <footer class="site-footer">
+    Data pulled live from UniProt, RCSB PDB, AlphaFold DB, and QuickGO. Search results are cached for faster repeat lookups; your search history is stored in your browser only. <button type="button" class="link-btn" id="clear-all-link">Clear saved data</button>
+    <span class="nav-sep" style="margin:0 6px;">|</span>
+    <a href="mailto:colin@specimen.site" class="link-btn">colin@specimen.site</a>
+  </footer>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.0.1/3Dmol-min.js"></script>
+<script>
+  const form = document.getElementById('search-form');
+  const input = document.getElementById('search-input');
+  const resultsEl = document.getElementById('results');
+  const cardEl = document.getElementById('card-slot');
+
+  function esc(str){
+    return String(str ?? '').replace(/[&<>"']/g, c => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    }[c]));
+  }
+
+  function stripCitations(text){
+    return text
+      .replace(/\s*\(\s*PubMed:\d+(?:\s*,\s*PubMed:\d+)*\s*\)/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  }
+
+  // ---------- Local storage: history + cache ----------
+  const HISTORY_KEY = 'specimen.history.v1';
+  const CACHE_KEY = 'specimen.cache.v1';
+  const BOOKMARKS_KEY = 'specimen.bookmarks.v1';
+  const HISTORY_LIMIT = 12;
+  const CACHE_LIMIT = 60;
+
+  function safeParse(json, fallback){
+    try{ const parsed = JSON.parse(json); return parsed ?? fallback; }
+    catch(e){ return fallback; }
+  }
+
+  function loadHistory(){
+    try{ return safeParse(localStorage.getItem(HISTORY_KEY), []); }
+    catch(e){ return []; }
+  }
+  function saveHistory(list){
+    try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); }
+    catch(e){ /* storage unavailable or full — fail silently */ }
+  }
+
+  function loadCache(){
+    try{ return safeParse(localStorage.getItem(CACHE_KEY), {}); }
+    catch(e){ return {}; }
+  }
+  function saveCache(map){
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify(map)); }
+    catch(e){
+      try{
+        const keys = Object.keys(map).sort((a,b) => (map[a].ts||0) - (map[b].ts||0));
+        keys.slice(0, 10).forEach(k => delete map[k]);
+        localStorage.setItem(CACHE_KEY, JSON.stringify(map));
+      }catch(e2){ /* give up quietly — caching is a nice-to-have, not critical */ }
+    }
+  }
+
+  function cacheKeyFor(term){ return term.trim().toLowerCase(); }
+
+  function getCached(term){
+    const cache = loadCache();
+    return cache[cacheKeyFor(term)] || null;
+  }
+
+  function setCached(term, entry){
+    const cache = loadCache();
+    cache[cacheKeyFor(term)] = {entry, ts: Date.now()};
+    const keys = Object.keys(cache);
+    if(keys.length > CACHE_LIMIT){
+      keys.sort((a,b) => (cache[a].ts||0) - (cache[b].ts||0))
+        .slice(0, keys.length - CACHE_LIMIT)
+        .forEach(k => delete cache[k]);
+    }
+    saveCache(cache);
+  }
+
+  function timeAgo(ts){
+    const mins = Math.round((Date.now() - ts) / 60000);
+    if(mins < 1) return 'just now';
+    if(mins < 60) return `${mins}m ago`;
+    const hrs = Math.round(mins / 60);
+    if(hrs < 24) return `${hrs}h ago`;
+    return `${Math.round(hrs / 24)}d ago`;
+  }
+
+  // ---------- Bookmarks (separate storage, never touched by Clear saved data) ----------
+  function loadBookmarks(){
+    try{ return safeParse(localStorage.getItem(BOOKMARKS_KEY), []); }
+    catch(e){ return []; }
+  }
+  function saveBookmarks(list){
+    try{ localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(list)); }
+    catch(e){ /* storage unavailable or full — fail silently */ }
+  }
+  function isBookmarked(accession){
+    return loadBookmarks().some(b => b.accession === accession);
+  }
+  function toggleBookmark(entry, term){
+    const accession = entry.primaryAccession;
+    const list = loadBookmarks();
+    const idx = list.findIndex(b => b.accession === accession);
+    if(idx >= 0){
+      list.splice(idx, 1);
+      saveBookmarks(list);
+      return false;
+    }
+    const gene = entry.genes?.[0]?.geneName?.value || term;
+    const name = entry.proteinDescription?.recommendedName?.fullName?.value
+      || entry.proteinDescription?.submissionNames?.[0]?.fullName?.value
+      || entry.uniProtkbId || term;
+    const organism = entry.organism?.scientificName || '';
+    list.unshift({accession, gene, name, organism, term, ts: Date.now()});
+    saveBookmarks(list);
+    return true;
+  }
+
+  function addToHistory(entry, term){
+    const accession = entry.primaryAccession;
+    const gene = entry.genes?.[0]?.geneName?.value || term;
+    const name = entry.proteinDescription?.recommendedName?.fullName?.value || entry.uniProtkbId || term;
+    let list = loadHistory().filter(h => h.accession !== accession);
+    list.unshift({accession, gene, name, term, ts: Date.now()});
+    if(list.length > HISTORY_LIMIT) list = list.slice(0, HISTORY_LIMIT);
+    saveHistory(list);
+    renderHistory();
+  }
+
+  function renderHistory(){
+    const panel = document.getElementById('recent-panel');
+    const list = loadHistory();
+    if(list.length === 0){ panel.hidden = true; panel.innerHTML = ''; return; }
+    panel.hidden = false;
+    const chips = list.map(h =>
+      `<button type="button" class="chip history-chip" data-term="${esc(h.term)}" title="${esc(h.name)}">${esc(h.gene)}</button>`
+    ).join('');
+    panel.innerHTML = `<span class="chip-label">recent:</span>${chips}<button type="button" class="link-btn" id="clear-history-link">clear</button>`;
+    panel.querySelectorAll('.history-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        input.value = btn.dataset.term;
+        runSearch(btn.dataset.term);
+      });
+    });
+    document.getElementById('clear-history-link').addEventListener('click', () => {
+      saveHistory([]);
+      renderHistory();
+    });
+  }
+
+  function bindChips(){
+    document.querySelectorAll('.chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        input.value = btn.dataset.term;
+        runSearch(btn.dataset.term);
+      });
+    });
+  }
+
+  function buildUrl(query){
+    return `/api/gene?q=${encodeURIComponent(query)}`;
+  }
+
+  async function fetchEntry(term){
+    const t = term.trim();
+    if(!t) return null;
+    const res = await fetch(buildUrl(t));
+    if(!res.ok) return null;
+    const data = await res.json();
+    return data.result || null;
+  }
+
+  function renderLoading(term){
+    resultsEl.hidden = false;
+    cardEl.innerHTML = `<div class="card loading-card"><p class="loading-line mono">Pulling the record for "${esc(term)}"…</p></div>`;
+  }
+
+  function renderNotFound(term){
+    cardEl.innerHTML = `
+      <div class="card empty-card">
+        <p>No specimen found for "<strong>${esc(term)}</strong>".</p>
+        <p class="meta">Double-check the spelling, or search by the official gene symbol rather than a common name — try one of the examples below.</p>
+        <div class="chip-row">
+          <button type="button" class="chip" data-term="TP53">TP53</button>
+          <button type="button" class="chip" data-term="BRCA1">BRCA1</button>
+          <button type="button" class="chip" data-term="INS">INS</button>
+        </div>
+      </div>`;
+    bindChips();
+  }
+
+  function renderNetworkError(){
+    cardEl.innerHTML = `
+      <div class="card empty-card">
+        <p>Couldn't reach UniProt just now.</p>
+        <p class="meta">This tool queries public databases directly from your browser. Try again in a moment, or check your connection.</p>
+      </div>`;
+  }
+
+  function renderPathways(entry){
+    const body = document.getElementById('pathway-body');
+    const refs = (entry.uniProtKBCrossReferences || []).filter(x => x.database === 'Reactome');
+    if(refs.length === 0){
+      body.innerHTML = `<p class="empty-note">No curated Reactome pathway annotations found for this entry.</p>`;
+      return;
+    }
+    const items = refs.map(r => {
+      const nameProp = (r.properties || []).find(p => p.key === 'PathwayName');
+      const name = nameProp?.value || r.id;
+      return `<li><a href="https://reactome.org/PathwayBrowser/#/${esc(r.id)}" target="_blank" rel="noopener">${esc(name)}</a></li>`;
+    }).join('');
+    body.innerHTML = `<ul class="pathway-list">${items}</ul>`;
+  }
+
+  // Cache for GO term definitions so repeated clicks don't re-fetch
+  const goTermCache = {};
+
+  async function fetchGoDefinition(termName){
+    if(goTermCache[termName]) return goTermCache[termName];
+    try{
+      const res = await fetch(`/api/go?term=${encodeURIComponent(termName)}`);
+      if(!res.ok) throw new Error('proxy error');
+      const data = await res.json();
+      if(!data.result) return null;
+      goTermCache[termName] = data.result;
+      return data.result;
+    }catch(e){
+      return null;
+    }
+  }
+
+  function bindGoTag(btn, termName){
+    let defEl = null;
+    btn.addEventListener('click', async () => {
+      const isActive = btn.classList.contains('go-active');
+      if(isActive){
+        btn.classList.remove('go-active');
+        if(defEl){ defEl.remove(); defEl = null; }
+        return;
+      }
+      btn.classList.add('go-active');
+      defEl = document.createElement('div');
+      defEl.className = 'go-definition';
+      defEl.innerHTML = `<p class="go-def-term">${esc(termName)}</p><p class="go-def-text loading-line mono">Looking up definition…</p>`;
+      btn.closest('.go-group').appendChild(defEl);
+
+      const info = await fetchGoDefinition(termName);
+      if(!btn.classList.contains('go-active')){ return; }
+
+      if(!info || !info.definition){
+        defEl.innerHTML = `<p class="go-def-term">${esc(termName)}</p><p class="go-def-text empty-note">No definition found for this term.</p>`;
+        return;
+      }
+      const ancestorHtml = info.ancestors?.length
+        ? `<p class="go-def-ancestors">part of: ${info.ancestors.map(a => esc(a)).join(' › ')}</p>`
+        : '';
+      const idLabel = info.id ? `${info.id} — ${info.name || termName}` : termName;
+      defEl.innerHTML = `<p class="go-def-term mono">${esc(idLabel)}</p><p class="go-def-text">${esc(info.definition)}</p>${ancestorHtml}`;
+    });
+  }
+
+  function renderGeneOntology(entry){
+    const body = document.getElementById('go-body');
+    const xrefs = entry.uniProtKBCrossReferences || [];
+    const groups = {C: [], F: [], P: []};
+    xrefs.filter(x => x.database === 'GO').forEach(ref => {
+      const termProp = (ref.properties || []).find(p => p.key === 'GoTerm');
+      if(!termProp) return;
+      const [code, ...rest] = termProp.value.split(':');
+      const term = rest.join(':').trim();
+      if(groups[code] && term) groups[code].push(term);
+    });
+
+    const sections = [
+      {label:'location', items:groups.C},
+      {label:'activity', items:groups.F},
+      {label:'process', items:groups.P}
+    ].filter(s => s.items.length > 0);
+
+    if(sections.length === 0){
+      body.innerHTML = `<p class="empty-note">No Gene Ontology annotations found for this entry.</p>`;
+      return;
+    }
+
+    const cap = 6;
+    const groupsHtml = sections.map(s => {
+      const shown = s.items.slice(0, cap);
+      const extra = s.items.slice(cap);
+      const tags = shown.map(t => `<button type="button" class="go-tag go-clickable" data-term="${esc(t)}">${esc(t)}</button>`).join('');
+      const extraTags = extra.map(t => `<button type="button" class="go-tag go-clickable go-extra" data-term="${esc(t)}" hidden>${esc(t)}</button>`).join('');
+      const more = extra.length > 0 ? `<button type="button" class="go-tag go-more">+${extra.length} more</button>` : '';
+      return `<div class="go-group"><p class="go-group-label">${s.label}</p><div class="go-tags">${tags}${extraTags}${more}</div></div>`;
+    }).join('');
+
+    body.innerHTML = `${groupsHtml}`;
+
+    body.querySelectorAll('.go-clickable').forEach(btn => {
+      bindGoTag(btn, btn.dataset.term);
+    });
+
+    body.querySelectorAll('.go-more').forEach(btn => {
+      const container = btn.closest('.go-tags');
+      const hiddenCount = container.querySelectorAll('.go-extra').length;
+      btn.addEventListener('click', () => {
+        const expanded = btn.dataset.expanded === 'true';
+        container.querySelectorAll('.go-extra').forEach(t => {
+          if(expanded) t.setAttribute('hidden', ''); else t.removeAttribute('hidden');
+        });
+        btn.dataset.expanded = expanded ? 'false' : 'true';
+        btn.textContent = expanded ? `+${hiddenCount} more` : 'show less';
+        if(!expanded){
+          container.querySelectorAll('.go-extra').forEach(btn => bindGoTag(btn, btn.dataset.term));
+        }
+      });
+    });
+  }
+
+  async function renderRelatedGenes(geneName){
+    const body = document.getElementById('related-body');
+    try{
+      const res = await fetch(`/api/string?q=${encodeURIComponent(geneName)}`);
+      const data = await res.json();
+      const partners = data.result || [];
+
+      if(partners.length === 0){
+        body.innerHTML = `<p class="empty-note">No high-confidence interaction partners found for this entry.</p>`;
+        return;
+      }
+
+      const chips = partners.map(p => {
+        const confidence = Math.round((p.score || 0) * 100); // STRING JSON score is a 0-1 decimal, show as 0-100%
+        return `<button type="button" class="related-gene-btn mono" data-term="${esc(p.gene)}">${esc(p.gene)} <span class="related-gene-score">${confidence}%</span></button>`;
+      }).join('');
+
+      body.innerHTML = `<p class="meta" style="margin-bottom:10px;">Genes known to interact with this one. The percentage combines evidence from lab experiments, shared expression patterns, and other research to show how strongly linked the two genes are.</p><div class="related-genes">${chips}</div><p class="meta" style="margin-top:10px;">Data via <a href="https://string-db.org" target="_blank" rel="noopener">STRING</a>.</p>`;
+
+      body.querySelectorAll('.related-gene-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          window.open(`genes.html?q=${encodeURIComponent(btn.dataset.term)}`, '_blank');
+        });
+      });
+    }catch(e){
+      body.innerHTML = `<p class="empty-note">Couldn't load related genes right now.</p>`;
+    }
+  }
+
+  async function renderStructure(entry, accession){
+    const body = document.getElementById('structure-body');
+    const xrefs = entry.uniProtKBCrossReferences || [];
+    const pdbRefs = xrefs.filter(x => x.database === 'PDB');
+    const afRef = xrefs.find(x => x.database === 'AlphaFoldDB');
+
+    if(pdbRefs.length > 0){
+      const ids = pdbRefs.map(r => r.id);
+      const links = ids.slice(0, 4)
+        .map(id => `<a href="https://www.rcsb.org/structure/${esc(id)}" target="_blank" rel="noopener">${esc(id)}</a>`)
+        .join(', ');
+      body.innerHTML = `
+        <div class="viewer" id="viewer-3d"></div>
+        <p class="meta mono">experimental structure &middot; ${links}${ids.length > 4 ? ` +${ids.length - 4} more` : ''}</p>`;
+      try{
+        const viewer = $3Dmol.createViewer(document.getElementById('viewer-3d'), {backgroundColor:'#FAFBF7'});
+        $3Dmol.download('pdb:' + ids[0], viewer, {}, function(){
+          viewer.setStyle({}, {cartoon:{color:'spectrum'}});
+          viewer.zoomTo();
+          viewer.render();
+        });
+      }catch(e){
+        body.insertAdjacentHTML('beforeend', `<p class="empty-note">Couldn't render the 3D viewer in this browser — use the links above instead.</p>`);
+      }
+      return;
+    }
+
+    if(afRef){
+      body.innerHTML = `<div class="viewer" id="viewer-3d"></div><p class="meta mono">predicted structure &middot; AlphaFold DB</p>`;
+      try{
+        const predRes = await fetch(`https://alphafold.ebi.ac.uk/api/prediction/${accession}`);
+        if(!predRes.ok) throw new Error('alphafold api error');
+        const predData = await predRes.json();
+        const modelUrl = predData?.[0]?.pdbUrl;
+        if(!modelUrl) throw new Error('no model url');
+        const modelRes = await fetch(modelUrl);
+        const pdbText = await modelRes.text();
+        const viewer = $3Dmol.createViewer(document.getElementById('viewer-3d'), {backgroundColor:'#FAFBF7'});
+        viewer.addModel(pdbText, 'pdb');
+        viewer.setStyle({}, {cartoon:{color:'spectrum'}});
+        viewer.zoomTo();
+        viewer.render();
+      }catch(e){
+        body.innerHTML = `<p class="empty-note">A predicted structure exists for this entry. View it directly on <a href="https://alphafold.ebi.ac.uk/entry/${esc(accession)}" target="_blank" rel="noopener">AlphaFold DB</a>.</p>`;
+      }
+      return;
+    }
+
+    body.innerHTML = `<p class="empty-note">No experimental or predicted structure is cross-referenced for this entry.</p>`;
+  }
+
+  function renderEntry(entry, term, meta){
+    resultsEl.hidden = false;
+    const accession = entry.primaryAccession || '—';
+    const entryId = entry.uniProtkbId || '';
+    const organism = entry.organism?.scientificName || 'Unknown organism';
+    const geneName = entry.genes?.[0]?.geneName?.value || term;
+    const fullName = entry.proteinDescription?.recommendedName?.fullName?.value
+      || entry.proteinDescription?.submissionNames?.[0]?.fullName?.value
+      || entryId || term;
+    const length = entry.sequence?.length;
+    const fnComment = (entry.comments || []).find(c => c.commentType === 'FUNCTION');
+    const fnText = fnComment?.texts?.[0]?.value;
+    const fnDisplay = fnText ? stripCitations(fnText) : null;
+    const freshnessHtml = meta?.fromCache
+      ? `<p class="meta mono cache-note">cached ${timeAgo(meta.ts)} &middot; <button type="button" class="link-btn" id="refresh-link">refresh</button></p>`
+      : '';
+
+    cardEl.innerHTML = `
+      <div class="card">
+        <div class="card-hole" aria-hidden="true"></div>
+        <div class="card-top">
+          <span class="tag mono">ACCESSION No. ${esc(accession)}</span>
+          <span class="card-top-right">
+            <span class="organism">${esc(organism)}</span>
+            <button type="button" class="bookmark-btn bookmark-icon-only${isBookmarked(accession) ? ' is-saved' : ''}" id="bookmark-toggle" aria-label="${isBookmarked(accession) ? 'Remove from saved' : 'Add to saved'}" title="${isBookmarked(accession) ? 'Remove from saved' : 'Add to saved'}">
+              <span class="bookmark-icon">${isBookmarked(accession) ? '★' : '☆'}</span>
+            </button>
+          </span>
+        </div>
+        ${freshnessHtml}
+        <h2 class="entry-name"><span class="gene-tag mono">${esc(geneName)}</span>${esc(fullName)}</h2>
+        ${length ? `<p class="meta mono">sequence length: ${length} aa &middot; entry ${esc(entryId)}</p>` : ''}
+        <div class="rule"></div>
+        <section class="field">
+          <h3 class="field-label">function</h3>
+          <p class="field-body clamp" id="function-text">${fnDisplay ? esc(fnDisplay) : 'No curated function summary is available for this entry yet.'}</p>
+          <button type="button" class="link-btn" id="function-toggle" style="margin-top:8px; display:none;">read more</button>
+        </section>
+        <div class="rule"></div>
+        <section class="field" id="go-field">
+          <h3 class="field-label">gene ontology</h3>
+          <div id="go-body"><p class="loading-line mono">Loading annotations…</p></div>
+        </section>
+        <div class="rule"></div>
+        <div class="two-col">
+          <section class="field" id="structure-field">
+            <h3 class="field-label">structure</h3>
+            <div id="structure-body"><p class="loading-line mono">Loading structural data…</p></div>
+          </section>
+          <section class="field" id="pathway-field">
+            <h3 class="field-label">pathways</h3>
+            <div id="pathway-body"><p class="loading-line mono">Loading pathway data…</p></div>
+          </section>
+        </div>
+        <div class="rule"></div>
+        <section class="field" id="related-field">
+          <h3 class="field-label">related genes</h3>
+          <div id="related-body"><p class="loading-line mono">Loading interaction data…</p></div>
+        </section>
+      </div>`;
+
+    if(meta?.fromCache){
+      document.getElementById('refresh-link')?.addEventListener('click', () => forceRefresh(term));
+    }
+
+    const bmBtn = document.getElementById('bookmark-toggle');
+    bmBtn?.addEventListener('click', async () => {
+      const nowSaved = toggleBookmark(entry, term);
+      bmBtn.classList.toggle('is-saved', nowSaved);
+      bmBtn.querySelector('.bookmark-icon').textContent = nowSaved ? '★' : '☆';
+      const label = nowSaved ? 'Remove from saved' : 'Add to saved';
+      bmBtn.setAttribute('aria-label', label);
+      bmBtn.setAttribute('title', label);
+
+      // Also sync with DB if signed in
+      const user = window.SpecimenAuth?.currentUser();
+      if(user){
+        const accession = entry.primaryAccession;
+        const geneName = entry.genes?.[0]?.geneName?.value || term;
+        const name = entry.proteinDescription?.recommendedName?.fullName?.value
+          || entry.proteinDescription?.submissionNames?.[0]?.fullName?.value
+          || entry.uniProtkbId || term;
+        const organism = entry.organism?.scientificName || '';
+        if(nowSaved){
+          await fetch('/genes/save', {
+            method:'POST', credentials:'include',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ gene: geneName, accession, name, organism }),
+          });
+        } else {
+          await fetch('/genes/remove', {
+            method:'POST', credentials:'include',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ accession }),
+          });
+        }
+      }
+    });
+
+    const fnEl = document.getElementById('function-text');
+    const fnToggle = document.getElementById('function-toggle');
+    if(fnEl && fnToggle && fnEl.scrollHeight > fnEl.clientHeight + 2){
+      fnToggle.style.display = 'inline-block';
+      fnToggle.addEventListener('click', () => {
+        if(fnEl.classList.contains('clamp')){
+          fnEl.classList.remove('clamp');
+          fnToggle.textContent = 'show less';
+        }else{
+          fnEl.classList.add('clamp');
+          fnToggle.textContent = 'read more';
+        }
+      });
+    }
+
+    renderPathways(entry);
+    renderGeneOntology(entry);
+    renderStructure(entry, accession);
+    renderRelatedGenes(geneName);
+  }
+
+  async function forceRefresh(term){
+    renderLoading(term);
+    try{
+      const entry = await fetchEntry(term);
+      if(!entry){ renderNotFound(term); return; }
+      setCached(term, entry);
+      addToHistory(entry, term);
+      renderEntry(entry, term, {fromCache:false, ts:Date.now()});
+    }catch(err){
+      renderNetworkError();
+    }
+  }
+
+  async function runSearch(term){
+    if(!term || !term.trim()) return;
+    const cached = getCached(term);
+    if(cached){
+      addToHistory(cached.entry, term);
+      renderEntry(cached.entry, term, {fromCache:true, ts:cached.ts});
+      return;
+    }
+    renderLoading(term);
+    try{
+      const entry = await fetchEntry(term);
+      if(!entry){ renderNotFound(term); return; }
+      setCached(term, entry);
+      addToHistory(entry, term);
+      renderEntry(entry, term, {fromCache:false, ts:Date.now()});
+    }catch(err){
+      renderNetworkError();
+    }
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    runSearch(input.value);
+  });
+
+  document.getElementById('clear-all-link').addEventListener('click', () => {
+    saveHistory([]);
+    saveCache({});
+    renderHistory();
+  });
+
+  bindChips();
+  renderHistory();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialQuery = urlParams.get('q');
+  if(initialQuery){
+    input.value = initialQuery;
+    runSearch(initialQuery);
+  }
+</script>
+
+<script src="auth.js"></script>
+</body>
+</html>
