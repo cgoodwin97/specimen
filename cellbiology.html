@@ -33,17 +33,38 @@
       <input type="text" id="cb-search-input" placeholder="mitochondrion, nucleus, ribosome…" autocomplete="off" aria-label="Cell structure or organelle name">
       <button type="submit">Search</button>
     </form>
-    <div class="chip-row">
-      <span class="chip-label">try:</span>
-      <button type="button" class="chip" data-term="mitochondrion">mitochondrion</button>
-      <button type="button" class="chip" data-term="nucleus">nucleus</button>
-      <button type="button" class="chip" data-term="ribosome">ribosome</button>
-      <button type="button" class="chip" data-term="Golgi apparatus">Golgi apparatus</button>
-      <button type="button" class="chip" data-term="lysosome">lysosome</button>
+  </section>
+
+  <section id="cb-browse" aria-label="Common structures">
+    <p class="cb-browse-label mono">common structures</p>
+    <div class="cb-structure-grid">
+      <button type="button" class="cb-tile" data-term="mitochondrion"><span class="cb-tile-name">Mitochondrion</span><span class="cb-tile-hint">energy production</span></button>
+      <button type="button" class="cb-tile" data-term="nucleus"><span class="cb-tile-name">Nucleus</span><span class="cb-tile-hint">gene expression</span></button>
+      <button type="button" class="cb-tile" data-term="ribosome"><span class="cb-tile-name">Ribosome</span><span class="cb-tile-hint">protein synthesis</span></button>
+      <button type="button" class="cb-tile" data-term="Golgi apparatus"><span class="cb-tile-name">Golgi apparatus</span><span class="cb-tile-hint">protein trafficking</span></button>
+      <button type="button" class="cb-tile" data-term="endoplasmic reticulum"><span class="cb-tile-name">Endoplasmic reticulum</span><span class="cb-tile-hint">folding &amp; transport</span></button>
+      <button type="button" class="cb-tile" data-term="lysosome"><span class="cb-tile-name">Lysosome</span><span class="cb-tile-hint">waste degradation</span></button>
+      <button type="button" class="cb-tile" data-term="plasma membrane"><span class="cb-tile-name">Plasma membrane</span><span class="cb-tile-hint">cell boundary</span></button>
+      <button type="button" class="cb-tile" data-term="cytoplasm"><span class="cb-tile-name">Cytoplasm</span><span class="cb-tile-hint">cell interior</span></button>
+      <button type="button" class="cb-tile" data-term="cytoskeleton"><span class="cb-tile-name">Cytoskeleton</span><span class="cb-tile-hint">structure &amp; movement</span></button>
+      <button type="button" class="cb-tile" data-term="vacuole"><span class="cb-tile-name">Vacuole</span><span class="cb-tile-hint">storage</span></button>
+      <button type="button" class="cb-tile" data-term="peroxisome"><span class="cb-tile-name">Peroxisome</span><span class="cb-tile-hint">detoxification</span></button>
+      <button type="button" class="cb-tile" data-term="centrosome"><span class="cb-tile-name">Centrosome</span><span class="cb-tile-hint">cell division</span></button>
+      <button type="button" class="cb-tile" data-term="nuclear envelope"><span class="cb-tile-name">Nuclear envelope</span><span class="cb-tile-hint">nucleus boundary</span></button>
+      <button type="button" class="cb-tile" data-term="microtubule"><span class="cb-tile-name">Microtubule</span><span class="cb-tile-hint">structural scaffold</span></button>
+      <button type="button" class="cb-tile" data-term="actin cytoskeleton"><span class="cb-tile-name">Actin cytoskeleton</span><span class="cb-tile-hint">shape &amp; motility</span></button>
+      <button type="button" class="cb-tile" data-term="endosome"><span class="cb-tile-name">Endosome</span><span class="cb-tile-hint">sorting &amp; routing</span></button>
+      <button type="button" class="cb-tile" data-term="nucleolus"><span class="cb-tile-name">Nucleolus</span><span class="cb-tile-hint">ribosome assembly</span></button>
+      <button type="button" class="cb-tile" data-term="chromatin"><span class="cb-tile-name">Chromatin</span><span class="cb-tile-hint">DNA packaging</span></button>
+      <button type="button" class="cb-tile" data-term="cell junction"><span class="cb-tile-name">Cell junction</span><span class="cb-tile-hint">cell-cell adhesion</span></button>
+      <button type="button" class="cb-tile" data-term="extracellular matrix"><span class="cb-tile-name">Extracellular matrix</span><span class="cb-tile-hint">structural scaffold</span></button>
     </div>
   </section>
 
   <section class="results" id="cb-results" hidden>
+    <div class="cb-browse-all-wrap">
+      <button type="button" class="cb-browse-all-btn mono" id="cb-browse-all">&#9632; browse all structures</button>
+    </div>
     <div id="cb-card-slot"></div>
   </section>
 
@@ -62,6 +83,18 @@
   const input = document.getElementById('cb-search-input');
   const resultsEl = document.getElementById('cb-results');
   const cardEl = document.getElementById('cb-card-slot');
+  const browseEl = document.getElementById('cb-browse');
+
+  function showResults(){
+    browseEl.hidden = true;
+    resultsEl.hidden = false;
+  }
+  function showBrowse(){
+    resultsEl.hidden = true;
+    browseEl.hidden = false;
+    input.value = '';
+    cardEl.innerHTML = '';
+  }
 
   function esc(str){
     return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -103,7 +136,7 @@
   window.CbBookmarks = { load: loadCbBookmarks };
 
   function renderLoading(term){
-    resultsEl.hidden = false;
+    showResults();
     cardEl.innerHTML = `<div class="card loading-card"><p class="loading-line mono">Pulling the record for "${esc(term)}"…</p></div>`;
   }
 
@@ -147,7 +180,7 @@
   };
 
   function renderEntry(data, term){
-    resultsEl.hidden = false;
+    showResults();
     const { goId, name, structureType, definition, synonyms, children, keyProteins } = data;
     const cleanDef = stripCitations(definition) || 'No definition available for this entry.';
     const summary = STRUCTURE_SUMMARIES[goId] || null;
@@ -284,21 +317,21 @@
     }
   }
 
-  function bindChips(){
-    document.querySelectorAll('.chip[data-term]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        input.value = btn.dataset.term;
-        runSearch(btn.dataset.term);
-      });
+  // Browse-all button — show grid, clear results
+  document.getElementById('cb-browse-all')?.addEventListener('click', showBrowse);
+
+  // Tile clicks — fire search
+  document.querySelectorAll('.cb-tile[data-term]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      input.value = btn.dataset.term;
+      runSearch(btn.dataset.term);
     });
-  }
+  });
 
   form.addEventListener('submit', e => {
     e.preventDefault();
     runSearch(input.value);
   });
-
-  bindChips();
 
   const urlParams = new URLSearchParams(window.location.search);
   const initialQuery = urlParams.get('q');
