@@ -1,20 +1,17 @@
 // /functions/api/virus.js
 // Virology data pipeline for Specimen.
 // 1. NCBI E-utilities esearch — resolve virus name to taxon ID
-// 2. NCBI E-utilities efetch — fetch full taxonomy lineage + metadata
-// 3. UniProt — fetch reviewed proteins for that taxon ID
-// Results cached in KV for 30 days under key `virus:{taxon_id}`
-// Search name→taxon cached 30 days under `virus:search:{term}`
+// 2. NCBI E-utilities efetch XML — fetch taxonomy lineage (XML only, no JSON)
+// 3. NCBI Datasets v2 REST API — genome type, hosts, reference accession
+// 4. UniProt — reviewed proteins for this taxon
+// All results cached in KV 30 days.
 
 export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
   const q = (url.searchParams.get('q') || '').trim();
+  if (!q) return json({ error: 'Missing query' }, 400);
 
-  if (!q) {
-    return json({ error: 'Missing query parameter q' }, 400);
-  }
-
-  // ---------- Step 1: Resolve name to taxon ID ----------
+  // ---------- Step 1: Resolve name → taxon ID ----------
   const termKey = `virus:search:${q.toLowerCase()}`;
   let taxonId = null;
 
@@ -25,13 +22,11 @@ export async function onRequestGet({ request, env }) {
 
   if (!taxonId) {
     try {
-      const searchUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=taxonomy&term=${encodeURIComponent(q + '[All Names]')}&retmode=json&retmax=1`;
-      const searchRes = await fetch(searchUrl, {
-        headers: { 'User-Agent': 'Specimen/1.0 (specimen.site; educational tool)' }
-      });
-      if (!searchRes.ok) return json({ error: 'NCBI search failed' }, 502);
-      const searchData = await searchRes.json();
-      const ids = searchData?.esearchresult?.idlist || [];
+      const searchUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=taxonomy&term=${encodeURIComponent(q)}&retmode=json&retmax=1`;
+      const res = await fetch(searchUrl, { headers: { 'User-Agent': 'Specimen/1.0 (specimen.site)' } });
+      if (!res.ok) return json({ error: 'NCBI search failed' }, 502);
+      const data = await res.json();
+      const ids = data?.esearchresult?.idlist || [];
       if (ids.length === 0) return json({ result: null }, 200);
       taxonId = ids[0];
       await env.SPECIMEN_KV.put(termKey, taxonId, { expirationTtl: 2592000 });
@@ -40,138 +35,152 @@ export async function onRequestGet({ request, env }) {
     }
   }
 
-  // ---------- Step 2: Check full result cache ----------
+  // ---------- Check full result cache ----------
+  const noCache = url.searchParams.get('nocache') === '1';
   const resultKey = `virus:${taxonId}`;
-  try {
-    const cached = await env.SPECIMEN_KV.get(resultKey);
-    if (cached) return json({ result: JSON.parse(cached) }, 200);
-  } catch (_) {}
+  if (!noCache) {
+    try {
+      const cached = await env.SPECIMEN_KV.get(resultKey);
+      if (cached) return json({ result: JSON.parse(cached) }, 200);
+    } catch (_) {}
+  }
 
-  // ---------- Step 3: Fetch taxonomy lineage via efetch ----------
-  let taxonomy = {};
-  try {
-    const fetchUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&id=${taxonId}&retmode=json`;
-    const fetchRes = await fetch(fetchUrl, {
-      headers: { 'User-Agent': 'Specimen/1.0 (specimen.site; educational tool)' }
-    });
-    if (fetchRes.ok) {
-      const fetchData = await fetchRes.json();
-      const taxon = fetchData?.result?.[taxonId];
-      if (taxon) {
-        taxonomy.scientificName = taxon.scientificname || '';
-        taxonomy.commonName     = taxon.commonname    || '';
-        taxonomy.rank           = taxon.rank          || '';
-        taxonomy.lineage        = taxon.lineage       || '';
+  // ---------- Step 2: Fetch taxonomy via efetch XML ----------
+  // efetch only supports XML for taxonomy — parse with regex
+  let scientificName = '', commonName = '', rank = '', lineage = '';
+  let family = '', genus = '', order = '';
 
-        // Extract family and genus from lineageex
-        const lineageEx = taxon.lineageex || [];
-        const family = lineageEx.find(n => n.rank === 'family');
-        const genus  = lineageEx.find(n => n.rank === 'genus');
-        const order  = lineageEx.find(n => n.rank === 'order');
-        taxonomy.family = family?.scientificname || '';
-        taxonomy.genus  = genus?.scientificname  || '';
-        taxonomy.order  = order?.scientificname  || '';
+  try {
+    const fetchUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&id=${taxonId}&retmode=xml`;
+    const res = await fetch(fetchUrl, { headers: { 'User-Agent': 'Specimen/1.0 (specimen.site)' } });
+    if (res.ok) {
+      const xml = await res.text();
+
+      scientificName = xml.match(/<ScientificName>([^<]+)<\/ScientificName>/)?.[1]?.trim() || '';
+      commonName     = xml.match(/<CommonName>([^<]+)<\/CommonName>/)?.[1]?.trim() || '';
+      rank           = xml.match(/<Rank>([^<]+)<\/Rank>/)?.[1]?.trim() || '';
+      lineage        = xml.match(/<Lineage>([^<]+)<\/Lineage>/)?.[1]?.trim() || '';
+
+      // Parse LineageEx for ranked taxa
+      const lineageExMatch = xml.match(/<LineageEx>([\s\S]*?)<\/LineageEx>/);
+      if (lineageExMatch) {
+        const lineageXml = lineageExMatch[1];
+        // Extract all Taxon blocks
+        const taxonBlocks = lineageXml.match(/<Taxon>[\s\S]*?<\/Taxon>/g) || [];
+        for (const block of taxonBlocks) {
+          const taxRank = block.match(/<Rank>([^<]+)<\/Rank>/)?.[1]?.trim() || '';
+          const taxName = block.match(/<ScientificName>([^<]+)<\/ScientificName>/)?.[1]?.trim() || '';
+          if (taxRank === 'family') family = taxName;
+          if (taxRank === 'genus')  genus  = taxName;
+          if (taxRank === 'order')  order  = taxName;
+        }
       }
     }
   } catch (_) {}
 
-  // ---------- Step 4: Fetch genome metadata via NCBI Datasets v2 ----------
-  let genomeType = '';
-  let hosts = [];
-  let refAccession = '';
+  // ---------- Step 3: NCBI Datasets v2 — genome type & hosts ----------
+  let genomeType = '', hosts = [], refAccession = '';
+
   try {
-    const datasetsUrl = `https://api.ncbi.nlm.nih.gov/datasets/v2/virus/taxon/${taxonId}/genome/summary?page_size=5`;
-    const dsRes = await fetch(datasetsUrl, {
+    // The correct v2 endpoint for virus genomes by taxon
+    const dsUrl = `https://api.ncbi.nlm.nih.gov/datasets/v2/virus/taxon/${taxonId}/genome/summary`;
+    const res = await fetch(dsUrl, {
       headers: {
         'Accept': 'application/json',
-        'User-Agent': 'Specimen/1.0 (specimen.site; educational tool)',
+        'User-Agent': 'Specimen/1.0 (specimen.site)',
       }
     });
-    if (dsRes.ok) {
-      const dsData = await dsRes.json();
-      const reports = dsData?.reports || [];
+    if (res.ok) {
+      const data = await res.json();
+      const reports = data?.reports || data?.genomes || [];
       if (reports.length > 0) {
-        // Find the reference genome if possible
         const ref = reports.find(r => r.is_reference) || reports[0];
-        genomeType   = ref?.genome_type    || ref?.nucleotide_completeness || '';
-        refAccession = ref?.accession      || '';
-        // Collect unique hosts
+        // genome_type field varies — try multiple paths
+        genomeType   = ref?.genome_type
+          || ref?.nucleotide_completeness
+          || ref?.assembly_info?.assembly_method
+          || '';
+        refAccession = ref?.accession || ref?.gb_accession || '';
+        // Collect hosts
         const hostSet = new Set();
-        reports.forEach(r => {
-          if (r.host?.host_organism?.common_name) hostSet.add(r.host.host_organism.common_name);
-          if (r.host?.host_organism?.organism_name) hostSet.add(r.host.host_organism.organism_name);
+        reports.slice(0, 10).forEach(r => {
+          const h = r?.host?.host_organism?.common_name
+            || r?.host?.host_organism?.organism_name
+            || r?.biosample?.host?.name
+            || '';
+          if (h) hostSet.add(h);
         });
-        hosts = [...hostSet].slice(0, 5);
+        hosts = [...hostSet].slice(0, 4);
       }
     }
   } catch (_) {}
 
-  // ---------- Step 5: Fetch reviewed proteins from UniProt ----------
+  // ---------- Step 4: UniProt reviewed proteins ----------
   let proteins = [];
   try {
-    const uniprotUrl = `https://rest.uniprot.org/uniprotkb/search?query=(taxonomy_id:${taxonId})AND(reviewed:true)&fields=gene_names,protein_name,accession,function&format=json&size=15`;
-    const upRes = await fetch(uniprotUrl, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Specimen/1.0 (specimen.site; educational tool)',
-      }
+    const upUrl = `https://rest.uniprot.org/uniprotkb/search?query=(taxonomy_id:${taxonId})AND(reviewed:true)&fields=gene_names,protein_name,accession,cc_function&format=json&size=15`;
+    const res = await fetch(upUrl, {
+      headers: { 'Accept': 'application/json', 'User-Agent': 'Specimen/1.0 (specimen.site)' }
     });
-    if (upRes.ok) {
-      const upData = await upRes.json();
-      proteins = (upData?.results || []).map(entry => {
-        const geneName = entry.genes?.[0]?.geneName?.value
+    if (res.ok) {
+      const data = await res.json();
+      proteins = (data?.results || []).map(entry => {
+        const gene = entry.genes?.[0]?.geneName?.value
           || entry.genes?.[0]?.orfNames?.[0]?.value
           || '';
-        const proteinName = entry.proteinDescription?.recommendedName?.fullName?.value
+        const name = entry.proteinDescription?.recommendedName?.fullName?.value
           || entry.proteinDescription?.submissionNames?.[0]?.fullName?.value
           || '';
-        const fnComment = (entry.comments || []).find(c => c.commentType === 'FUNCTION');
-        const fnText = fnComment?.texts?.[0]?.value || '';
+        const fn = (entry.comments || []).find(c => c.commentType === 'FUNCTION');
+        const fnText = fn?.texts?.[0]?.value || '';
         return {
-          accession:   entry.primaryAccession || '',
-          gene:        geneName,
-          name:        proteinName,
-          function:    fnText.replace(/\s*\(PubMed:[^)]+\)/g, '').trim(),
+          accession: entry.primaryAccession || '',
+          gene,
+          name,
+          function: fnText.replace(/\s*\(PubMed:[^)]+\)/g, '').trim(),
         };
       }).filter(p => p.name || p.gene);
     }
   } catch (_) {}
 
-  // ---------- Step 6: Normalise genome type to Baltimore class ----------
-  const baltimoreMap = {
-    'dsRNA':          'dsRNA (Baltimore Class III)',
-    'ssRNA(+)':       'ssRNA positive-sense (Baltimore Class IV)',
-    'ssRNA positive': 'ssRNA positive-sense (Baltimore Class IV)',
-    'ssRNA+':         'ssRNA positive-sense (Baltimore Class IV)',
-    'ssRNA(-)':       'ssRNA negative-sense (Baltimore Class V)',
-    'ssRNA negative': 'ssRNA negative-sense (Baltimore Class V)',
-    'ssRNA-':         'ssRNA negative-sense (Baltimore Class V)',
-    'ssDNA':          'ssDNA (Baltimore Class II)',
-    'dsDNA':          'dsDNA (Baltimore Class I)',
-    'ssRNA-RT':       'ssRNA reverse-transcribing (Baltimore Class VI)',
-    'dsDNA-RT':       'dsDNA reverse-transcribing (Baltimore Class VII)',
-  };
-  const baltimoreClass = Object.entries(baltimoreMap).find(([k]) =>
-    genomeType.toLowerCase().includes(k.toLowerCase())
-  )?.[1] || genomeType;
+  // ---------- Normalise genome type → Baltimore class ----------
+  const baltimoreMap = [
+    ['ssRNA(+)',         'ssRNA positive-sense (Baltimore Class IV)'],
+    ['ssRNA+',          'ssRNA positive-sense (Baltimore Class IV)'],
+    ['ss-RNA(+)',       'ssRNA positive-sense (Baltimore Class IV)'],
+    ['positive-strand', 'ssRNA positive-sense (Baltimore Class IV)'],
+    ['positive-sense',  'ssRNA positive-sense (Baltimore Class IV)'],
+    ['ssRNA(-)',         'ssRNA negative-sense (Baltimore Class V)'],
+    ['ssRNA-',          'ssRNA negative-sense (Baltimore Class V)'],
+    ['ss-RNA(-)',       'ssRNA negative-sense (Baltimore Class V)'],
+    ['negative-strand', 'ssRNA negative-sense (Baltimore Class V)'],
+    ['negative-sense',  'ssRNA negative-sense (Baltimore Class V)'],
+    ['dsRNA',           'dsRNA (Baltimore Class III)'],
+    ['ssDNA',           'ssDNA (Baltimore Class II)'],
+    ['dsDNA-RT',        'dsDNA reverse-transcribing (Baltimore Class VII)'],
+    ['ssRNA-RT',        'ssRNA reverse-transcribing (Baltimore Class VI)'],
+    ['retro',           'ssRNA reverse-transcribing (Baltimore Class VI)'],
+    ['dsDNA',           'dsDNA (Baltimore Class I)'],
+  ];
+  const gt = genomeType.toLowerCase();
+  const baltimoreClass = baltimoreMap.find(([k]) => gt.includes(k))?.[1] || genomeType;
 
   // ---------- Assemble result ----------
   const result = {
     taxonId,
-    scientificName: taxonomy.scientificName || q,
-    commonName:     taxonomy.commonName     || '',
-    rank:           taxonomy.rank           || '',
-    lineage:        taxonomy.lineage        || '',
-    family:         taxonomy.family         || '',
-    genus:          taxonomy.genus          || '',
-    order:          taxonomy.order          || '',
-    genomeType:     baltimoreClass,
+    scientificName: scientificName || q,
+    commonName:     commonName || '',
+    rank,
+    lineage,
+    family,
+    genus,
+    order,
+    genomeType:  baltimoreClass,
     hosts,
     refAccession,
     proteins,
   };
 
-  // Cache for 30 days
   try {
     await env.SPECIMEN_KV.put(resultKey, JSON.stringify(result), { expirationTtl: 2592000 });
   } catch (_) {}
