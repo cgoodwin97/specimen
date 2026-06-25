@@ -195,27 +195,24 @@
 
   function renderProfileModal() {
     const content = document.getElementById('auth-modal-content');
+    content.innerHTML = `<div style="background:#FAFBF7;border-radius:16px;padding:28px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#6E7568;">Loading…</div>`;
 
-    // If currentUser isn't set yet (e.g. Electron calling openModal before
-    // auth.js session check completes), re-fetch before rendering
-    if (!currentUser) {
-      content.innerHTML = `<div style="background:#FAFBF7;border-radius:16px;padding:28px;text-align:center;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#6E7568;">Loading…</div>`;
-      fetch('/auth/me', { credentials: 'include' })
-        .then(r => r.json())
-        .then(data => {
-          if (data.ok && data.user) {
-            currentUser = data.user;
-            renderProfileModal();
-          } else {
-            closeModal();
-            openModal('signin');
-          }
-        })
-        .catch(() => { closeModal(); openModal('signin'); });
-      return;
-    }
+    fetch('/auth/me', { credentials: 'include' })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.ok || !data.user) {
+          closeModal();
+          openModal('signin');
+          return;
+        }
+        // Always update currentUser with fresh data
+        currentUser = data.user;
+        _renderProfileContent(content, data.user);
+      })
+      .catch(() => { closeModal(); openModal('signin'); });
+  }
 
-    const user = currentUser || {};
+  function _renderProfileContent(content, user) {
     const level = user.level || 1;
     const xp = user.xp || 0;
     const title = levelTitle(level);
