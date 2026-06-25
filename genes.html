@@ -3,7 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Glossary — Specimen</title>
+<title>Specimen</title>
+<meta name="description" content="Specimen — a study tool for biology.">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://specimen.site">
+<meta property="og:title" content="Specimen">
+<meta property="og:description" content="A study tool for biology.">
+<meta property="og:image" content="https://specimen.site/og-image.png">
+<meta property="og:site_name" content="Specimen">
+
+<!-- Twitter / X card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Specimen">
+<meta name="twitter:description" content="A study tool for biology.">
+<meta name="twitter:image" content="https://specimen.site/og-image.png">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%2256%22%20height%3D%2256%22%20rx%3D%2212%22%20fill%3D%22%23EAEEE6%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2224%22%20fill%3D%22none%22%20stroke%3D%22%231F6F5C%22%20stroke-width%3D%221.5%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2220%22%20fill%3D%22%231F6F5C%22/%3E%3Ctext%20x%3D%2232%22%20y%3D%2234%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20font-family%3D%22Fraunces%2C%20Georgia%2C%20serif%22%20font-style%3D%22italic%22%20font-size%3D%2224%22%20fill%3D%22%23EAEEE6%22%3ES%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -19,7 +34,7 @@
     <nav class="site-nav mono" aria-label="primary">
       <a href="index.html">home</a>
       <span class="nav-sep">|</span>
-      <a href="genes.html">genes &amp; proteins</a>
+      <span class="nav-current">genes &amp; proteins</span>
       <span class="nav-sep">|</span>
       <a href="cellbiology.html">cell biology</a>
       <span class="nav-sep">|</span>
@@ -27,237 +42,45 @@
       <span class="nav-sep">|</span>
       <a href="saved.html">saved</a>
       <span class="nav-sep">|</span>
-      <span class="nav-current">glossary</span>
+      <a href="glossary.html">glossary</a>
     </nav>
-    <p>Definitions for vocabulary that comes up across the site. Pick a category to browse its terms.</p>
+    <p>A field guide to genes and proteins. Type a gene or protein name to pull its function, structure, and pathway record.</p>
   </header>
 
-  <section class="results">
-    <div id="glossary-slot" class="glossary-grid"></div>
+  <section class="search-panel">
+    <form class="search-form" id="search-form">
+      <input type="text" id="search-input" placeholder="TP53, insulin, CFTR…" autocomplete="off" aria-label="Gene or protein name">
+      <button type="submit">Search</button>
+    </form>
+    <div class="chip-row">
+      <span class="chip-label">try:</span>
+      <button type="button" class="chip" data-term="TP53">TP53</button>
+      <button type="button" class="chip" data-term="BRCA1">BRCA1</button>
+      <button type="button" class="chip" data-term="INS">INS</button>
+      <button type="button" class="chip" data-term="HBB">HBB</button>
+      <button type="button" class="chip" data-term="CFTR">CFTR</button>
+    </div>
+    <div class="chip-row" id="recent-panel" hidden></div>
+  </section>
+
+  <section class="results" id="results" hidden>
+    <div id="card-slot"></div>
   </section>
 
   <footer class="site-footer">
-    Data pulled live from UniProt, RCSB PDB, AlphaFold DB, and QuickGO. Search results are cached for faster repeat lookups; your search history is stored in your browser only.
+    Data pulled live from UniProt, RCSB PDB, AlphaFold DB, and QuickGO. Search results are cached for faster repeat lookups; your search history is stored in your browser only. <button type="button" class="link-btn" id="clear-all-link">Clear saved data</button>
     <span class="nav-sep" style="margin:0 6px;">|</span>
     <a href="mailto:colin@specimen.site" class="link-btn">colin@specimen.site</a>
   </footer>
 
 </div>
 
-<div class="modal-overlay" id="modal-overlay" hidden>
-  <div class="modal-card-wrap">
-    <button type="button" class="modal-close-btn" id="modal-close" aria-label="Close">&times;</button>
-    <div id="modal-content"></div>
-  </div>
-</div>
-
+<script src="https://cdnjs.cloudflare.com/ajax/libs/3Dmol/2.0.1/3Dmol-min.js"></script>
 <script>
-  const GLOSSARY = [
-    {
-      category: "Protein Structure & Function",
-      terms: [
-        {term:"Domain", def:"A distinct, self-contained section of a protein that folds independently and often carries out a specific function, like a working sub-unit within the larger protein."},
-        {term:"Motif", def:"A short, recurring pattern in a protein's sequence or structure that's often linked to a specific function."},
-        {term:"Isoform", def:"One of several slightly different versions of a protein that come from the same gene, usually produced through alternative splicing."},
-        {term:"Substrate", def:"The molecule that an enzyme or protein acts on or binds to in order to carry out its function."},
-        {term:"Ligand", def:"A molecule that binds to a specific site on a protein, often triggering a change in the protein's activity or shape."},
-        {term:"Active site", def:"The specific region of an enzyme where substrates bind and a chemical reaction actually takes place."},
-        {term:"Binding site", def:"A region on a protein's surface shaped to attach to a specific other molecule, such as a ligand, ion, or another protein."},
-        {term:"Conformation", def:"The three-dimensional shape a protein takes on, which can shift depending on what it's bound to or doing at the moment."},
-        {term:"Homodimer / heterodimer", def:"A protein complex made of two subunits joined together — identical subunits form a homodimer, different ones form a heterodimer."},
-        {term:"Cofactor", def:"A non-protein molecule or ion, such as a metal ion or vitamin-derived molecule, that a protein needs in order to function properly."},
-        {term:"Quaternary structure", def:"The overall structure formed when multiple protein subunits combine into one larger functional complex."},
-        {term:"N-terminus / C-terminus", def:"The two ends of a protein chain — the N-terminus is the starting end, the C-terminus is the finishing end, based on how the chain is built."},
-        {term:"Folding", def:"The process by which a protein chain arranges itself into its functional three-dimensional shape."},
-        {term:"Alpha helix / beta sheet", def:"The two most common secondary structural shapes a protein chain forms. An alpha helix is a coiled ribbon shape; a beta sheet is a flat, pleated arrangement of strands lying side by side."},
-        {term:"Signal peptide", def:"A short sequence at the beginning of a protein that acts like an address label, directing it to the right location inside or outside the cell."},
-        {term:"Transmembrane domain", def:"A region of a protein that spans the full width of a cell membrane, anchoring the protein in place."},
-        {term:"Disulfide bond", def:"A strong chemical link between two sulfur atoms in a protein, helping to hold its shape stable."},
-        {term:"Chaperone protein", def:"A protein that helps other proteins fold correctly, preventing them from clumping together or forming the wrong shape."},
-        {term:"Intrinsically disordered region", def:"A section of a protein that doesn't fold into a fixed shape and instead remains flexible, which can actually be important for its function."},
-        {term:"Allosteric site", def:"A region on a protein separate from the active site where a molecule can bind and change the protein's overall activity by altering its shape."}
-      ]
-    },
-    {
-      category: "Genetics & Molecular Biology",
-      terms: [
-        {term:"Transcription factor", def:"A protein that binds to DNA and helps control whether a nearby gene is turned on or off."},
-        {term:"Ortholog", def:"A gene found in different species that evolved from a common ancestral gene and usually keeps a similar function."},
-        {term:"Paralog", def:"A gene related to another gene within the same species, usually arising from a gene duplication event."},
-        {term:"Allele", def:"One of two or more versions of a gene that can exist at the same location on a chromosome."},
-        {term:"Polymorphism", def:"A natural variation in a DNA sequence that's common enough to appear in more than one form across a population."},
-        {term:"Knockout", def:"A laboratory technique where a specific gene is deliberately disabled to study what happens without it."},
-        {term:"Locus", def:"The specific physical location of a gene on a chromosome."},
-        {term:"Genotype", def:"An organism's actual genetic makeup, as opposed to phenotype, which is how those genes are physically or observably expressed."},
-        {term:"Exon / intron", def:"An exon is a segment of a gene kept in the final processed messenger RNA and used to code for protein; an intron is a segment removed during that process."},
-        {term:"Splice variant", def:"A different version of a protein's messenger RNA created by including or excluding certain exons during processing."},
-        {term:"Genome", def:"The complete set of genetic material, including all genes, contained within an organism."},
-        {term:"Chromosome", def:"A tightly packaged structure of DNA that carries genetic information, found in the nucleus of a cell."},
-        {term:"Mutation", def:"A permanent change in a DNA sequence, which can be harmless, harmful, or occasionally beneficial."},
-        {term:"Promoter", def:"A region of DNA just upstream of a gene that acts as a starting signal, telling the cell's machinery where to begin reading the gene."},
-        {term:"Enhancer", def:"A stretch of DNA that can boost the activity of a gene, sometimes from a great distance along the chromosome."},
-        {term:"Epigenetics", def:"Changes to how genes are expressed that don't involve changes to the DNA sequence itself, often driven by chemical tags added to DNA or the proteins around it."},
-        {term:"DNA methylation", def:"The addition of a small chemical tag (a methyl group) to DNA, commonly used to silence genes without changing the underlying sequence."},
-        {term:"Chromatin", def:"The complex of DNA and proteins that packages genetic material inside the nucleus, controlling which genes are accessible."},
-        {term:"Codon", def:"A three-letter unit of the genetic code in messenger RNA that specifies a particular amino acid to be added to a growing protein chain."},
-        {term:"Reading frame", def:"The specific way a sequence of DNA or RNA is divided into consecutive three-letter codons for translation, determined by where reading starts."}
-      ]
-    },
-    {
-      category: "Enzymes & Catalysis",
-      terms: [
-        {term:"Kinase", def:"An enzyme that adds a phosphate group to another molecule, often a protein, to switch its activity on or off."},
-        {term:"Phosphatase", def:"An enzyme that removes a phosphate group from a molecule, often reversing what a kinase has done."},
-        {term:"Ligase", def:"An enzyme that joins two molecules together, often by forming a new chemical bond."},
-        {term:"Protease", def:"An enzyme that breaks down proteins by cutting the bonds between their amino acids."},
-        {term:"Substrate specificity", def:"How selective an enzyme is about which molecules it will act on."},
-        {term:"Catalytic activity", def:"The specific chemical reaction an enzyme speeds up or makes possible."},
-        {term:"Post-translational modification", def:"A chemical change made to a protein after it's been built, which can alter its function, location, or stability."},
-        {term:"Ubiquitination", def:"The process of attaching a small protein tag called ubiquitin to another protein, often marking it for breakdown."},
-        {term:"Phosphorylation", def:"The addition of a phosphate group to a molecule, commonly used to activate or deactivate proteins."},
-        {term:"Glycosylation", def:"The attachment of sugar molecules to a protein, which can affect its folding, stability, or function."},
-        {term:"Enzyme inhibitor", def:"A molecule that reduces or blocks an enzyme's activity."},
-        {term:"Hydrolysis", def:"A chemical reaction that breaks a bond using water, commonly used by enzymes to break down larger molecules."},
-        {term:"Allosteric regulation", def:"A way of controlling an enzyme's activity by binding a molecule at a site other than the active site, changing the enzyme's shape and effectiveness."},
-        {term:"Feedback inhibition", def:"A control mechanism where the end product of a reaction pathway inhibits an earlier enzyme in that same pathway, preventing overproduction."},
-        {term:"Coenzyme", def:"A small organic molecule that assists an enzyme in carrying out its reaction, often derived from vitamins."},
-        {term:"Dehydrogenase", def:"An enzyme that removes hydrogen atoms from a molecule, often as part of energy-producing reactions in the cell."},
-        {term:"Transferase", def:"An enzyme that moves a chemical group from one molecule to another."},
-        {term:"Isomerase", def:"An enzyme that rearranges the atoms within a molecule to convert it into a different form without changing its overall composition."},
-        {term:"Turnover number", def:"The number of substrate molecules a single enzyme can convert to product per second, a measure of how fast an enzyme works."},
-        {term:"Acetylation", def:"The addition of an acetyl group to a molecule, a common modification that can alter protein function or gene activity."}
-      ]
-    },
-    {
-      category: "Cell Biology & Structures",
-      terms: [
-        {term:"Cytoplasm", def:"The gel-like substance filling a cell, where many of its internal structures and processes reside."},
-        {term:"Nucleus / nucleoplasm", def:"The nucleus is the membrane-bound structure in a cell that houses most of its DNA; the nucleoplasm is the fluid inside it."},
-        {term:"Organelle", def:"A specialized structure within a cell that carries out a specific function, similar to an organ within a body."},
-        {term:"Golgi apparatus", def:"A cell structure that packages and modifies proteins before sending them to their final destination."},
-        {term:"Endoplasmic reticulum", def:"A network of membranes in a cell involved in building proteins and lipids."},
-        {term:"Mitochondrion", def:"The cell structure responsible for producing most of the cell's usable energy."},
-        {term:"Centrosome", def:"A cell structure involved in organizing the internal scaffolding that helps cells divide."},
-        {term:"Extracellular matrix", def:"A network of proteins and other molecules surrounding cells that provides structural support."},
-        {term:"Vesicle", def:"A small, membrane-bound sac inside a cell used to transport or store molecules."},
-        {term:"Cell membrane", def:"The outer boundary of a cell, controlling what enters and exits."},
-        {term:"Cytosol", def:"The liquid component of the cytoplasm, not including the organelles suspended within it."},
-        {term:"Ribosome", def:"The cell structure responsible for building proteins from genetic instructions."},
-        {term:"Lysosome", def:"A cell structure that breaks down waste materials and unneeded molecules."},
-        {term:"Cytoskeleton", def:"A network of protein filaments inside a cell that gives it shape, allows it to move, and helps transport materials internally."},
-        {term:"Nuclear envelope", def:"The double membrane that surrounds the nucleus, separating its contents from the rest of the cell."},
-        {term:"Peroxisome", def:"A small cell structure that breaks down fatty acids and neutralizes harmful substances like hydrogen peroxide."},
-        {term:"Endocytosis / exocytosis", def:"Endocytosis is the process of bringing material into a cell by engulfing it; exocytosis is the process of releasing material out of the cell."},
-        {term:"Autophagy", def:"A cellular process where the cell breaks down and recycles its own damaged or unneeded components."},
-        {term:"Cell junction", def:"A structure that connects adjacent cells to each other or to the extracellular matrix, providing mechanical support or communication channels."},
-        {term:"Plasma membrane", def:"Another term for the cell membrane — the lipid bilayer boundary that encloses the cell and regulates what passes in and out."}
-      ]
-    },
-    {
-      category: "Pathways & Regulation",
-      terms: [
-        {term:"Signal transduction", def:"The process by which a cell receives a signal from outside itself and converts it into an internal response."},
-        {term:"Apoptosis", def:"A controlled, programmed process by which a cell deliberately shuts itself down."},
-        {term:"Cell cycle checkpoint", def:"A control point during cell division where the cell verifies that everything is ready before proceeding to the next stage."},
-        {term:"Homeostasis", def:"The maintenance of a stable internal environment within a cell or organism despite outside changes."},
-        {term:"Pathway", def:"A series of connected steps or reactions, often involving multiple proteins, that together carry out a specific biological process."},
-        {term:"Upregulation", def:"An increase in the activity or amount of a gene or protein."},
-        {term:"Downregulation", def:"A decrease in the activity or amount of a gene or protein."},
-        {term:"Negative feedback", def:"A regulatory process where the output of a pathway works to reduce or shut down its own activity."},
-        {term:"Positive feedback", def:"A regulatory process where the output of a pathway works to increase or amplify its own activity."},
-        {term:"Gene expression", def:"The process by which information from a gene is used to build a functional product, usually a protein."},
-        {term:"Receptor", def:"A protein that detects a specific signal, often a hormone or other molecule, and triggers a response inside the cell."},
-        {term:"Cascade", def:"A chain reaction of biological events where one step triggers the next in sequence."},
-        {term:"Transcription", def:"The process of copying a gene's DNA instructions into a molecule of messenger RNA."},
-        {term:"Translation", def:"The process of reading a messenger RNA sequence and using it to build a chain of amino acids that becomes a protein."},
-        {term:"microRNA", def:"A small RNA molecule that can silence or reduce the activity of specific genes by binding to their messenger RNA."},
-        {term:"Ubiquitin-proteasome system", def:"The cell's main system for disposing of damaged or unneeded proteins by tagging them with ubiquitin and sending them to a protein-degrading complex called the proteasome."},
-        {term:"MAPK pathway", def:"A major signaling chain that relays messages from the cell surface to the nucleus, regulating processes like growth, division, and stress responses."},
-        {term:"Crosstalk", def:"The interaction between two different signaling pathways where activity in one influences or interferes with the other."},
-        {term:"Ligand-receptor binding", def:"The interaction where a signaling molecule (ligand) attaches to a specific receptor protein, triggering a cellular response."},
-        {term:"Second messenger", def:"A small molecule inside the cell that relays and amplifies a signal received at the cell surface, spreading the response further into the cell."}
-      ]
-    },
-    {
-      category: "Disease & Mutation",
-      terms: [
-        {term:"Tumor suppressor", def:"A gene or protein that normally works to prevent uncontrolled cell growth; when disabled, it can contribute to cancer."},
-        {term:"Oncogene", def:"A gene that, when mutated or overactive, can drive a cell toward uncontrolled growth and cancer."},
-        {term:"Loss-of-function mutation", def:"A mutation that reduces or eliminates a gene's normal activity."},
-        {term:"Gain-of-function mutation", def:"A mutation that gives a gene a new or enhanced activity beyond its normal role."},
-        {term:"Pathogenic variant", def:"A specific genetic change known to cause or contribute to disease."},
-        {term:"Susceptibility gene", def:"A gene whose variants are associated with an increased risk of developing a particular condition, without guaranteeing it will occur."},
-        {term:"Heterozygous", def:"Having two different versions (alleles) of a particular gene, one inherited from each parent."},
-        {term:"Homozygous", def:"Having two identical versions (alleles) of a particular gene."},
-        {term:"Penetrance", def:"The likelihood that someone carrying a particular genetic variant will actually show the associated trait or condition."},
-        {term:"Biomarker", def:"A measurable biological indicator, such as a specific protein, used to detect or track a disease or condition."},
-        {term:"Carrier", def:"Someone who has one copy of a gene variant associated with a condition but doesn't show symptoms themselves."},
-        {term:"Genetic predisposition", def:"An increased likelihood of developing a condition based on someone's genetic makeup."},
-        {term:"Dominant vs recessive", def:"A dominant variant produces a noticeable effect even with just one copy; a recessive variant only produces an effect when both copies of the gene carry it."},
-        {term:"De novo mutation", def:"A genetic change that appears for the first time in an individual and was not inherited from either parent."},
-        {term:"Missense mutation", def:"A mutation that changes a single DNA letter in a way that causes a different amino acid to be incorporated into the protein."},
-        {term:"Nonsense mutation", def:"A mutation that introduces a premature stop signal into a gene, usually resulting in a shortened, nonfunctional protein."},
-        {term:"Copy number variation", def:"A type of genetic variation where a section of DNA is duplicated or deleted, meaning someone has more or fewer copies of certain genes than usual."},
-        {term:"Haploinsufficiency", def:"A situation where one working copy of a gene is not enough to maintain normal function, even though the other copy is intact."},
-        {term:"Somatic vs germline mutation", def:"A somatic mutation occurs in body cells and isn't passed to offspring; a germline mutation occurs in egg or sperm cells and can be inherited."},
-        {term:"Epigenetic silencing", def:"The switching off of a gene through chemical modifications to DNA or surrounding proteins, without changing the DNA sequence itself."}
-      ]
-    },
-    {
-      category: "Genomics & Sequencing",
-      terms: [
-        {term:"DNA sequencing", def:"The process of determining the exact order of building blocks within a DNA molecule."},
-        {term:"Genome-wide association study (GWAS)", def:"A research approach that scans many genomes to find genetic variants linked to a particular trait or disease."},
-        {term:"Reference genome", def:"A standardized, representative genome sequence used as a baseline for comparison in genetic research."},
-        {term:"Annotation (genomic)", def:"The process of identifying and labeling the genes and other meaningful features within a genome sequence."},
-        {term:"Single nucleotide polymorphism (SNP)", def:"A common type of genetic variation involving a change at just one position in a DNA sequence."},
-        {term:"Coding sequence", def:"The portion of a gene that actually contains the instructions for building a protein."},
-        {term:"Non-coding DNA", def:"DNA that doesn't code for proteins but can still play regulatory or structural roles."},
-        {term:"Homology", def:"Similarity between sequences or structures due to a shared evolutionary origin."},
-        {term:"Conserved sequence", def:"A DNA or protein sequence that has stayed largely unchanged across different species over evolutionary time, often because it's functionally important."},
-        {term:"Sequence alignment", def:"A method of arranging DNA, RNA, or protein sequences to identify regions of similarity."},
-        {term:"Phylogenetics", def:"The study of evolutionary relationships between organisms or genes."},
-        {term:"Transcriptome", def:"The complete set of RNA molecules expressed by a cell or organism at a given time."},
-        {term:"Proteome", def:"The complete set of proteins expressed by a cell, tissue, or organism."},
-        {term:"Next-generation sequencing (NGS)", def:"A modern, high-speed approach to DNA sequencing that can read millions of DNA fragments simultaneously, making it far faster and cheaper than earlier methods."},
-        {term:"Variant calling", def:"The process of identifying locations in a sequenced genome that differ from the reference sequence."},
-        {term:"Haplotype", def:"A set of genetic variants that tend to be inherited together because they sit close to each other on the same chromosome."},
-        {term:"Structural variant", def:"A large-scale change in a genome's structure, such as a deletion, duplication, or rearrangement of a substantial stretch of DNA."},
-        {term:"Gene expression profiling", def:"A technique that measures the activity levels of many genes at once, giving a snapshot of which genes are turned on or off in a sample."},
-        {term:"Metagenomics", def:"The study of genetic material collected directly from an environment (such as a soil or gut sample) rather than from a single isolated organism."},
-        {term:"Linkage disequilibrium", def:"The tendency for certain genetic variants to occur together more often than would be expected by chance, because they are located close to each other on the same chromosome."}
-      ]
-    },
-    {
-      category: "Lab & Research Terms",
-      terms: [
-        {term:"In vitro", def:"A study or experiment conducted outside a living organism, such as in a test tube or culture dish."},
-        {term:"In vivo", def:"A study or experiment conducted within a living organism."},
-        {term:"Assay", def:"A laboratory procedure used to measure or detect a specific substance or biological activity."},
-        {term:"Western blot", def:"A laboratory technique used to detect a specific protein within a sample."},
-        {term:"PCR (Polymerase Chain Reaction)", def:"A laboratory technique used to make many copies of a specific piece of DNA."},
-        {term:"CRISPR", def:"A gene-editing technology that allows scientists to make precise, targeted changes to DNA."},
-        {term:"Cell line", def:"A population of cells, often originally derived from a single source, that can be grown and studied repeatedly in a lab."},
-        {term:"Model organism", def:"A non-human species studied in research because its biology offers useful insight into broader biological processes, including in humans."},
-        {term:"Antibody", def:"A protein produced by the immune system, or in a lab setting, that specifically recognizes and binds to a target molecule."},
-        {term:"Expression vector", def:"A tool used in a lab to introduce a gene into a cell so the cell produces the corresponding protein."},
-        {term:"Control group", def:"In an experiment, the group that doesn't receive the treatment being tested, used as a baseline for comparison."},
-        {term:"Peer review", def:"The process by which other experts evaluate a scientific study before it's published, to help ensure its quality and accuracy."},
-        {term:"Flow cytometry", def:"A technique that rapidly analyzes individual cells in a liquid sample, measuring characteristics like size, complexity, and the presence of specific proteins."},
-        {term:"Immunoprecipitation", def:"A technique for isolating a specific protein from a mixture by using an antibody that binds to it."},
-        {term:"ELISA", def:"A lab test that uses antibodies and a color-change reaction to detect and measure a specific protein in a sample."},
-        {term:"Gel electrophoresis", def:"A technique that separates molecules like DNA or proteins by size by pushing them through a gel with an electric current."},
-        {term:"Transfection", def:"The process of introducing foreign DNA or RNA into a cell in a laboratory setting."},
-        {term:"Knockdown", def:"A technique that reduces (but doesn't fully eliminate) the activity of a specific gene, often using RNA molecules, to study its role."},
-        {term:"Recombinant protein", def:"A protein produced by introducing the gene that encodes it into a host cell, such as bacteria or yeast, so that cell makes the protein in large quantities."},
-        {term:"Confocal microscopy", def:"An advanced microscopy technique that uses focused laser light to produce sharp, high-resolution images of specific structures inside cells."}
-      ]
-    }
-  ];
-
-  const slot = document.getElementById('glossary-slot');
-  const overlay = document.getElementById('modal-overlay');
-  const modalContent = document.getElementById('modal-content');
+  const form = document.getElementById('search-form');
+  const input = document.getElementById('search-input');
+  const resultsEl = document.getElementById('results');
+  const cardEl = document.getElementById('card-slot');
 
   function esc(str){
     return String(str ?? '').replace(/[&<>"']/g, c => ({
@@ -265,69 +88,579 @@
     }[c]));
   }
 
-  function renderCategoryCards(){
-    slot.innerHTML = GLOSSARY.map((cat, idx) => `
-      <div class="glossary-cat-card" data-idx="${idx}" tabindex="0" role="button">
-        <span class="glossary-cat-count mono">${cat.terms.length} terms</span>
-        <p class="glossary-cat-name">${esc(cat.category)}</p>
-      </div>`).join('');
+  function stripCitations(text){
+    return text
+      .replace(/\s*\(\s*PubMed:\d+(?:\s*,\s*PubMed:\d+)*\s*\)/gi, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+  }
 
-    slot.querySelectorAll('.glossary-cat-card').forEach(card => {
-      const open = () => openCategory(Number(card.dataset.idx));
-      card.addEventListener('click', open);
-      card.addEventListener('keydown', (e) => {
-        if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); }
+  // ---------- Local storage: history + cache ----------
+  const HISTORY_KEY = 'specimen.history.v1';
+  const CACHE_KEY = 'specimen.cache.v1';
+  const BOOKMARKS_KEY = 'specimen.bookmarks.v1';
+  const HISTORY_LIMIT = 12;
+  const CACHE_LIMIT = 60;
+
+  function safeParse(json, fallback){
+    try{ const parsed = JSON.parse(json); return parsed ?? fallback; }
+    catch(e){ return fallback; }
+  }
+
+  function loadHistory(){
+    try{ return safeParse(localStorage.getItem(HISTORY_KEY), []); }
+    catch(e){ return []; }
+  }
+  function saveHistory(list){
+    try{ localStorage.setItem(HISTORY_KEY, JSON.stringify(list)); }
+    catch(e){ /* storage unavailable or full — fail silently */ }
+  }
+
+  function loadCache(){
+    try{ return safeParse(localStorage.getItem(CACHE_KEY), {}); }
+    catch(e){ return {}; }
+  }
+  function saveCache(map){
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify(map)); }
+    catch(e){
+      try{
+        const keys = Object.keys(map).sort((a,b) => (map[a].ts||0) - (map[b].ts||0));
+        keys.slice(0, 10).forEach(k => delete map[k]);
+        localStorage.setItem(CACHE_KEY, JSON.stringify(map));
+      }catch(e2){ /* give up quietly — caching is a nice-to-have, not critical */ }
+    }
+  }
+
+  function cacheKeyFor(term){ return term.trim().toLowerCase(); }
+
+  function getCached(term){
+    const cache = loadCache();
+    return cache[cacheKeyFor(term)] || null;
+  }
+
+  function setCached(term, entry){
+    const cache = loadCache();
+    cache[cacheKeyFor(term)] = {entry, ts: Date.now()};
+    const keys = Object.keys(cache);
+    if(keys.length > CACHE_LIMIT){
+      keys.sort((a,b) => (cache[a].ts||0) - (cache[b].ts||0))
+        .slice(0, keys.length - CACHE_LIMIT)
+        .forEach(k => delete cache[k]);
+    }
+    saveCache(cache);
+  }
+
+  function timeAgo(ts){
+    const mins = Math.round((Date.now() - ts) / 60000);
+    if(mins < 1) return 'just now';
+    if(mins < 60) return `${mins}m ago`;
+    const hrs = Math.round(mins / 60);
+    if(hrs < 24) return `${hrs}h ago`;
+    return `${Math.round(hrs / 24)}d ago`;
+  }
+
+  // ---------- Bookmarks (separate storage, never touched by Clear saved data) ----------
+  function loadBookmarks(){
+    try{ return safeParse(localStorage.getItem(BOOKMARKS_KEY), []); }
+    catch(e){ return []; }
+  }
+  function saveBookmarks(list){
+    try{ localStorage.setItem(BOOKMARKS_KEY, JSON.stringify(list)); }
+    catch(e){ /* storage unavailable or full — fail silently */ }
+  }
+  function isBookmarked(accession){
+    return loadBookmarks().some(b => b.accession === accession);
+  }
+  function toggleBookmark(entry, term){
+    const accession = entry.primaryAccession;
+    const list = loadBookmarks();
+    const idx = list.findIndex(b => b.accession === accession);
+    if(idx >= 0){
+      list.splice(idx, 1);
+      saveBookmarks(list);
+      return false;
+    }
+    const gene = entry.genes?.[0]?.geneName?.value || term;
+    const name = entry.proteinDescription?.recommendedName?.fullName?.value
+      || entry.proteinDescription?.submissionNames?.[0]?.fullName?.value
+      || entry.uniProtkbId || term;
+    const organism = entry.organism?.scientificName || '';
+    list.unshift({accession, gene, name, organism, term, ts: Date.now()});
+    saveBookmarks(list);
+    return true;
+  }
+
+  function addToHistory(entry, term){
+    const accession = entry.primaryAccession;
+    const gene = entry.genes?.[0]?.geneName?.value || term;
+    const name = entry.proteinDescription?.recommendedName?.fullName?.value || entry.uniProtkbId || term;
+    let list = loadHistory().filter(h => h.accession !== accession);
+    list.unshift({accession, gene, name, term, ts: Date.now()});
+    if(list.length > HISTORY_LIMIT) list = list.slice(0, HISTORY_LIMIT);
+    saveHistory(list);
+    renderHistory();
+  }
+
+  function renderHistory(){
+    const panel = document.getElementById('recent-panel');
+    const list = loadHistory();
+    if(list.length === 0){ panel.hidden = true; panel.innerHTML = ''; return; }
+    panel.hidden = false;
+    const chips = list.map(h =>
+      `<button type="button" class="chip history-chip" data-term="${esc(h.term)}" title="${esc(h.name)}">${esc(h.gene)}</button>`
+    ).join('');
+    panel.innerHTML = `<span class="chip-label">recent:</span>${chips}<button type="button" class="link-btn" id="clear-history-link">clear</button>`;
+    panel.querySelectorAll('.history-chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        input.value = btn.dataset.term;
+        runSearch(btn.dataset.term);
+      });
+    });
+    document.getElementById('clear-history-link').addEventListener('click', () => {
+      saveHistory([]);
+      renderHistory();
+    });
+  }
+
+  function bindChips(){
+    document.querySelectorAll('.chip').forEach(btn => {
+      btn.addEventListener('click', () => {
+        input.value = btn.dataset.term;
+        runSearch(btn.dataset.term);
       });
     });
   }
 
-  function openCategory(idx){
-    const cat = GLOSSARY[idx];
-    overlay.hidden = false;
-    document.body.style.overflow = 'hidden';
+  function buildUrl(query){
+    return `/api/gene?q=${encodeURIComponent(query)}`;
+  }
 
-    const rows = cat.terms.map((t, i) => `
-      <div class="go-acc-row">
-        <button type="button" class="go-acc-head">
-          <span>${esc(t.term)}</span>
-          <span class="go-acc-chev">&#9656;</span>
-        </button>
-        <div class="go-acc-body go-acc-body-prose">
-          <p>${esc(t.def)}</p>
+  async function fetchEntry(term){
+    const t = term.trim();
+    if(!t) return null;
+    const res = await fetch(buildUrl(t));
+    if(!res.ok) return null;
+    const data = await res.json();
+    return data.result || null;
+  }
+
+  function renderLoading(term){
+    resultsEl.hidden = false;
+    cardEl.innerHTML = `<div class="card loading-card"><p class="loading-line mono">Pulling the record for "${esc(term)}"…</p></div>`;
+  }
+
+  function renderNotFound(term){
+    cardEl.innerHTML = `
+      <div class="card empty-card">
+        <p>No specimen found for "<strong>${esc(term)}</strong>".</p>
+        <p class="meta">Double-check the spelling, or search by the official gene symbol rather than a common name — try one of the examples below.</p>
+        <div class="chip-row">
+          <button type="button" class="chip" data-term="TP53">TP53</button>
+          <button type="button" class="chip" data-term="BRCA1">BRCA1</button>
+          <button type="button" class="chip" data-term="INS">INS</button>
         </div>
-      </div>`).join('');
+      </div>`;
+    bindChips();
+  }
 
-    modalContent.innerHTML = `
+  function renderNetworkError(){
+    cardEl.innerHTML = `
+      <div class="card empty-card">
+        <p>Couldn't reach UniProt just now.</p>
+        <p class="meta">This tool queries public databases directly from your browser. Try again in a moment, or check your connection.</p>
+      </div>`;
+  }
+
+  function renderPathways(entry){
+    const body = document.getElementById('pathway-body');
+    const refs = (entry.uniProtKBCrossReferences || []).filter(x => x.database === 'Reactome');
+    if(refs.length === 0){
+      body.innerHTML = `<p class="empty-note">No curated Reactome pathway annotations found for this entry.</p>`;
+      return;
+    }
+    const items = refs.map(r => {
+      const nameProp = (r.properties || []).find(p => p.key === 'PathwayName');
+      const name = nameProp?.value || r.id;
+      return `<li><a href="https://reactome.org/PathwayBrowser/#/${esc(r.id)}" target="_blank" rel="noopener">${esc(name)}</a></li>`;
+    }).join('');
+    body.innerHTML = `<ul class="pathway-list">${items}</ul>`;
+  }
+
+  // Cache for GO term definitions so repeated clicks don't re-fetch
+  const goTermCache = {};
+
+  async function fetchGoDefinition(termName){
+    if(goTermCache[termName]) return goTermCache[termName];
+    try{
+      const res = await fetch(`/api/go?term=${encodeURIComponent(termName)}`);
+      if(!res.ok) throw new Error('proxy error');
+      const data = await res.json();
+      if(!data.result) return null;
+      goTermCache[termName] = data.result;
+      return data.result;
+    }catch(e){
+      return null;
+    }
+  }
+
+  function bindGoTag(btn, termName){
+    let defEl = null;
+    btn.addEventListener('click', async () => {
+      const isActive = btn.classList.contains('go-active');
+      if(isActive){
+        btn.classList.remove('go-active');
+        if(defEl){ defEl.remove(); defEl = null; }
+        return;
+      }
+      btn.classList.add('go-active');
+      defEl = document.createElement('div');
+      defEl.className = 'go-definition';
+      defEl.innerHTML = `<p class="go-def-term">${esc(termName)}</p><p class="go-def-text loading-line mono">Looking up definition…</p>`;
+      btn.closest('.go-group').appendChild(defEl);
+
+      const info = await fetchGoDefinition(termName);
+      if(!btn.classList.contains('go-active')){ return; }
+
+      if(!info || !info.definition){
+        defEl.innerHTML = `<p class="go-def-term">${esc(termName)}</p><p class="go-def-text empty-note">No definition found for this term.</p>`;
+        return;
+      }
+      const ancestorHtml = info.ancestors?.length
+        ? `<p class="go-def-ancestors">part of: ${info.ancestors.map(a => esc(a)).join(' › ')}</p>`
+        : '';
+      const idLabel = info.id ? `${info.id} — ${info.name || termName}` : termName;
+      defEl.innerHTML = `<p class="go-def-term mono">${esc(idLabel)}</p><p class="go-def-text">${esc(info.definition)}</p>${ancestorHtml}`;
+    });
+  }
+
+  function renderGeneOntology(entry){
+    const body = document.getElementById('go-body');
+    const xrefs = entry.uniProtKBCrossReferences || [];
+    const groups = {C: [], F: [], P: []};
+    xrefs.filter(x => x.database === 'GO').forEach(ref => {
+      const termProp = (ref.properties || []).find(p => p.key === 'GoTerm');
+      if(!termProp) return;
+      const [code, ...rest] = termProp.value.split(':');
+      const term = rest.join(':').trim();
+      if(groups[code] && term) groups[code].push(term);
+    });
+
+    const sections = [
+      {label:'location', items:groups.C},
+      {label:'activity', items:groups.F},
+      {label:'process', items:groups.P}
+    ].filter(s => s.items.length > 0);
+
+    if(sections.length === 0){
+      body.innerHTML = `<p class="empty-note">No Gene Ontology annotations found for this entry.</p>`;
+      return;
+    }
+
+    const cap = 6;
+    const groupsHtml = sections.map(s => {
+      const shown = s.items.slice(0, cap);
+      const extra = s.items.slice(cap);
+      const tags = shown.map(t => `<button type="button" class="go-tag go-clickable" data-term="${esc(t)}">${esc(t)}</button>`).join('');
+      const extraTags = extra.map(t => `<button type="button" class="go-tag go-clickable go-extra" data-term="${esc(t)}" hidden>${esc(t)}</button>`).join('');
+      const more = extra.length > 0 ? `<button type="button" class="go-tag go-more">+${extra.length} more</button>` : '';
+      return `<div class="go-group"><p class="go-group-label">${s.label}</p><div class="go-tags">${tags}${extraTags}${more}</div></div>`;
+    }).join('');
+
+    body.innerHTML = `${groupsHtml}`;
+
+    body.querySelectorAll('.go-clickable').forEach(btn => {
+      bindGoTag(btn, btn.dataset.term);
+    });
+
+    body.querySelectorAll('.go-more').forEach(btn => {
+      const container = btn.closest('.go-tags');
+      const hiddenCount = container.querySelectorAll('.go-extra').length;
+      btn.addEventListener('click', () => {
+        const expanded = btn.dataset.expanded === 'true';
+        container.querySelectorAll('.go-extra').forEach(t => {
+          if(expanded) t.setAttribute('hidden', ''); else t.removeAttribute('hidden');
+        });
+        btn.dataset.expanded = expanded ? 'false' : 'true';
+        btn.textContent = expanded ? `+${hiddenCount} more` : 'show less';
+        if(!expanded){
+          container.querySelectorAll('.go-extra').forEach(btn => bindGoTag(btn, btn.dataset.term));
+        }
+      });
+    });
+  }
+
+  async function renderRelatedGenes(geneName){
+    const body = document.getElementById('related-body');
+    try{
+      const res = await fetch(`/api/string?q=${encodeURIComponent(geneName)}`);
+      const data = await res.json();
+      const partners = data.result || [];
+
+      if(partners.length === 0){
+        body.innerHTML = `<p class="empty-note">No high-confidence interaction partners found for this entry.</p>`;
+        return;
+      }
+
+      const chips = partners.map(p => {
+        const confidence = Math.round((p.score || 0) * 100); // STRING JSON score is a 0-1 decimal, show as 0-100%
+        return `<button type="button" class="related-gene-btn mono" data-term="${esc(p.gene)}">${esc(p.gene)} <span class="related-gene-score">${confidence}%</span></button>`;
+      }).join('');
+
+      body.innerHTML = `<p class="meta" style="margin-bottom:10px;">Genes known to interact with this one. The percentage combines evidence from lab experiments, shared expression patterns, and other research to show how strongly linked the two genes are.</p><div class="related-genes">${chips}</div><p class="meta" style="margin-top:10px;">Data via <a href="https://string-db.org" target="_blank" rel="noopener">STRING</a>.</p>`;
+
+      body.querySelectorAll('.related-gene-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          window.open(`genes.html?q=${encodeURIComponent(btn.dataset.term)}`, '_blank');
+        });
+      });
+    }catch(e){
+      body.innerHTML = `<p class="empty-note">Couldn't load related genes right now.</p>`;
+    }
+  }
+
+  async function renderStructure(entry, accession){
+    const body = document.getElementById('structure-body');
+    const xrefs = entry.uniProtKBCrossReferences || [];
+    const pdbRefs = xrefs.filter(x => x.database === 'PDB');
+    const afRef = xrefs.find(x => x.database === 'AlphaFoldDB');
+
+    if(pdbRefs.length > 0){
+      const ids = pdbRefs.map(r => r.id);
+      const links = ids.slice(0, 4)
+        .map(id => `<a href="https://www.rcsb.org/structure/${esc(id)}" target="_blank" rel="noopener">${esc(id)}</a>`)
+        .join(', ');
+      body.innerHTML = `
+        <div class="viewer" id="viewer-3d"></div>
+        <p class="meta mono">experimental structure &middot; ${links}${ids.length > 4 ? ` +${ids.length - 4} more` : ''}</p>`;
+      try{
+        const viewer = $3Dmol.createViewer(document.getElementById('viewer-3d'), {backgroundColor:'#FAFBF7'});
+        $3Dmol.download('pdb:' + ids[0], viewer, {}, function(){
+          viewer.setStyle({}, {cartoon:{color:'spectrum'}});
+          viewer.zoomTo();
+          viewer.render();
+        });
+      }catch(e){
+        body.insertAdjacentHTML('beforeend', `<p class="empty-note">Couldn't render the 3D viewer in this browser — use the links above instead.</p>`);
+      }
+      return;
+    }
+
+    if(afRef){
+      body.innerHTML = `<div class="viewer" id="viewer-3d"></div><p class="meta mono">predicted structure &middot; AlphaFold DB</p>`;
+      try{
+        const predRes = await fetch(`https://alphafold.ebi.ac.uk/api/prediction/${accession}`);
+        if(!predRes.ok) throw new Error('alphafold api error');
+        const predData = await predRes.json();
+        const modelUrl = predData?.[0]?.pdbUrl;
+        if(!modelUrl) throw new Error('no model url');
+        const modelRes = await fetch(modelUrl);
+        const pdbText = await modelRes.text();
+        const viewer = $3Dmol.createViewer(document.getElementById('viewer-3d'), {backgroundColor:'#FAFBF7'});
+        viewer.addModel(pdbText, 'pdb');
+        viewer.setStyle({}, {cartoon:{color:'spectrum'}});
+        viewer.zoomTo();
+        viewer.render();
+      }catch(e){
+        body.innerHTML = `<p class="empty-note">A predicted structure exists for this entry. View it directly on <a href="https://alphafold.ebi.ac.uk/entry/${esc(accession)}" target="_blank" rel="noopener">AlphaFold DB</a>.</p>`;
+      }
+      return;
+    }
+
+    body.innerHTML = `<p class="empty-note">No experimental or predicted structure is cross-referenced for this entry.</p>`;
+  }
+
+  function renderEntry(entry, term, meta){
+    resultsEl.hidden = false;
+    const accession = entry.primaryAccession || '—';
+    const entryId = entry.uniProtkbId || '';
+    const organism = entry.organism?.scientificName || 'Unknown organism';
+    const geneName = entry.genes?.[0]?.geneName?.value || term;
+    const fullName = entry.proteinDescription?.recommendedName?.fullName?.value
+      || entry.proteinDescription?.submissionNames?.[0]?.fullName?.value
+      || entryId || term;
+    const length = entry.sequence?.length;
+    const fnComment = (entry.comments || []).find(c => c.commentType === 'FUNCTION');
+    const fnText = fnComment?.texts?.[0]?.value;
+    const fnDisplay = fnText ? stripCitations(fnText) : null;
+    const freshnessHtml = meta?.fromCache
+      ? `<p class="meta mono cache-note">cached ${timeAgo(meta.ts)} &middot; <button type="button" class="link-btn" id="refresh-link">refresh</button></p>`
+      : '';
+
+    cardEl.innerHTML = `
       <div class="card">
         <div class="card-hole" aria-hidden="true"></div>
-        <h2 class="entry-name" style="margin-bottom:4px;">${esc(cat.category)}</h2>
-        <p class="meta mono" style="margin-bottom:14px;">${cat.terms.length} terms &middot; click any term to expand its definition</p>
+        <div class="card-top">
+          <span class="tag mono">ACCESSION No. ${esc(accession)}</span>
+          <span class="card-top-right">
+            <span class="organism">${esc(organism)}</span>
+            <button type="button" class="bookmark-btn bookmark-icon-only${isBookmarked(accession) ? ' is-saved' : ''}" id="bookmark-toggle" aria-label="${isBookmarked(accession) ? 'Remove from saved' : 'Add to saved'}" title="${isBookmarked(accession) ? 'Remove from saved' : 'Add to saved'}">
+              <span class="bookmark-icon">${isBookmarked(accession) ? '★' : '☆'}</span>
+            </button>
+          </span>
+        </div>
+        ${freshnessHtml}
+        <h2 class="entry-name"><span class="gene-tag mono">${esc(geneName)}</span>${esc(fullName)}</h2>
+        ${length ? `<p class="meta mono">sequence length: ${length} aa &middot; entry ${esc(entryId)}</p>` : ''}
         <div class="rule"></div>
-        ${rows}
+        <section class="field">
+          <h3 class="field-label">function</h3>
+          <p class="field-body clamp" id="function-text">${fnDisplay ? esc(fnDisplay) : 'No curated function summary is available for this entry yet.'}</p>
+          <button type="button" class="link-btn" id="function-toggle" style="margin-top:8px; display:none;">read more</button>
+        </section>
+        <div class="rule"></div>
+        <section class="field" id="go-field">
+          <h3 class="field-label">gene ontology</h3>
+          <div id="go-body"><p class="loading-line mono">Loading annotations…</p></div>
+        </section>
+        <div class="rule"></div>
+        <div class="two-col">
+          <section class="field" id="structure-field">
+            <h3 class="field-label">structure</h3>
+            <div id="structure-body"><p class="loading-line mono">Loading structural data…</p></div>
+          </section>
+          <section class="field" id="pathway-field">
+            <h3 class="field-label">pathways</h3>
+            <div id="pathway-body"><p class="loading-line mono">Loading pathway data…</p></div>
+          </section>
+        </div>
+        <div class="rule"></div>
+        <section class="field" id="related-field">
+          <h3 class="field-label">related genes</h3>
+          <div id="related-body"><p class="loading-line mono">Loading interaction data…</p></div>
+        </section>
       </div>`;
 
-    modalContent.querySelectorAll('.go-acc-head').forEach(head => {
-      head.addEventListener('click', () => {
-        head.closest('.go-acc-row').classList.toggle('expanded');
-      });
+    if(meta?.fromCache){
+      document.getElementById('refresh-link')?.addEventListener('click', () => forceRefresh(term));
+    }
+
+    const bmBtn = document.getElementById('bookmark-toggle');
+    bmBtn?.addEventListener('click', async () => {
+      const nowSaved = toggleBookmark(entry, term);
+      bmBtn.classList.toggle('is-saved', nowSaved);
+      bmBtn.querySelector('.bookmark-icon').textContent = nowSaved ? '★' : '☆';
+      const label = nowSaved ? 'Remove from saved' : 'Add to saved';
+      bmBtn.setAttribute('aria-label', label);
+      bmBtn.setAttribute('title', label);
+
+      // Also sync with DB if signed in
+      const user = window.SpecimenAuth?.currentUser();
+      if(user){
+        const accession = entry.primaryAccession;
+        const geneName = entry.genes?.[0]?.geneName?.value || term;
+        const name = entry.proteinDescription?.recommendedName?.fullName?.value
+          || entry.proteinDescription?.submissionNames?.[0]?.fullName?.value
+          || entry.uniProtkbId || term;
+        const organism = entry.organism?.scientificName || '';
+        if(nowSaved){
+          await fetch('/genes/save', {
+            method:'POST', credentials:'include',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ gene: geneName, accession, name, organism }),
+          });
+          awardXp('save_card');
+        } else {
+          await fetch('/genes/remove', {
+            method:'POST', credentials:'include',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ accession }),
+          });
+        }
+      }
     });
+
+    const fnEl = document.getElementById('function-text');
+    const fnToggle = document.getElementById('function-toggle');
+    if(fnEl && fnToggle && fnEl.scrollHeight > fnEl.clientHeight + 2){
+      fnToggle.style.display = 'inline-block';
+      fnToggle.addEventListener('click', () => {
+        if(fnEl.classList.contains('clamp')){
+          fnEl.classList.remove('clamp');
+          fnToggle.textContent = 'show less';
+        }else{
+          fnEl.classList.add('clamp');
+          fnToggle.textContent = 'read more';
+        }
+      });
+    }
+
+    renderPathways(entry);
+    renderGeneOntology(entry);
+    renderStructure(entry, accession);
+    renderRelatedGenes(geneName);
   }
 
-  function closeModal(){
-    overlay.hidden = true;
-    modalContent.innerHTML = '';
-    document.body.style.overflow = '';
+  async function forceRefresh(term){
+    renderLoading(term);
+    try{
+      const entry = await fetchEntry(term);
+      if(!entry){ renderNotFound(term); return; }
+      setCached(term, entry);
+      addToHistory(entry, term);
+      renderEntry(entry, term, {fromCache:false, ts:Date.now()});
+    }catch(err){
+      renderNetworkError();
+    }
   }
 
-  document.getElementById('modal-close').addEventListener('click', closeModal);
-  overlay.addEventListener('click', (e) => {
-    if(e.target === overlay) closeModal();
-  });
-  document.addEventListener('keydown', (e) => {
-    if(e.key === 'Escape' && !overlay.hidden) closeModal();
+  // ---------- XP ----------
+  async function awardXp(action, term) {
+    const user = window.SpecimenAuth?.currentUser();
+    if (!user) return;
+    try {
+      const res = await fetch('/profile/xp', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, term }),
+      });
+      const data = await res.json();
+      if (data.ok && data.xp_awarded > 0) {
+        window.SpecimenAuth.refreshUserXp(data.xp, data.level);
+      }
+    } catch(e) {}
+  }
+
+  async function runSearch(term){
+    if(!term || !term.trim()) return;
+    const cached = getCached(term);
+    if(cached){
+      addToHistory(cached.entry, term);
+      renderEntry(cached.entry, term, {fromCache:true, ts:cached.ts});
+      return;
+    }
+    renderLoading(term);
+    try{
+      const entry = await fetchEntry(term);
+      if(!entry){ renderNotFound(term); return; }
+      setCached(term, entry);
+      addToHistory(entry, term);
+      renderEntry(entry, term, {fromCache:false, ts:Date.now()});
+      awardXp('search_term', term.trim().toLowerCase());
+    }catch(err){
+      renderNetworkError();
+    }
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    runSearch(input.value);
   });
 
-  renderCategoryCards();
+  document.getElementById('clear-all-link').addEventListener('click', () => {
+    saveHistory([]);
+    saveCache({});
+    renderHistory();
+  });
+
+  bindChips();
+  renderHistory();
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialQuery = urlParams.get('q');
+  if(initialQuery){
+    input.value = initialQuery;
+    runSearch(initialQuery);
+  }
 </script>
 
 <script src="auth.js"></script>
