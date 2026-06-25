@@ -30,7 +30,9 @@
     color: var(--mute, #6E7568); background: var(--card, #FAFBF7);
     border: 0.5px solid var(--line, #D4D8D0);
     padding: 2px 8px; border-radius: 4px; white-space: nowrap;
+    cursor: pointer; transition: border-color 0.12s, color 0.12s;
   }
+  .viro-int-host:hover { border-color: #1F6F5C; color: #1F6F5C; }
   .viro-int-type {
     font-size: 11px; font-family: 'IBM Plex Mono', monospace;
     color: var(--mute, #6E7568); margin-left: auto;
@@ -240,9 +242,9 @@
 
     const proteinsHtml = proteins && proteins.length > 0
       ? `<div class="go-tags">${proteins.map(p => {
-          const queryTerm = p.gene || p.accession || p.name;
+          const queryTerm = p.accession || p.gene || p.name;
           const label = p.gene || p.name;
-          return `<button type="button" class="go-tag go-clickable" data-gene="${esc(queryTerm)}" title="${esc(p.function || p.name)}">${esc(label)}</button>`;
+          return `<button type="button" class="go-tag go-clickable" data-gene="${esc(queryTerm)}" title="${esc(p.name)}">${esc(label)}</button>`;
         }).join('')}</div>
         <p class="meta" style="margin-top:8px; font-style:italic;">Links open in the genes &amp; proteins index.</p>`
       : `<p class="empty-note">No reviewed proteins found for this entry.</p>`;
@@ -386,14 +388,21 @@
             <div class="viro-int-row">
               <span class="viro-int-viral">${esc(i.viralGene)}</span>
               <span class="viro-int-arrow">↔</span>
-              <span class="viro-int-host">${esc(i.humanGene)}</span>
+              <button type="button" class="viro-int-host go-tag" data-gene="${esc(i.humanGene)}" title="Search ${esc(i.humanGene)} in genes &amp; proteins">${esc(i.humanGene)}</button>
               ${description
                 ? `<span class="viro-int-desc">${esc(description)}</span>`
                 : `<span class="viro-int-type">${esc(i.interactionType)}</span>`}
             </div>`;
           }).join('')}
         </div>
-        <p class="meta" style="margin-top:8px; font-style:italic;">Experimentally validated interactions from <a href="https://www.ebi.ac.uk/intact" target="_blank" rel="noopener">IntAct</a> / IMEx Consortium (CC BY 4.0).</p>`;
+        <p class="meta" style="margin-top:8px; font-style:italic;">Experimentally validated interactions from <a href="https://www.ebi.ac.uk/intact" target="_blank" rel="noopener">IntAct</a> / IMEx Consortium (CC BY 4.0). Click any human protein to open it in genes &amp; proteins.</p>`;
+
+      // Bind human protein chip clicks
+      section.querySelectorAll('.viro-int-host[data-gene]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          window.open(`genes.html?q=${encodeURIComponent(btn.dataset.gene)}`, '_blank');
+        });
+      });
     } catch(_) {
       const p = section.querySelector('p');
       if (p) { p.textContent = 'Interaction data unavailable right now.'; p.className = 'empty-note'; }
