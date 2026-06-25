@@ -333,7 +333,7 @@
     });
 
     // Fetch host-pathogen interactions asynchronously
-    fetchAndRenderInteractions(taxonId);
+    fetchAndRenderInteractions(taxonId, proteins);
   }
 
   // Curated plain-English descriptions for well-known virus-host interaction pairs.
@@ -372,9 +372,16 @@
     'UL12::RAD51':     'DNA repair hijacking — facilitates viral genome replication',
   };
 
-  async function fetchAndRenderInteractions(taxonId) {
+  async function fetchAndRenderInteractions(taxonId, proteins) {
     const section = document.getElementById('viro-interactions-section');
     if (!section) return;
+
+    // Build a gene→accession map from the known proteins list
+    const viralGeneMap = {};
+    (proteins || []).forEach(p => {
+      if (p.gene) viralGeneMap[p.gene.toUpperCase()] = p.accession;
+      if (p.name) viralGeneMap[p.name.toUpperCase()] = p.accession;
+    });
     try {
       const res = await fetch(`/api/virusinteractions?taxon=${encodeURIComponent(taxonId)}`);
       const data = await res.json();
@@ -394,7 +401,7 @@
             const description = INTERACTION_DESCRIPTIONS[descKey] || null;
             return `
             <div class="viro-int-row">
-              <button type="button" class="viro-int-viral" data-gene="${esc(i.viralAccession || i.viralGene)}">${esc(i.viralGene)}</button>
+              <button type="button" class="viro-int-viral" data-gene="${esc(viralGeneMap[i.viralGene.toUpperCase()] || i.viralAccession || i.viralGene)}">${esc(i.viralGene)}</button>
               <span class="viro-int-arrow">↔</span>
               <button type="button" class="viro-int-host go-tag" data-gene="${esc(i.humanAccession || i.humanGene)}" title="Search ${esc(i.humanGene)} in genes &amp; proteins">${esc(i.humanGene)}</button>
               ${description
