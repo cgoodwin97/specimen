@@ -25,7 +25,9 @@
     font-size: 11.5px; font-family: 'IBM Plex Mono', monospace; font-weight: 500;
     color: #085041; background: #E1F5EE; border: 0.5px solid #9FE1CB;
     padding: 2px 8px; border-radius: 4px; white-space: nowrap;
+    cursor: pointer; transition: background 0.12s;
   }
+  .viro-int-viral:hover { background: #C5EEE1; }
   .viro-int-arrow { font-size: 13px; color: var(--mute, #6E7568); flex-shrink: 0; }
   .viro-int-host {
     font-size: 11.5px; font-family: 'IBM Plex Mono', monospace; font-weight: 500;
@@ -392,9 +394,9 @@
             const description = INTERACTION_DESCRIPTIONS[descKey] || null;
             return `
             <div class="viro-int-row">
-              <span class="viro-int-viral">${esc(i.viralGene)}</span>
+              <button type="button" class="viro-int-viral" data-gene="${esc(i.viralAccession || i.viralGene)}">${esc(i.viralGene)}</button>
               <span class="viro-int-arrow">↔</span>
-              <button type="button" class="viro-int-host go-tag" data-gene="${esc(i.humanGene)}" title="Search ${esc(i.humanGene)} in genes &amp; proteins">${esc(i.humanGene)}</button>
+              <button type="button" class="viro-int-host go-tag" data-gene="${esc(i.humanAccession || i.humanGene)}" title="Search ${esc(i.humanGene)} in genes &amp; proteins">${esc(i.humanGene)}</button>
               ${description
                 ? `<span class="viro-int-desc">${esc(description)}</span>`
                 : `<span class="viro-int-type">${esc(i.interactionType)}</span>`}
@@ -403,8 +405,8 @@
         </div>
         <p class="meta" style="margin-top:8px; font-style:italic;">Experimentally validated interactions from <a href="https://www.ebi.ac.uk/intact" target="_blank" rel="noopener">IntAct</a> / IMEx Consortium (CC BY 4.0). Click any human protein to open it in genes &amp; proteins.</p>`;
 
-      // Bind human protein chip clicks
-      section.querySelectorAll('.viro-int-host[data-gene]').forEach(btn => {
+      // Bind both viral and human protein chip clicks
+      section.querySelectorAll('.viro-int-viral[data-gene], .viro-int-host[data-gene]').forEach(btn => {
         btn.addEventListener('click', () => {
           window.open(`genes.html?q=${encodeURIComponent(btn.dataset.gene)}`, '_blank');
         });
