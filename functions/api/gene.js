@@ -31,6 +31,28 @@ export async function onRequestGet({ request, env }) {
     }
   }
 
+  // If query looks like a UniProt accession, fetch it directly
+  // UniProt accession format: [A-Z][0-9][A-Z0-9]{3}[0-9] or [O,P,Q][0-9][A-Z0-9]{3}[0-9]
+  const isAccession = /^[A-Z][0-9][A-Z0-9]{3}[0-9]$/i.test(q) || /^[A-Z][0-9][A-Z0-9]{3}[0-9]-[0-9]+$/i.test(q);
+  if (isAccession) {
+    const accUrl = `https://rest.uniprot.org/uniprotkb/${encodeURIComponent(q.toUpperCase())}?fields=${FIELDS}&format=json`;
+    try {
+      const res = await fetch(accUrl, { headers: { Accept: 'application/json' } });
+      if (res.ok) {
+        const entry = await res.json();
+        if (entry && entry.primaryAccession) {
+          const body = JSON.stringify({ result: entry });
+          if (env.SPECIMEN_KV) {
+            await env.SPECIMEN_KV.put(cacheKey, body, { expirationTtl: CACHE_TTL });
+          }
+          return new Response(body, {
+            headers: { ...corsHeaders('application/json'), 'X-Cache': 'MISS' },
+          });
+        }
+      }
+    } catch (e) { /* fall through to search queries */ }
+  }
+
   // Not cached — try UniProt queries in order
   const t = q;
   for (const query of QUERIES(q, t)) {
