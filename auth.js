@@ -91,8 +91,8 @@
     const el = document.createElement('div');
     el.innerHTML = `
       <div class="modal-overlay" id="auth-modal-overlay" hidden>
-        <div class="modal-card-wrap" style="max-width:400px;">
-          <button type="button" class="modal-close-btn" id="auth-modal-close" aria-label="Close">&times;</button>
+        <div class="modal-card-wrap" style="max-width:380px;background:transparent;border:none;padding:0;position:relative;">
+          <button type="button" class="modal-close-btn" id="auth-modal-close" aria-label="Close" style="position:absolute;top:10px;right:10px;z-index:10;">&times;</button>
           <div id="auth-modal-content"></div>
         </div>
       </div>`;
@@ -132,13 +132,20 @@
   // ---------- Sign in view ----------
   function renderView(view) {
     const content = document.getElementById('auth-modal-content');
+
+    const seal = `
+      <div style="width:40px;height:40px;border-radius:50%;background:#1F6F5C;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+        <span style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:20px;font-weight:500;color:#EAEEE6;line-height:1;margin-top:1px;">S</span>
+      </div>`;
+
+    const sharedStyles = `background:#FAFBF7;border-radius:16px;padding:28px 26px 22px;`;
+
     if (view === 'signin') {
       content.innerHTML = `
-        <div class="card">
-          <div class="card-hole" aria-hidden="true"></div>
-          <h2 class="entry-name" style="font-size:22px; margin-bottom:4px;">Sign in</h2>
-          <p class="meta" style="margin-bottom:16px;">Access your saved genes across any device.</p>
-          <div class="rule"></div>
+        <div style="${sharedStyles}">
+          ${seal}
+          <h2 style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:21px;font-weight:500;color:#1E2A22;text-align:center;margin:0 0 4px;">Sign in</h2>
+          <p style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:#6E7568;text-align:center;margin:0 0 22px;">access your saved cards across any device</p>
           <div id="auth-error" class="auth-error" hidden></div>
           <div class="auth-field">
             <label class="field-label" for="si-username">username</label>
@@ -148,9 +155,8 @@
             <label class="field-label" for="si-password">password</label>
             <input type="password" id="si-password" class="auth-input" autocomplete="current-password">
           </div>
-          <button type="button" class="auth-submit" id="si-submit">Sign in</button>
-          <div class="rule"></div>
-          <p class="meta" style="text-align:center;">No account? <button type="button" class="link-btn" id="go-register">Create one</button></p>
+          <button type="button" class="auth-submit" id="si-submit" style="width:100%;margin-top:4px;">Sign in</button>
+          <p style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:#6E7568;text-align:center;margin:14px 0 0;">No account? <button type="button" class="link-btn" id="go-register">Create one</button></p>
         </div>`;
       document.getElementById('go-register')?.addEventListener('click', () => renderView('register'));
       document.getElementById('si-submit')?.addEventListener('click', handleSignIn);
@@ -159,11 +165,10 @@
       });
     } else {
       content.innerHTML = `
-        <div class="card">
-          <div class="card-hole" aria-hidden="true"></div>
-          <h2 class="entry-name" style="font-size:22px; margin-bottom:4px;">Create account</h2>
-          <p class="meta" style="margin-bottom:16px;">All data is stored securely, but as a precaution, please avoid using any personal information in your username or password.</p>
-          <div class="rule"></div>
+        <div style="${sharedStyles}">
+          ${seal}
+          <h2 style="font-family:'Fraunces',Georgia,serif;font-style:italic;font-size:21px;font-weight:500;color:#1E2A22;text-align:center;margin:0 0 4px;">Create account</h2>
+          <p style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:#6E7568;text-align:center;margin:0 0 22px;">avoid personal info in your username or password</p>
           <div id="auth-error" class="auth-error" hidden></div>
           <div class="auth-field">
             <label class="field-label" for="reg-username">username <span class="auth-hint">5+ characters, no spaces</span></label>
@@ -173,9 +178,8 @@
             <label class="field-label" for="reg-password">password <span class="auth-hint">8+ characters</span></label>
             <input type="password" id="reg-password" class="auth-input" autocomplete="new-password">
           </div>
-          <button type="button" class="auth-submit" id="reg-submit">Create account</button>
-          <div class="rule"></div>
-          <p class="meta" style="text-align:center;">Already have an account? <button type="button" class="link-btn" id="go-signin">Sign in</button></p>
+          <button type="button" class="auth-submit" id="reg-submit" style="width:100%;margin-top:4px;">Create account</button>
+          <p style="font-size:12px;font-family:'IBM Plex Mono',monospace;color:#6E7568;text-align:center;margin:14px 0 0;">Already have an account? <button type="button" class="link-btn" id="go-signin">Sign in</button></p>
         </div>`;
       document.getElementById('go-signin')?.addEventListener('click', () => renderView('signin'));
       document.getElementById('reg-submit')?.addEventListener('click', handleRegister);
