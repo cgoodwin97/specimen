@@ -262,6 +262,7 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ go_id: goId, name, structure_type: structureType, definition: cleanDef }),
           });
+          awardXp('save_card');
         } else {
           await fetch('/cellbiology/remove', {
             method: 'POST', credentials: 'include',
@@ -304,6 +305,23 @@
     });
   }
 
+  // ---------- XP ----------
+  async function awardXp(action, term) {
+    const user = window.SpecimenAuth?.currentUser();
+    if (!user) return;
+    try {
+      const res = await fetch('/profile/xp', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, term }),
+      });
+      const data = await res.json();
+      if (data.ok && data.xp_awarded > 0) {
+        window.SpecimenAuth.refreshUserXp(data.xp, data.level);
+      }
+    } catch(e) {}
+  }
+
   async function runSearch(term){
     if(!term || !term.trim()) return;
     renderLoading(term);
@@ -312,6 +330,7 @@
       const data = await res.json();
       if(!data.result){ renderNotFound(term); return; }
       renderEntry(data.result, term);
+      awardXp('search_term', term.trim().toLowerCase());
     }catch(e){
       cardEl.innerHTML = `<div class="card empty-card"><p>Couldn't reach the server just now. Please try again.</p></div>`;
     }
