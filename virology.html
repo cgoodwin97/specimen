@@ -9,6 +9,34 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+  .viro-int-list { display: flex; flex-direction: column; gap: 6px; }
+  .viro-int-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px;
+    background: var(--paper, #EAEEE6);
+    border: 0.5px solid var(--line, #D4D8D0);
+    border-radius: 6px;
+    flex-wrap: wrap;
+  }
+  .viro-int-viral {
+    font-size: 11.5px; font-family: 'IBM Plex Mono', monospace; font-weight: 500;
+    color: #085041; background: #E1F5EE; border: 0.5px solid #9FE1CB;
+    padding: 2px 8px; border-radius: 4px; white-space: nowrap;
+  }
+  .viro-int-arrow { font-size: 13px; color: var(--mute, #6E7568); flex-shrink: 0; }
+  .viro-int-host {
+    font-size: 11.5px; font-family: 'IBM Plex Mono', monospace; font-weight: 500;
+    color: var(--mute, #6E7568); background: var(--card, #FAFBF7);
+    border: 0.5px solid var(--line, #D4D8D0);
+    padding: 2px 8px; border-radius: 4px; white-space: nowrap;
+  }
+  .viro-int-type {
+    font-size: 11px; font-family: 'IBM Plex Mono', monospace;
+    color: var(--mute, #6E7568); margin-left: auto;
+    white-space: nowrap; opacity: 0.7;
+  }
+</style>
 </head>
 <body>
 
@@ -248,6 +276,11 @@
           <h3 class="field-label">key proteins</h3>
           ${proteinsHtml}
         </section>
+        <div class="rule"></div>
+        <section class="field" id="viro-interactions-section">
+          <h3 class="field-label">host-pathogen interactions</h3>
+          <p class="loading-line mono" style="font-size:12px;">Loading interaction data…</p>
+        </section>
       </div>`;
 
     // Bookmark toggle
@@ -282,6 +315,41 @@
         window.open(`genes.html?q=${encodeURIComponent(btn.dataset.gene)}`, '_blank');
       });
     });
+
+    // Fetch host-pathogen interactions asynchronously
+    fetchAndRenderInteractions(taxonId);
+  }
+
+  async function fetchAndRenderInteractions(taxonId) {
+    const section = document.getElementById('viro-interactions-section');
+    if (!section) return;
+    try {
+      const res = await fetch(`/api/virusinteractions?taxon=${encodeURIComponent(taxonId)}`);
+      const data = await res.json();
+      const list = data.interactions || [];
+
+      if (list.length === 0) {
+        section.querySelector('p').textContent = 'No experimentally validated host-pathogen interactions found for this virus.';
+        section.querySelector('p').className = 'empty-note';
+        return;
+      }
+
+      section.innerHTML = `
+        <h3 class="field-label">host-pathogen interactions</h3>
+        <div class="viro-int-list">
+          ${list.map(i => `
+            <div class="viro-int-row">
+              <span class="viro-int-viral">${esc(i.viralGene)}</span>
+              <span class="viro-int-arrow">↔</span>
+              <span class="viro-int-host">${esc(i.humanGene)}</span>
+              <span class="viro-int-type">${esc(i.interactionType)}</span>
+            </div>`).join('')}
+        </div>
+        <p class="meta" style="margin-top:8px; font-style:italic;">Experimentally validated interactions from <a href="https://www.ebi.ac.uk/intact" target="_blank" rel="noopener">IntAct</a> / IMEx Consortium (CC BY 4.0).</p>`;
+    } catch(_) {
+      const p = section.querySelector('p');
+      if (p) { p.textContent = 'Interaction data unavailable right now.'; p.className = 'empty-note'; }
+    }
   }
 
   async function runSearch(term){
