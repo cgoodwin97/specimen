@@ -249,7 +249,7 @@
     const proteinsHtml = proteins && proteins.length > 0
       ? `<div class="go-tags">${proteins.map(p => {
           const queryTerm = p.accession || p.gene || p.name;
-          const label = p.gene || p.name;
+          const label = p.name || p.gene;
           return `<button type="button" class="go-tag go-clickable" data-gene="${esc(queryTerm)}" title="${esc(p.name)}">${esc(label)}</button>`;
         }).join('')}</div>
         <p class="meta" style="margin-top:8px; font-style:italic;">Links open in the genes &amp; proteins index.</p>`
@@ -376,11 +376,18 @@
     const section = document.getElementById('viro-interactions-section');
     if (!section) return;
 
-    // Build a gene→accession map from the known proteins list
+    // Build both gene→accession and gene→name maps
     const viralGeneMap = {};
+    const viralNameMap = {};
     (proteins || []).forEach(p => {
-      if (p.gene) viralGeneMap[p.gene.toUpperCase()] = p.accession;
-      if (p.name) viralGeneMap[p.name.toUpperCase()] = p.accession;
+      if (p.gene) {
+        viralGeneMap[p.gene.toUpperCase()] = p.accession;
+        viralNameMap[p.gene.toUpperCase()] = p.name || p.gene;
+      }
+      if (p.name) {
+        viralGeneMap[p.name.toUpperCase()] = p.accession;
+        viralNameMap[p.name.toUpperCase()] = p.name;
+      }
     });
     try {
       const res = await fetch(`/api/virusinteractions?taxon=${encodeURIComponent(taxonId)}`);
@@ -401,7 +408,7 @@
             const description = INTERACTION_DESCRIPTIONS[descKey] || null;
             return `
             <div class="viro-int-row">
-              <button type="button" class="viro-int-viral" data-gene="${esc(viralGeneMap[i.viralGene.toUpperCase()] || i.viralAccession || i.viralGene)}">${esc(i.viralGene)}</button>
+              <button type="button" class="viro-int-viral" data-gene="${esc(viralGeneMap[i.viralGene.toUpperCase()] || i.viralAccession || i.viralGene)}">${esc(viralNameMap[i.viralGene.toUpperCase()] || i.viralGene)}</button>
               <span class="viro-int-arrow">↔</span>
               <button type="button" class="viro-int-host go-tag" data-gene="${esc(i.humanAccession || i.humanGene)}" title="Search ${esc(i.humanGene)} in genes &amp; proteins">${esc(i.humanGene)}</button>
               ${description
