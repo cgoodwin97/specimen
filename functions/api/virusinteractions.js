@@ -72,8 +72,10 @@ export async function onRequestGet({ request, env }) {
     const aliasViralCol = viralSide === 'A' ? cols[4] : cols[5];
     const aliasHumanCol = viralSide === 'A' ? cols[5] : cols[4];
 
-    const viralGene  = extractGeneName(aliasViralCol) || extractAccession(viralSide === 'A' ? cols[0] : cols[1]);
-    const humanGene  = extractGeneName(aliasHumanCol) || extractAccession(viralSide === 'A' ? cols[1] : cols[0]);
+    const viralGene      = extractGeneName(aliasViralCol) || extractAccession(viralSide === 'A' ? cols[0] : cols[1]);
+    const humanGene      = extractGeneName(aliasHumanCol) || extractAccession(viralSide === 'A' ? cols[1] : cols[0]);
+    const viralAccession = extractAccession(viralSide === 'A' ? cols[0] : cols[1]) || '';
+    const humanAccession = extractAccession(viralSide === 'A' ? cols[1] : cols[0]) || '';
 
     if (!viralGene || !humanGene) continue;
 
@@ -87,7 +89,9 @@ export async function onRequestGet({ request, env }) {
 
     interactions.push({
       viralGene,
+      viralAccession,
       humanGene,
+      humanAccession,
       interactionType: normaliseIntType(intType),
     });
 
