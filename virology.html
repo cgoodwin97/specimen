@@ -36,6 +36,10 @@
     color: var(--mute, #6E7568); margin-left: auto;
     white-space: nowrap; opacity: 0.7;
   }
+  .viro-int-desc {
+    font-size: 11.5px; color: var(--mute, #6E7568);
+    flex: 1; line-height: 1.4;
+  }
 </style>
 </head>
 <body>
@@ -235,9 +239,11 @@
     ].filter(Boolean).join('');
 
     const proteinsHtml = proteins && proteins.length > 0
-      ? `<div class="go-tags">${proteins.map(p =>
-          `<button type="button" class="go-tag go-clickable" data-gene="${esc(p.accession)}" title="${esc(p.function || p.name)}">${esc(p.gene || p.name)}</button>`
-        ).join('')}</div>
+      ? `<div class="go-tags">${proteins.map(p => {
+          const queryTerm = p.gene || p.accession || p.name;
+          const label = p.gene || p.name;
+          return `<button type="button" class="go-tag go-clickable" data-gene="${esc(queryTerm)}" title="${esc(p.function || p.name)}">${esc(label)}</button>`;
+        }).join('')}</div>
         <p class="meta" style="margin-top:8px; font-style:italic;">Links open in the genes &amp; proteins index.</p>`
       : `<p class="empty-note">No reviewed proteins found for this entry.</p>`;
 
@@ -320,6 +326,42 @@
     fetchAndRenderInteractions(taxonId);
   }
 
+  // Curated plain-English descriptions for well-known virus-host interaction pairs.
+  // Key: "VIRALGENE::HUMANGENE" (uppercase). Falls back to interaction type if not found.
+  const INTERACTION_DESCRIPTIONS = {
+    'S::ACE2':         'Receptor binding — viral entry into host cell',
+    'SPIKE::ACE2':     'Receptor binding — viral entry into host cell',
+    'S::TMPRSS2':      'Spike priming — cleavage enables membrane fusion',
+    'SPIKE::TMPRSS2':  'Spike priming — cleavage enables membrane fusion',
+    'N::G3BP1':        'Stress granule disruption — blocks innate immune response',
+    'N::G3BP2':        'Stress granule disruption — blocks innate immune response',
+    'NSP3::USP25':     'Deubiquitinase interaction — immune evasion',
+    'NSP1::EIF4E':     'Translation inhibition — shuts down host protein synthesis',
+    'NSP5::NLRP12':    'Inflammasome suppression — dampens immune activation',
+    'ORF8::MHC1A':     'MHC-I downregulation — immune evasion from T cells',
+    'M::TBK1':         'Interferon suppression — blocks antiviral signalling',
+    'GP::NPC1':        'Cholesterol transporter binding — required for viral entry',
+    'GP1::NPC1':       'Cholesterol transporter binding — required for viral entry',
+    'VP35::TRIM6':     'IFN pathway blockade — innate immune evasion',
+    'GP120::CD4':      'Primary receptor binding — HIV entry into T cells',
+    'GP41::CXCR4':     'Co-receptor binding — HIV membrane fusion',
+    'GP41::CCR5':      'Co-receptor binding — HIV membrane fusion',
+    'TAT::CCNT1':      'Transcription activation — drives HIV gene expression',
+    'REV::XPO1':       'Nuclear export — shuttles viral RNA out of nucleus',
+    'HA::ACE2':        'Receptor binding — influenza entry into respiratory cells',
+    'NS1::TRIM25':     'RIG-I ubiquitination blockade — suppresses interferon response',
+    'PB1::IMPORTIN':   'Nuclear import — delivers viral polymerase to nucleus',
+    'LHBS::HSD17B13':  'Metabolic interaction — linked to liver disease severity',
+    'HBSAG::TLR2':     'Pattern recognition — triggers innate immune response',
+    'NS5A::FKBP8':     'Mitochondrial recruitment — HCV replication complex assembly',
+    'E2::CD81':        'Entry receptor binding — HCV attachment to hepatocytes',
+    'VP1::INTEGRIN':   'Cell attachment — HPV entry into epithelial cells',
+    'E6::TP53':        'p53 degradation — blocks tumour suppression',
+    'E7::RB1':         'Retinoblastoma protein inactivation — drives cell proliferation',
+    'ICP27::XRN2':     'RNA processing disruption — HSV immune evasion',
+    'UL12::RAD51':     'DNA repair hijacking — facilitates viral genome replication',
+  };
+
   async function fetchAndRenderInteractions(taxonId) {
     const section = document.getElementById('viro-interactions-section');
     if (!section) return;
@@ -337,13 +379,19 @@
       section.innerHTML = `
         <h3 class="field-label">host-pathogen interactions</h3>
         <div class="viro-int-list">
-          ${list.map(i => `
+          ${list.map(i => {
+            const descKey = `${i.viralGene}::${i.humanGene}`;
+            const description = INTERACTION_DESCRIPTIONS[descKey] || null;
+            return `
             <div class="viro-int-row">
               <span class="viro-int-viral">${esc(i.viralGene)}</span>
               <span class="viro-int-arrow">↔</span>
               <span class="viro-int-host">${esc(i.humanGene)}</span>
-              <span class="viro-int-type">${esc(i.interactionType)}</span>
-            </div>`).join('')}
+              ${description
+                ? `<span class="viro-int-desc">${esc(description)}</span>`
+                : `<span class="viro-int-type">${esc(i.interactionType)}</span>`}
+            </div>`;
+          }).join('')}
         </div>
         <p class="meta" style="margin-top:8px; font-style:italic;">Experimentally validated interactions from <a href="https://www.ebi.ac.uk/intact" target="_blank" rel="noopener">IntAct</a> / IMEx Consortium (CC BY 4.0).</p>`;
     } catch(_) {
