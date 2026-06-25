@@ -128,12 +128,14 @@
   }
 
   function showResults(){
-    browseEl.hidden = true;
+    browseEl.style.display = 'none';
+    resultsEl.style.display = 'block';
     resultsEl.hidden = false;
   }
   function showBrowse(){
+    resultsEl.style.display = 'none';
     resultsEl.hidden = true;
-    browseEl.hidden = false;
+    browseEl.style.display = 'block';
     input.value = '';
     cardEl.innerHTML = '';
   }
