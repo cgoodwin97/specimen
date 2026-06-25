@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Genes &amp; Proteins — Specimen</title>
+<title>Specimen</title>
 <meta name="description" content="Specimen — a study tool for biology.">
 
 <!-- Open Graph -->
@@ -556,6 +556,7 @@
             headers:{'Content-Type':'application/json'},
             body: JSON.stringify({ gene: geneName, accession, name, organism }),
           });
+          awardXp('save_card');
         } else {
           await fetch('/genes/remove', {
             method:'POST', credentials:'include',
@@ -600,6 +601,23 @@
     }
   }
 
+  // ---------- XP ----------
+  async function awardXp(action, term) {
+    const user = window.SpecimenAuth?.currentUser();
+    if (!user) return;
+    try {
+      const res = await fetch('/profile/xp', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, term }),
+      });
+      const data = await res.json();
+      if (data.ok && data.xp_awarded > 0) {
+        window.SpecimenAuth.refreshUserXp(data.xp, data.level);
+      }
+    } catch(e) {}
+  }
+
   async function runSearch(term){
     if(!term || !term.trim()) return;
     const cached = getCached(term);
@@ -615,6 +633,7 @@
       setCached(term, entry);
       addToHistory(entry, term);
       renderEntry(entry, term, {fromCache:false, ts:Date.now()});
+      awardXp('search_term', term.trim().toLowerCase());
     }catch(err){
       renderNetworkError();
     }
