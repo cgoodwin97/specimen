@@ -103,7 +103,11 @@
     const overlay = document.getElementById('auth-modal-overlay');
     overlay.hidden = false;
     document.body.style.overflow = 'hidden';
-    renderView(view);
+    if (view === 'profile') {
+      renderProfileModal();
+    } else {
+      renderView(view);
+    }
   }
 
   function closeModal() {
