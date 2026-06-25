@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Virology — Specimen</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20x%3D%224%22%20y%3D%224%22%20width%3D%2256%22%20height%3D%2256%22%20rx%3D%2212%22%20fill%3D%22%23EAEEE6%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2224%22%20fill%3D%22none%22%20stroke%3D%22%231F6F5C%22%20stroke-width%3D%221.5%22/%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2220%22%20fill%3D%22%231F6F5C%22/%3E%3Ctext%20x%3D%2232%22%20y%3D%2234%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22central%22%20font-family%3D%22Fraunces%2C%20Georgia%2C%20serif%22%20font-style%3D%22italic%22%20font-size%3D%2224%22%20fill%3D%22%23EAEEE6%22%3ES%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page">
+
+  <header class="hero">
+    <h1>Specimen</h1>
+    <nav class="site-nav mono" aria-label="primary">
+      <a href="index.html">home</a>
+      <span class="nav-sep">|</span>
+      <a href="genes.html">genes &amp; proteins</a>
+      <span class="nav-sep">|</span>
+      <a href="cellbiology.html">cell biology</a>
+      <span class="nav-sep">|</span>
+      <span class="nav-current">virology</span>
+      <span class="nav-sep">|</span>
+      <a href="saved.html">saved</a>
+      <span class="nav-sep">|</span>
+      <a href="glossary.html">glossary</a>
+    </nav>
+    <p>A field guide to viruses, viral proteins, and host-pathogen interactions. Search any virus to pull its taxonomy, genome type, natural hosts, and key proteins.</p>
+  </header>
+
+  <section class="search-panel">
+    <form class="search-form" id="viro-search-form">
+      <input type="text" id="viro-search-input" placeholder="SARS-CoV-2, influenza, HIV, ebola…" autocomplete="off" aria-label="Virus name">
+      <button type="submit">Search</button>
+    </form>
+  </section>
+
+  <section id="viro-browse" aria-label="Common viruses">
+    <p class="cb-browse-label mono">common viruses</p>
+    <div class="cb-structure-grid">
+      <button type="button" class="cb-tile" data-term="SARS-CoV-2"><span class="cb-tile-name">SARS-CoV-2</span><span class="cb-tile-hint">COVID-19</span></button>
+      <button type="button" class="cb-tile" data-term="Influenza A virus"><span class="cb-tile-name">Influenza A</span><span class="cb-tile-hint">seasonal flu</span></button>
+      <button type="button" class="cb-tile" data-term="Human immunodeficiency virus 1"><span class="cb-tile-name">HIV-1</span><span class="cb-tile-hint">AIDS</span></button>
+      <button type="button" class="cb-tile" data-term="Zaire ebolavirus"><span class="cb-tile-name">Ebola</span><span class="cb-tile-hint">hemorrhagic fever</span></button>
+      <button type="button" class="cb-tile" data-term="Hepatitis B virus"><span class="cb-tile-name">Hepatitis B</span><span class="cb-tile-hint">liver infection</span></button>
+      <button type="button" class="cb-tile" data-term="Hepatitis C virus"><span class="cb-tile-name">Hepatitis C</span><span class="cb-tile-hint">liver infection</span></button>
+      <button type="button" class="cb-tile" data-term="Measles morbillivirus"><span class="cb-tile-name">Measles</span><span class="cb-tile-hint">rubeola</span></button>
+      <button type="button" class="cb-tile" data-term="Rabies lyssavirus"><span class="cb-tile-name">Rabies</span><span class="cb-tile-hint">zoonotic</span></button>
+      <button type="button" class="cb-tile" data-term="Dengue virus"><span class="cb-tile-name">Dengue</span><span class="cb-tile-hint">mosquito-borne</span></button>
+      <button type="button" class="cb-tile" data-term="Zika virus"><span class="cb-tile-name">Zika</span><span class="cb-tile-hint">mosquito-borne</span></button>
+      <button type="button" class="cb-tile" data-term="Monkeypox virus"><span class="cb-tile-name">Mpox</span><span class="cb-tile-hint">poxvirus</span></button>
+      <button type="button" class="cb-tile" data-term="Norovirus"><span class="cb-tile-name">Norovirus</span><span class="cb-tile-hint">gastroenteritis</span></button>
+      <button type="button" class="cb-tile" data-term="Rotavirus A"><span class="cb-tile-name">Rotavirus</span><span class="cb-tile-hint">diarrheal disease</span></button>
+      <button type="button" class="cb-tile" data-term="Human papillomavirus"><span class="cb-tile-name">HPV</span><span class="cb-tile-hint">papillomavirus</span></button>
+      <button type="button" class="cb-tile" data-term="Human alphaherpesvirus 1"><span class="cb-tile-name">Herpes simplex 1</span><span class="cb-tile-hint">oral herpes</span></button>
+      <button type="button" class="cb-tile" data-term="Human alphaherpesvirus 3"><span class="cb-tile-name">Varicella-zoster</span><span class="cb-tile-hint">chickenpox</span></button>
+      <button type="button" class="cb-tile" data-term="Poliovirus"><span class="cb-tile-name">Poliovirus</span><span class="cb-tile-hint">poliomyelitis</span></button>
+      <button type="button" class="cb-tile" data-term="Yellow fever virus"><span class="cb-tile-name">Yellow fever</span><span class="cb-tile-hint">mosquito-borne</span></button>
+      <button type="button" class="cb-tile" data-term="West Nile virus"><span class="cb-tile-name">West Nile</span><span class="cb-tile-hint">arbovirus</span></button>
+      <button type="button" class="cb-tile" data-term="Marburg marburgvirus"><span class="cb-tile-name">Marburg</span><span class="cb-tile-hint">filovirus</span></button>
+    </div>
+  </section>
+
+  <section class="results" id="viro-results" hidden>
+    <div class="cb-browse-all-wrap">
+      <button type="button" class="cb-browse-all-btn mono" id="viro-browse-all">&#9632; browse all viruses</button>
+    </div>
+    <div id="viro-card-slot"></div>
+  </section>
+
+  <footer class="site-footer">
+    Virus taxonomy via <a href="https://www.ncbi.nlm.nih.gov/taxonomy" target="_blank" rel="noopener">NCBI Taxonomy</a>. Genome metadata via <a href="https://www.ncbi.nlm.nih.gov/datasets" target="_blank" rel="noopener">NCBI Datasets</a>. Proteins via <a href="https://www.uniprot.org" target="_blank" rel="noopener">UniProt</a>. Results cached for faster repeat lookups.
+    <span class="nav-sep" style="margin:0 6px;">|</span>
+    <a href="mailto:colin@specimen.site" class="link-btn">colin@specimen.site</a>
+  </footer>
+
+</div>
+
+<script>
+  const form      = document.getElementById('viro-search-form');
+  const input     = document.getElementById('viro-search-input');
+  const resultsEl = document.getElementById('viro-results');
+  const cardEl    = document.getElementById('viro-card-slot');
+  const browseEl  = document.getElementById('viro-browse');
+
+  function esc(str){
+    return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function showResults(){
+    browseEl.hidden = true;
+    resultsEl.hidden = false;
+  }
+  function showBrowse(){
+    resultsEl.hidden = true;
+    browseEl.hidden = false;
+    input.value = '';
+    cardEl.innerHTML = '';
+  }
+
+  // ---------- Virus bookmarks ----------
+  const VIRO_BOOKMARKS_KEY = 'specimen.viro.bookmarks.v1';
+
+  function loadViroBookmarks(){
+    try{ return JSON.parse(localStorage.getItem(VIRO_BOOKMARKS_KEY) || '[]'); }
+    catch(e){ return []; }
+  }
+  function saveViroBookmarks(list){
+    try{ localStorage.setItem(VIRO_BOOKMARKS_KEY, JSON.stringify(list)); }
+    catch(e){}
+  }
+  function isViroBookmarked(taxonId){
+    return loadViroBookmarks().some(b => b.taxon_id === taxonId);
+  }
+  function toggleViroBookmark(taxonId, name, commonName, genomeType){
+    const list = loadViroBookmarks();
+    const idx = list.findIndex(b => b.taxon_id === taxonId);
+    if(idx >= 0){ list.splice(idx, 1); saveViroBookmarks(list); return false; }
+    list.unshift({ taxon_id: taxonId, name, common_name: commonName, genome_type: genomeType, ts: Date.now() });
+    saveViroBookmarks(list);
+    return true;
+  }
+
+  // ---------- XP ----------
+  async function awardXp(action, term){
+    const user = window.SpecimenAuth?.currentUser();
+    if(!user) return;
+    try{
+      const res = await fetch('/profile/xp', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, term }),
+      });
+      const data = await res.json();
+      if(data.ok && data.xp_awarded > 0){
+        window.SpecimenAuth.refreshUserXp(data.xp, data.level);
+      }
+    } catch(_){}
+  }
+
+  // ---------- Curated summaries ----------
+  // Plain-English descriptions for common viruses, shown below the taxonomy section.
+  const VIRUS_SUMMARIES = {
+    '2697049': 'SARS-CoV-2 is the coronavirus responsible for COVID-19. It spreads primarily through respiratory droplets and targets cells via the ACE2 receptor. The spike protein is the primary target of vaccines and neutralising antibodies.',
+    '11520':   'Influenza A is the most clinically significant flu virus, causing seasonal epidemics and periodic pandemics. It mutates rapidly through antigenic drift and shift, which is why flu vaccines are updated annually.',
+    '11676':   'HIV-1 is the primary cause of AIDS worldwide. It targets CD4+ T cells, gradually destroying the immune system. Antiretroviral therapy can suppress the virus to undetectable levels but does not cure infection.',
+    '128952':  'Ebola is a filovirus causing severe hemorrhagic fever with high fatality rates. It spreads through direct contact with bodily fluids of infected individuals and has caused several major outbreaks in central Africa.',
+    '10359':   'Hepatitis B is a DNA virus that infects the liver, causing acute and chronic disease. Chronic infection significantly increases the risk of cirrhosis and liver cancer. An effective vaccine is available.',
+    '11103':   'Hepatitis C is an RNA virus that primarily infects the liver. It often becomes chronic and can lead to cirrhosis and liver cancer. Direct-acting antiviral drugs now cure over 95% of infections.',
+    '11234':   'Measles is one of the most contagious viruses known. It spreads through respiratory droplets and causes fever, rash, and in severe cases encephalitis. The MMR vaccine provides effective protection.',
+    '11292':   'Rabies is almost universally fatal once symptoms appear. It spreads through the saliva of infected animals and travels to the brain via peripheral nerves. Post-exposure vaccination before symptom onset is effective.',
+    '12637':   'Dengue is the most prevalent mosquito-borne viral disease globally. Infection with one of four serotypes can lead to severe dengue upon re-infection with a different serotype due to antibody-dependent enhancement.',
+    '64320':   'Zika virus causes mild illness in most adults but can cause severe microcephaly and brain defects in babies born to infected mothers. It spread explosively through the Americas in 2015–2016.',
+    '10244':   'Mpox (monkeypox) is an orthopoxvirus related to smallpox. It causes a characteristic pustular rash and is transmitted through close contact. Cases rose dramatically during the 2022 global outbreak.',
+    '142786':  'Norovirus is the leading cause of viral gastroenteritis worldwide. It spreads very easily through contaminated food, water, and surfaces, and is notorious for outbreaks on cruise ships and in care homes.',
+    '28875':   'Rotavirus is the leading cause of severe diarrhoeal disease in young children globally. Oral vaccines have dramatically reduced hospitalisation and death rates in countries where they are deployed.',
+    '10566':   'Human papillomavirus is the most common sexually transmitted infection. Most infections clear on their own, but persistent infection with high-risk strains is the primary cause of cervical cancer.',
+    '10298':   'Herpes simplex virus 1 typically causes oral herpes (cold sores) but can also cause genital herpes. After primary infection it establishes lifelong latency in sensory neurons and can reactivate periodically.',
+    '10335':   'Varicella-zoster virus causes chickenpox on first infection and can reactivate decades later as shingles (herpes zoster). Vaccines are available for both primary infection and shingles prevention.',
+    '12110':   'Poliovirus was once a major cause of paralytic disease worldwide. Extensive vaccination campaigns have reduced cases by over 99% since 1988, with wild poliovirus transmission now limited to a few countries.',
+    '11089':   'Yellow fever is a mosquito-borne flavivirus that causes jaundice and hemorrhagic fever. A highly effective single-dose vaccine provides lifelong protection in most recipients.',
+    '11082':   'West Nile virus is transmitted by Culex mosquitoes and is now endemic across North America. Most infections are asymptomatic, but a small percentage develop neuroinvasive disease.',
+    '11269':   'Marburg virus is a filovirus closely related to Ebola, causing rare but highly lethal hemorrhagic fever outbreaks. Fruit bats are the reservoir host; human-to-human transmission occurs through direct contact.',
+  };
+
+  function renderLoading(term){
+    showResults();
+    cardEl.innerHTML = `<div class="card loading-card"><p class="loading-line mono">Pulling the record for "${esc(term)}"…</p></div>`;
+  }
+
+  function renderNotFound(term){
+    showResults();
+    cardEl.innerHTML = `
+      <div class="card empty-card">
+        <p>No virus found for "<strong>${esc(term)}</strong>".</p>
+        <p class="meta">Try the full scientific name — for example "SARS-CoV-2", "Influenza A virus", or "Human immunodeficiency virus 1".</p>
+      </div>`;
+  }
+
+  function renderEntry(data){
+    showResults();
+    const {
+      taxonId, scientificName, commonName, family, genus, order,
+      lineage, genomeType, hosts, refAccession, proteins
+    } = data;
+
+    const saved = isViroBookmarked(taxonId);
+
+    const displayName = commonName || scientificName;
+    const summary = VIRUS_SUMMARIES[taxonId] || null;
+
+    // Build lineage breadcrumb — extract the useful parts
+    const lineageParts = lineage ? lineage.split(';').map(s => s.trim()).filter(Boolean) : [];
+    // Show the last 4 meaningful levels
+    const lineageDisplay = lineageParts.slice(-4).join(' › ');
+
+    const taxonomyRows = [
+      family && `<div class="two-col-row"><span class="field-label" style="margin:0;">family</span><span class="field-body" style="margin:0;">${esc(family)}</span></div>`,
+      genus  && `<div class="two-col-row"><span class="field-label" style="margin:0;">genus</span><span class="field-body" style="margin:0;">${esc(genus)}</span></div>`,
+      genomeType && `<div class="two-col-row"><span class="field-label" style="margin:0;">genome type</span><span class="field-body" style="margin:0;">${esc(genomeType)}</span></div>`,
+      hosts.length > 0 && `<div class="two-col-row"><span class="field-label" style="margin:0;">natural hosts</span><span class="field-body" style="margin:0;">${hosts.map(esc).join(', ')}</span></div>`,
+      refAccession && `<div class="two-col-row"><span class="field-label" style="margin:0;">reference genome</span><span class="field-body" style="margin:0;"><a href="https://www.ncbi.nlm.nih.gov/nuccore/${esc(refAccession)}" target="_blank" rel="noopener">${esc(refAccession)} ↗</a></span></div>`,
+    ].filter(Boolean).join('');
+
+    const proteinsHtml = proteins && proteins.length > 0
+      ? `<div class="go-tags">${proteins.map(p =>
+          `<button type="button" class="go-tag go-clickable" data-gene="${esc(p.accession)}" title="${esc(p.function || p.name)}">${esc(p.gene || p.name)}</button>`
+        ).join('')}</div>
+        <p class="meta" style="margin-top:8px; font-style:italic;">Links open in the genes &amp; proteins index.</p>`
+      : `<p class="empty-note">No reviewed proteins found for this entry.</p>`;
+
+    const summaryHtml = summary
+      ? `<p class="field-body" style="margin-top:10px; padding-top:10px; border-top:1px solid var(--line);">${esc(summary)}</p>`
+      : '';
+
+    cardEl.innerHTML = `
+      <div class="card">
+        <div class="card-hole" aria-hidden="true"></div>
+        <div class="card-top">
+          <span class="tag mono">VIRUS &middot; ${esc(family || 'unclassified')}</span>
+          <span class="card-top-right">
+            <span class="organism">${esc(scientificName)}</span>
+            <button type="button" class="bookmark-btn bookmark-icon-only${saved ? ' is-saved' : ''}" id="viro-bookmark-toggle" aria-label="${saved ? 'Remove from saved' : 'Add to saved'}" title="${saved ? 'Remove from saved' : 'Add to saved'}">
+              <span class="bookmark-icon">${saved ? '★' : '☆'}</span>
+            </button>
+          </span>
+        </div>
+        <h2 class="entry-name"><span class="gene-tag mono">${esc(scientificName)}</span>${esc(displayName.charAt(0).toUpperCase() + displayName.slice(1))}</h2>
+        ${lineageDisplay ? `<p class="meta mono" style="margin-bottom:0;">${esc(lineageDisplay)}</p>` : ''}
+        <div class="rule"></div>
+        <section class="field">
+          <h3 class="field-label">overview</h3>
+          ${summaryHtml
+            ? `<p class="field-body">${esc(summary)}</p>`
+            : `<p class="empty-note">No curated summary available for this virus.</p>`}
+        </section>
+        <div class="rule"></div>
+        <section class="field">
+          <h3 class="field-label">taxonomy &amp; classification</h3>
+          <div style="display:flex; flex-direction:column; gap:8px;">${taxonomyRows}</div>
+        </section>
+        <div class="rule"></div>
+        <section class="field">
+          <h3 class="field-label">key proteins</h3>
+          ${proteinsHtml}
+        </section>
+      </div>`;
+
+    // Bookmark toggle
+    const bmBtn = document.getElementById('viro-bookmark-toggle');
+    bmBtn?.addEventListener('click', async () => {
+      const nowSaved = toggleViroBookmark(taxonId, scientificName, commonName, genomeType);
+      bmBtn.classList.toggle('is-saved', nowSaved);
+      bmBtn.querySelector('.bookmark-icon').textContent = nowSaved ? '★' : '☆';
+      const label = nowSaved ? 'Remove from saved' : 'Add to saved';
+      bmBtn.setAttribute('aria-label', label);
+      bmBtn.setAttribute('title', label);
+
+      // DB sync if signed in
+      const user = window.SpecimenAuth?.currentUser();
+      if(user){
+        const endpoint = nowSaved ? '/virology/save' : '/virology/remove';
+        await fetch(endpoint, {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(nowSaved
+            ? { taxon_id: taxonId, name: scientificName, common_name: commonName, genome_type: genomeType }
+            : { taxon_id: taxonId }
+          ),
+        }).catch(() => {});
+        if(nowSaved) awardXp('save_card');
+      }
+    });
+
+    // Key protein chips — open in genes & proteins index
+    cardEl.querySelectorAll('.go-clickable[data-gene]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        window.open(`genes.html?q=${encodeURIComponent(btn.dataset.gene)}`, '_blank');
+      });
+    });
+  }
+
+  async function runSearch(term){
+    if(!term || !term.trim()) return;
+    renderLoading(term);
+    try{
+      const res = await fetch(`/api/virus?q=${encodeURIComponent(term.trim())}`);
+      const data = await res.json();
+      if(!data.result){ renderNotFound(term); return; }
+      renderEntry(data.result);
+      awardXp('search_term', term.trim().toLowerCase());
+    }catch(e){
+      cardEl.innerHTML = `<div class="card empty-card"><p>Couldn't reach the server just now. Please try again.</p></div>`;
+    }
+  }
+
+  // Browse-all button
+  document.getElementById('viro-browse-all').addEventListener('click', showBrowse);
+
+  // Tile clicks
+  document.querySelectorAll('.cb-tile[data-term]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      input.value = btn.dataset.term;
+      runSearch(btn.dataset.term);
+    });
+  });
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    runSearch(input.value);
+  });
+
+  // URL param support
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialQuery = urlParams.get('q');
+  if(initialQuery){
+    input.value = initialQuery;
+    runSearch(initialQuery);
+  }
+</script>
+<script src="auth.js"></script>
+</body>
+</html>
