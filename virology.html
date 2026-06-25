@@ -18,6 +18,8 @@
     border: 0.5px solid var(--line, #D4D8D0);
     border-radius: 6px;
     flex-wrap: wrap;
+    position: relative;
+    z-index: 0;
   }
   .viro-int-viral {
     font-size: 11.5px; font-family: 'IBM Plex Mono', monospace; font-weight: 500;
@@ -287,7 +289,9 @@
         <div class="rule"></div>
         <section class="field" id="viro-interactions-section">
           <h3 class="field-label">host-pathogen interactions</h3>
-          <p class="loading-line mono" style="font-size:12px;">Loading interaction data…</p>
+          <div style="min-height:200px;">
+            <p class="loading-line mono" style="font-size:12px;">Loading interaction data…</p>
+          </div>
         </section>
       </div>`;
 
