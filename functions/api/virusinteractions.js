@@ -62,10 +62,16 @@ export async function onRequestGet({ request, env }) {
     const taxIdB = taxB.match(/taxid:(\d+)/)?.[1] || '';
 
     // One must be the virus, one must be human (9606)
-    const viralSide = taxIdA === taxonId ? 'A' : taxIdB === taxonId ? 'B' : null;
-    if (!viralSide) continue;
-    const humanSide = viralSide === 'A' ? 'B' : 'A';
-    if ((viralSide === 'A' ? taxIdB : taxIdA) !== '9606') continue;
+    // IntAct may store virus at strain level — check both cols
+    const aIsVirus = taxIdA === taxonId || (taxIdA !== '9606' && taxIdB === '9606');
+    const bIsVirus = taxIdB === taxonId || (taxIdB !== '9606' && taxIdA === '9606');
+
+    let viralSide = null;
+    if (taxIdA === taxonId && taxIdB === '9606') viralSide = 'A';
+    else if (taxIdB === taxonId && taxIdA === '9606') viralSide = 'B';
+    else if (taxIdB === '9606' && taxIdA !== '9606' && taxIdA !== '') viralSide = 'A';
+    else if (taxIdA === '9606' && taxIdB !== '9606' && taxIdB !== '') viralSide = 'B';
+    else continue;
 
     // Extract gene names from alias columns (cols 4 and 5)
     // Alias format: "uniprotkb:GENE_HUMAN(gene name synonym)|..." or "intact:EBI-...(display_short)|..."
@@ -74,8 +80,13 @@ export async function onRequestGet({ request, env }) {
 
     const viralGene      = extractGeneName(aliasViralCol) || extractAccession(viralSide === 'A' ? cols[0] : cols[1]);
     const humanGene      = extractGeneName(aliasHumanCol) || extractAccession(viralSide === 'A' ? cols[1] : cols[0]);
-    const viralAccession = extractAccession(viralSide === 'A' ? cols[0] : cols[1]) || '';
-    const humanAccession = extractAccession(viralSide === 'A' ? cols[1] : cols[0]) || '';
+
+    // Extract accessions — double-check by also trying alt columns
+    const viralAccessionA = extractAccession(cols[0]) || '';
+    const viralAccessionB = extractAccession(cols[1]) || '';
+    // Use the column matching viralSide
+    const viralAccession = viralSide === 'A' ? viralAccessionA : viralAccessionB;
+    const humanAccession = viralSide === 'A' ? viralAccessionB : viralAccessionA;
 
     if (!viralGene || !humanGene) continue;
 
