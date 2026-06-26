@@ -2,12 +2,15 @@ import { corsHeaders, getSessionToken } from '../_auth_utils.js';
 
 // XP values per action
 const XP_VALUES = {
-  save_card:  10,
-  search_term: 5,
+  save_card:    10,
+  search_term:   5,
+  quiz_answer:  15,  // per correct answer; bonus handled client-side
 };
 
 // After this level, save_card and search_term no longer earn XP
+// quiz_answer is never capped — it's the primary progression path
 const PASSIVE_XP_CAP_LEVEL = 5;
+const UNCAPPED_ACTIONS = new Set(['quiz_answer']);
 
 // Level thresholds — XP required to reach each level
 const LEVEL_THRESHOLDS = [
@@ -75,7 +78,7 @@ export async function onRequestPost({ request, env }) {
 
     // Enforce cap — passive actions earn no XP above level 5
     const isPassive = action === 'save_card' || action === 'search_term';
-    if (isPassive && currentLevel >= PASSIVE_XP_CAP_LEVEL) {
+    if (isPassive && !UNCAPPED_ACTIONS.has(action) && currentLevel >= PASSIVE_XP_CAP_LEVEL) {
       return new Response(JSON.stringify({
         ok: true, xp_awarded: 0, xp: currentXp, level: currentLevel,
         title: LEVEL_TITLES[currentLevel - 1], capped: true,
