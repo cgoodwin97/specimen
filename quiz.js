@@ -116,6 +116,7 @@
   function renderBranchPicker(){
     getContent().innerHTML = `
       <div class="quiz-wrap">
+        <button type="button" class="modal-close-btn" id="quiz-modal-close" aria-label="Close">&times;</button>
         <div class="quiz-header">
           <p class="quiz-title">Quizzes</p>
           <p class="quiz-sub">Choose a branch to start a 10-question quiz.</p>
@@ -156,6 +157,7 @@
 
     getContent().innerHTML = `
       <div class="quiz-wrap">
+        <button type="button" class="modal-close-btn" id="quiz-modal-close" aria-label="Close">&times;</button>
         <div class="quiz-progress-bar-wrap">
           <div class="quiz-progress-bar" style="width:${(qIndex / 10) * 100}%"></div>
         </div>
@@ -227,6 +229,7 @@
 
     getContent().innerHTML = `
       <div class="quiz-wrap">
+        <button type="button" class="modal-close-btn" id="quiz-modal-close" aria-label="Close">&times;</button>
         <div class="quiz-header" style="text-align:center;">
           <p class="quiz-title">${esc(branchLabel)} Quiz</p>
           <div class="quiz-score-circle">
@@ -259,17 +262,16 @@
     const el = document.createElement('div');
     el.innerHTML = `
       <div class="modal-overlay" id="quiz-modal-overlay" hidden>
-        <div class="modal-card-wrap quiz-modal-wrap">
-          <button type="button" class="modal-close-btn" id="quiz-modal-close" aria-label="Close">&times;</button>
+        <div class="modal-card-wrap" style="max-width:520px;">
           <div id="quiz-modal-content"></div>
         </div>
       </div>`;
     document.body.appendChild(el.firstElementChild);
 
-    // Close handlers
-    document.getElementById('quiz-modal-close').addEventListener('click', closeQuizModal);
+    // Close handlers — use delegation since close btn is inside re-rendered content
     document.getElementById('quiz-modal-overlay').addEventListener('click', e => {
       if(e.target === document.getElementById('quiz-modal-overlay')) closeQuizModal();
+      if(e.target.id === 'quiz-modal-close' || e.target.closest('#quiz-modal-close')) closeQuizModal();
     });
     document.addEventListener('keydown', e => {
       if(e.key === 'Escape' && !document.getElementById('quiz-modal-overlay').hidden) closeQuizModal();
