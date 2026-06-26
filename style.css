@@ -672,6 +672,186 @@ a:hover{text-decoration-color:var(--moss);}
   .cb-structure-grid{ grid-template-columns:repeat(2,1fr); }
 }
 
+/* ---------- Quiz modal ---------- */
+.quiz-wrap{
+  background: var(--card);
+  border: 0.5px solid var(--line);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.quiz-progress-bar-wrap{
+  height: 3px;
+  background: var(--line);
+  width: 100%;
+}
+.quiz-progress-bar{
+  height: 100%;
+  background: var(--moss);
+  transition: width 0.3s ease;
+}
+.quiz-header{
+  padding: 22px 24px 16px;
+  border-bottom: 0.5px solid var(--line);
+}
+.quiz-title{
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+.quiz-sub{
+  font-size: 13px;
+  color: var(--mute);
+  margin: 0;
+}
+.quiz-meta-row{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.quiz-branch-tag{
+  font-size: 10.5px;
+  color: var(--moss);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.quiz-counter{
+  font-size: 11px;
+  color: var(--mute);
+}
+.quiz-question{
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink);
+  margin: 0;
+}
+.quiz-options{
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.quiz-option{
+  width: 100%;
+  padding: 11px 16px;
+  background: var(--paper);
+  border: 0.5px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+  font-family: inherit;
+}
+.quiz-option:hover:not(:disabled){ border-color: var(--moss); background: #EDF7F3; }
+.quiz-option.correct{ border-color: var(--moss); background: #E1F5EE; color: #085041; font-weight: 500; }
+.quiz-option.incorrect{ border-color: var(--rust); background: #FAEAE4; color: var(--rust); }
+.quiz-option:disabled{ cursor: default; }
+.quiz-feedback{
+  padding: 0 24px 20px;
+}
+.quiz-fb-correct{
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--moss);
+  margin: 0 0 10px;
+}
+.quiz-fb-incorrect{
+  font-size: 13.5px;
+  color: var(--rust);
+  margin: 0 0 10px;
+}
+.quiz-next-btn{
+  font-size: 13px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--card);
+  background: var(--moss);
+  border: none;
+  border-radius: 7px;
+  padding: 8px 18px;
+  cursor: pointer;
+  transition: opacity 0.12s;
+}
+.quiz-next-btn:hover{ opacity: 0.88; }
+.quiz-branch-grid{
+  padding: 16px 24px 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.quiz-branch-btn{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 16px;
+  background: var(--paper);
+  border: 0.5px solid var(--line);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.12s;
+  color: var(--moss);
+  font-family: inherit;
+}
+.quiz-branch-btn:hover{ border-color: var(--moss); }
+.quiz-branch-name{
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.quiz-branch-desc{
+  font-size: 11.5px;
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--mute);
+}
+.quiz-score-circle{
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+  margin: 16px 0 4px;
+}
+.quiz-score-num{
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 52px;
+  font-weight: 500;
+  color: var(--moss);
+  line-height: 1;
+}
+.quiz-score-denom{
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 18px;
+  color: var(--mute);
+}
+.quiz-score-pct{
+  font-size: 13px;
+  color: var(--mute);
+  margin: 0 0 6px;
+}
+.quiz-score-msg{
+  font-size: 15px;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+.quiz-bonus-note{
+  font-size: 11px;
+  color: var(--moss);
+  margin: 4px 0 0;
+}
+.quiz-results-actions{
+  padding: 16px 24px 24px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
 /* ---------- Footer ---------- */
 .site-footer{
   border-top:1px solid var(--line);
