@@ -238,16 +238,17 @@
   async function renderDB(){
     let genes = [], structs = [], viruses = [];
     try{
-      const [gRes, sRes] = await Promise.all([
+      const [gRes, sRes, vRes] = await Promise.all([
         fetch('/genes/list', { credentials: 'include' }),
         fetch('/cellbiology/list', { credentials: 'include' }),
+        fetch('/virology/list', { credentials: 'include' }),
       ]);
       const gData = await gRes.json();
       const sData = await sRes.json();
+      const vData = await vRes.json();
       if(gData.ok) genes = gData.genes || [];
       if(sData.ok) structs = sData.structures || [];
-      // Virology is localStorage-only for now
-      viruses = loadViroBookmarks();
+      if(vData.ok) viruses = vData.viruses || [];
     } catch(e){
       render(); return;
     }
@@ -309,8 +310,12 @@
       });
     }
     if(anyViruses){
-      bindViroCards(document.getElementById('viro-grid'), taxonId => {
-        saveViroBookmarks(loadViroBookmarks().filter(b => b.taxon_id !== taxonId));
+      bindViroCards(document.getElementById('viro-grid'), async taxonId => {
+        await fetch('/virology/remove', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ taxon_id: taxonId }),
+        });
         renderDB();
       });
     }
