@@ -54,6 +54,7 @@
 <script>
   const BOOKMARKS_KEY    = 'specimen.bookmarks.v1';
   const CB_BOOKMARKS_KEY = 'specimen.cb.bookmarks.v1';
+  const VIRO_BOOKMARKS_KEY = 'specimen.viro.bookmarks.v1';
 
   const slot     = document.getElementById('bookmark-slot');
   const clearLink = document.getElementById('clear-bookmarks-link');
@@ -81,6 +82,12 @@
   }
   function saveCbBookmarks(list){
     try{ localStorage.setItem(CB_BOOKMARKS_KEY, JSON.stringify(list)); } catch(e){}
+  }
+  function loadViroBookmarks(){
+    try{ return safeParse(localStorage.getItem(VIRO_BOOKMARKS_KEY), []); } catch(e){ return []; }
+  }
+  function saveViroBookmarks(list){
+    try{ localStorage.setItem(VIRO_BOOKMARKS_KEY, JSON.stringify(list)); } catch(e){}
   }
 
   // ---------- Section heading ----------
@@ -132,6 +139,28 @@
     });
   }
 
+  // ---------- Virology cards ----------
+  function viroCardsHtml(list){
+    return list.map(b => `
+      <div class="bookmark-card" data-taxon="${esc(b.taxon_id)}" tabindex="0" role="button">
+        <button type="button" class="bm-remove" data-taxon="${esc(b.taxon_id)}" aria-label="Remove from saved" title="Remove from saved">&times;</button>
+        <span class="bm-gene mono">${esc(b.taxon_id)}</span>
+        <p class="bm-name">${esc(b.name || b.common_name)}</p>
+        <p class="bm-meta">${b.genome_type ? esc(b.genome_type) : 'virus'}</p>
+      </div>`).join('');
+  }
+
+  function bindViroCards(container, onRemove){
+    container.querySelectorAll('.bookmark-card').forEach(card => {
+      const openIt = () => openViroModal(card.dataset.taxon);
+      card.addEventListener('click', e => { if(e.target.closest('.bm-remove')) return; openIt(); });
+      card.addEventListener('keydown', e => { if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openIt(); }});
+    });
+    container.querySelectorAll('.bm-remove').forEach(btn => {
+      btn.addEventListener('click', e => { e.stopPropagation(); onRemove(btn.dataset.taxon); });
+    });
+  }
+
   // ---------- Empty state ----------
   function emptyHtml(category, href, linkLabel){
     return `<div class="bookmark-empty" style="margin-bottom:14px;">
@@ -144,10 +173,12 @@
   function render(){
     const genes = loadBookmarks();
     const structs = loadCbBookmarks();
+    const viruses = loadViroBookmarks();
     const anyGenes = genes.length > 0;
     const anyStructs = structs.length > 0;
+    const anyViruses = viruses.length > 0;
 
-    clearLink.hidden = !anyGenes && !anyStructs;
+    clearLink.hidden = !anyGenes && !anyStructs && !anyViruses;
 
     let html = '';
 
@@ -162,12 +193,22 @@
     html += `</div>`;
 
     // Cell Biology section
-    html += `<div>`;
+    html += `<div style="margin-bottom:36px;">`;
     html += sectionHeading('Cell Biology', structs.length);
     if(anyStructs){
       html += `<div class="bookmark-grid" id="cb-grid">${cbCardsHtml(structs)}</div>`;
     } else {
       html += emptyHtml('cell biology', 'cellbiology.html', 'cell biology');
+    }
+    html += `</div>`;
+
+    // Virology section
+    html += `<div>`;
+    html += sectionHeading('Virology', viruses.length);
+    if(anyViruses){
+      html += `<div class="bookmark-grid" id="viro-grid">${viroCardsHtml(viruses)}</div>`;
+    } else {
+      html += emptyHtml('virology', 'virology.html', 'virology');
     }
     html += `</div>`;
 
@@ -185,12 +226,17 @@
         render();
       });
     }
+    if(anyViruses){
+      bindViroCards(document.getElementById('viro-grid'), taxonId => {
+        saveViroBookmarks(loadViroBookmarks().filter(b => b.taxon_id !== taxonId));
+        render();
+      });
+    }
   }
 
   // ---------- Render (DB, signed in) ----------
   async function renderDB(){
-    // Fetch both in parallel
-    let genes = [], structs = [];
+    let genes = [], structs = [], viruses = [];
     try{
       const [gRes, sRes] = await Promise.all([
         fetch('/genes/list', { credentials: 'include' }),
@@ -200,6 +246,8 @@
       const sData = await sRes.json();
       if(gData.ok) genes = gData.genes || [];
       if(sData.ok) structs = sData.structures || [];
+      // Virology is localStorage-only for now
+      viruses = loadViroBookmarks();
     } catch(e){
       render(); return;
     }
@@ -207,6 +255,7 @@
     clearLink.hidden = true;
     const anyGenes = genes.length > 0;
     const anyStructs = structs.length > 0;
+    const anyViruses = viruses.length > 0;
 
     let html = '';
 
@@ -219,12 +268,21 @@
     }
     html += `</div>`;
 
-    html += `<div>`;
+    html += `<div style="margin-bottom:36px;">`;
     html += sectionHeading('Cell Biology', structs.length);
     if(anyStructs){
       html += `<div class="bookmark-grid" id="cb-grid">${cbCardsHtml(structs)}</div>`;
     } else {
       html += emptyHtml('cell biology', 'cellbiology.html', 'cell biology');
+    }
+    html += `</div>`;
+
+    html += `<div>`;
+    html += sectionHeading('Virology', viruses.length);
+    if(anyViruses){
+      html += `<div class="bookmark-grid" id="viro-grid">${viroCardsHtml(viruses)}</div>`;
+    } else {
+      html += emptyHtml('virology', 'virology.html', 'virology');
     }
     html += `</div>`;
 
@@ -250,12 +308,19 @@
         renderDB();
       });
     }
+    if(anyViruses){
+      bindViroCards(document.getElementById('viro-grid'), taxonId => {
+        saveViroBookmarks(loadViroBookmarks().filter(b => b.taxon_id !== taxonId));
+        renderDB();
+      });
+    }
   }
 
   // ---------- Clear all ----------
   clearLink.addEventListener('click', () => {
     saveBookmarks([]);
     saveCbBookmarks([]);
+    saveViroBookmarks([]);
     render();
   });
 
@@ -457,6 +522,77 @@
         </section>
         <div class="rule"></div>
         <p class="meta"><a href="cellbiology.html?q=${encodeURIComponent(name)}">Open full record on cell biology &rarr;</a></p>
+      </div>`;
+  }
+
+  // ---------- Virology modal ----------
+  const VIRUS_SUMMARIES = {
+    '2697049': 'SARS-CoV-2 is the coronavirus responsible for COVID-19. It spreads primarily through respiratory droplets and targets cells via the ACE2 receptor.',
+    '11520':   'Influenza A is the most clinically significant flu virus, causing seasonal epidemics and periodic pandemics. It mutates rapidly through antigenic drift and shift.',
+    '11676':   'HIV-1 is the primary cause of AIDS worldwide. It targets CD4+ T cells, gradually destroying the immune system.',
+    '128952':  'Ebola is a filovirus causing severe hemorrhagic fever with high fatality rates. It spreads through direct contact with bodily fluids of infected individuals.',
+    '10359':   'Hepatitis B is a DNA virus that infects the liver, causing acute and chronic disease. Chronic infection significantly increases the risk of cirrhosis and liver cancer.',
+    '11103':   'Hepatitis C is an RNA virus that primarily infects the liver. Direct-acting antiviral drugs now cure over 95% of infections.',
+    '11234':   'Measles is one of the most contagious viruses known. The MMR vaccine provides effective protection.',
+    '11292':   'Rabies is almost universally fatal once symptoms appear. Post-exposure vaccination before symptom onset is effective.',
+    '12637':   'Dengue is the most prevalent mosquito-borne viral disease globally, with four serotypes that can interact dangerously on re-infection.',
+    '64320':   'Zika virus causes mild illness in most adults but severe microcephaly in babies born to infected mothers.',
+    '10244':   'Mpox is an orthopoxvirus related to smallpox, causing a characteristic pustular rash transmitted through close contact.',
+    '142786':  'Norovirus is the leading cause of viral gastroenteritis worldwide, notorious for outbreaks on cruise ships and in care homes.',
+    '28875':   'Rotavirus is the leading cause of severe diarrhoeal disease in young children globally.',
+    '10566':   'HPV is the most common sexually transmitted infection and the primary cause of cervical cancer.',
+    '10298':   'HSV-1 typically causes oral herpes and establishes lifelong latency in sensory neurons.',
+    '10335':   'Varicella-zoster virus causes chickenpox on first infection and can reactivate decades later as shingles.',
+    '12110':   'Poliovirus was once a major cause of paralytic disease; vaccination has reduced cases by over 99% since 1988.',
+    '11089':   'Yellow fever is a mosquito-borne flavivirus; a single-dose vaccine provides lifelong protection in most recipients.',
+    '11082':   'West Nile virus is transmitted by Culex mosquitoes and is now endemic across North America.',
+    '11269':   'Marburg virus is a filovirus closely related to Ebola, causing rare but highly lethal hemorrhagic fever outbreaks.',
+  };
+
+  async function openViroModal(taxonId){
+    overlay.hidden = false;
+    modalContent.innerHTML = '<div class="card loading-card"><p class="loading-line mono">Pulling the saved record…</p></div>';
+    document.body.style.overflow = 'hidden';
+
+    // Use stored data as base, then try live fetch
+    const stored = loadViroBookmarks().find(b => b.taxon_id === taxonId);
+    let name = stored?.name || taxonId;
+    let commonName = stored?.common_name || '';
+    let genomeType = stored?.genome_type || '';
+    let family = '';
+
+    try{
+      const res = await fetch('/api/virus?q=' + encodeURIComponent(stored?.name || taxonId));
+      const data = await res.json();
+      if(data.result){
+        name = data.result.scientificName || name;
+        commonName = data.result.commonName || commonName;
+        genomeType = data.result.genomeType || genomeType;
+        family = data.result.family || '';
+      }
+    } catch(e){ /* use stored data */ }
+
+    const displayName = commonName || name;
+    const summary = VIRUS_SUMMARIES[taxonId] || null;
+
+    modalContent.innerHTML = `
+      <div class="card">
+        <div class="card-hole" aria-hidden="true"></div>
+        <div class="card-top">
+          <span class="tag mono">VIRUS${family ? ' &middot; ' + esc(family) : ''}</span>
+          <span class="organism">${esc(name)}</span>
+        </div>
+        <h2 class="entry-name"><span class="gene-tag mono">${esc(name)}</span>${esc(displayName.charAt(0).toUpperCase() + displayName.slice(1))}</h2>
+        ${genomeType ? `<p class="meta mono" style="margin-bottom:0;">${esc(genomeType)}</p>` : ''}
+        <div class="rule"></div>
+        <section class="field">
+          <h3 class="field-label">overview</h3>
+          ${summary
+            ? `<p class="field-body">${esc(summary)}</p>`
+            : `<p class="empty-note">No curated summary available.</p>`}
+        </section>
+        <div class="rule"></div>
+        <p class="meta"><a href="virology.html?q=${encodeURIComponent(name)}">Open full record on virology &rarr;</a></p>
       </div>`;
   }
 
