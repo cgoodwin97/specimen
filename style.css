@@ -852,6 +852,30 @@ a:hover{text-decoration-color:var(--moss);}
   gap: 10px;
 }
 
+/* ---------- Card tabs ---------- */
+.card-tabs{
+  display:flex; gap:0;
+  border-bottom:0.5px solid var(--line);
+  margin:0 0 0;
+  padding:0 1.25rem;
+  overflow-x:auto;
+  scrollbar-width:none;
+}
+.card-tabs::-webkit-scrollbar{ display:none; }
+.card-tab{
+  font-size:11.5px; font-family:'IBM Plex Mono',monospace;
+  color:var(--mute); background:none; border:none;
+  padding:10px 14px; cursor:pointer;
+  border-bottom:2px solid transparent;
+  margin-bottom:-0.5px;
+  white-space:nowrap;
+  transition:color 0.12s, border-color 0.12s;
+}
+.card-tab:hover{ color:var(--ink); }
+.card-tab.active{ color:var(--moss); border-bottom-color:var(--moss); font-weight:500; }
+.card-tab-panel{ display:none; padding:14px 1.25rem 1.25rem; }
+.card-tab-panel.active{ display:block; }
+
 /* ---------- Disease associations ---------- */
 .cb-disease-list{ display:flex; flex-direction:column; gap:6px; }
 .cb-disease-row{

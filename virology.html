@@ -305,6 +305,33 @@
       ? `<p class="field-body" style="margin-top:10px; padding-top:10px; border-top:1px solid var(--line);">${esc(summary)}</p>`
       : '';
 
+    const dp = DISEASE_PROFILES[taxonId] || null;
+    const replication = REPLICATION_SUMMARIES[taxonId] || null;
+
+    const dpHtml = dp ? `
+      <div class="viro-disease-grid">
+        <div class="viro-disease-card">
+          <p class="viro-disease-label">disease</p>
+          <p class="viro-disease-value">${esc(dp.disease)}</p>
+          ${dp.fullName !== dp.disease ? `<p class="viro-disease-sub">${esc(dp.fullName)}</p>` : ''}
+        </div>
+        <div class="viro-disease-card">
+          <p class="viro-disease-label">systems affected</p>
+          <p class="viro-disease-value">${esc(dp.systems)}</p>
+        </div>
+        <div class="viro-disease-card">
+          <p class="viro-disease-label">transmission</p>
+          <p class="viro-disease-value">${esc(dp.transmission)}</p>
+        </div>
+        <div class="viro-disease-card">
+          <p class="viro-disease-label">prevention &amp; treatment</p>
+          <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
+            ${dp.vaccine ? '<span class="viro-pill viro-pill--vaccine">vaccine available</span>' : '<span class="viro-pill viro-pill--novax">no vaccine</span>'}
+            ${dp.treatment ? `<span class="viro-pill viro-pill--treat" title="${esc(dp.treatment)}">${esc(dp.treatment.split('(')[0].trim())}</span>` : ''}
+          </div>
+        </div>
+      </div>` : '<p class="empty-note">No disease profile available for this virus.</p>';
+
     cardEl.innerHTML = `
       <div class="card">
         <div class="card-hole" aria-hidden="true"></div>
@@ -318,68 +345,56 @@
           </span>
         </div>
         <h2 class="entry-name"><span class="gene-tag mono">${esc(scientificName)}</span>${esc(displayName.charAt(0).toUpperCase() + displayName.slice(1))}</h2>
-        ${lineageDisplay ? `<p class="meta mono" style="margin-bottom:0;">${esc(lineageDisplay)}</p>` : ''}
-        <div class="rule"></div>
-        <section class="field">
-          <h3 class="field-label">overview</h3>
-          ${summaryHtml
+        ${lineageDisplay ? `<p class="meta mono" style="margin:0; padding:0 1.25rem;">${esc(lineageDisplay)}</p>` : ''}
+
+        <div class="card-tabs" role="tablist">
+          <button type="button" class="card-tab active" data-tab="overview" role="tab">overview</button>
+          <button type="button" class="card-tab" data-tab="classification" role="tab">classification</button>
+          ${replication ? '<button type="button" class="card-tab" data-tab="replication" role="tab">replication</button>' : ''}
+          <button type="button" class="card-tab" data-tab="proteins" role="tab">proteins</button>
+          <button type="button" class="card-tab" data-tab="interactions" role="tab">interactions</button>
+          <button type="button" class="card-tab" data-tab="disease" role="tab">disease</button>
+        </div>
+
+        <div class="card-tab-panel active" id="viro-tab-overview">
+          ${summary
             ? `<p class="field-body">${esc(summary)}</p>`
             : `<p class="empty-note">No curated summary available for this virus.</p>`}
-        </section>
-        <div class="rule"></div>
-        <section class="field">
-          <h3 class="field-label">taxonomy &amp; classification</h3>
-          <div style="display:flex; flex-direction:column; gap:8px;">${taxonomyRows}</div>
-        </section>
-        ${REPLICATION_SUMMARIES[taxonId] ? `
-        <div class="rule"></div>
-        <section class="field">
-          <h3 class="field-label">replication cycle</h3>
-          <p class="field-body">${esc(REPLICATION_SUMMARIES[taxonId])}</p>
-        </section>` : ''}
-        ${(() => {
-          const dp = DISEASE_PROFILES[taxonId];
-          if(!dp) return '';
-          return `<div class="rule"></div>
-        <section class="field">
-          <h3 class="field-label">disease profile</h3>
-          <div class="viro-disease-grid">
-            <div class="viro-disease-card">
-              <p class="viro-disease-label">disease</p>
-              <p class="viro-disease-value">${esc(dp.disease)}</p>
-              ${dp.fullName !== dp.disease ? `<p class="viro-disease-sub">${esc(dp.fullName)}</p>` : ''}
-            </div>
-            <div class="viro-disease-card">
-              <p class="viro-disease-label">systems affected</p>
-              <p class="viro-disease-value">${esc(dp.systems)}</p>
-            </div>
-            <div class="viro-disease-card">
-              <p class="viro-disease-label">transmission</p>
-              <p class="viro-disease-value">${esc(dp.transmission)}</p>
-            </div>
-            <div class="viro-disease-card">
-              <p class="viro-disease-label">prevention &amp; treatment</p>
-              <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
-                ${dp.vaccine ? '<span class="viro-pill viro-pill--vaccine">vaccine available</span>' : '<span class="viro-pill viro-pill--novax">no vaccine</span>'}
-                ${dp.treatment ? `<span class="viro-pill viro-pill--treat" title="${esc(dp.treatment)}">${esc(dp.treatment.split('(')[0].trim())}</span>` : ''}
-              </div>
-            </div>
-          </div>
-        </section>`;
-        })()}
-        <div class="rule"></div>
-        <section class="field">
-          <h3 class="field-label">key proteins</h3>
+        </div>
+
+        <div class="card-tab-panel" id="viro-tab-classification">
+          <div style="display:flex; flex-direction:column; gap:8px;">${taxonomyRows || '<p class="empty-note">No classification data available.</p>'}</div>
+        </div>
+
+        ${replication ? `
+        <div class="card-tab-panel" id="viro-tab-replication">
+          <p class="field-body">${esc(replication)}</p>
+        </div>` : ''}
+
+        <div class="card-tab-panel" id="viro-tab-proteins">
           ${proteinsHtml}
-        </section>
-        <div class="rule"></div>
-        <section class="field" id="viro-interactions-section">
-          <h3 class="field-label">host-pathogen interactions</h3>
-          <div style="min-height:200px;">
-            <p class="loading-line mono" style="font-size:12px;">Loading interaction data…</p>
-          </div>
-        </section>
+        </div>
+
+        <div class="card-tab-panel" id="viro-tab-interactions">
+          <p class="loading-line mono" style="font-size:12px;" id="viro-interactions-loading">Loading interaction data…</p>
+        </div>
+
+        <div class="card-tab-panel" id="viro-tab-disease">
+          ${dpHtml}
+        </div>
+
       </div>`;
+
+    // Tab switching
+    cardEl.querySelectorAll('.card-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        cardEl.querySelectorAll('.card-tab').forEach(t => t.classList.remove('active'));
+        cardEl.querySelectorAll('.card-tab-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        const panelId = `viro-tab-${tab.dataset.tab}`;
+        document.getElementById(panelId)?.classList.add('active');
+      });
+    });
 
     // Bookmark toggle
     const bmBtn = document.getElementById('viro-bookmark-toggle');
@@ -455,7 +470,7 @@
   };
 
   async function fetchAndRenderInteractions(taxonId, proteins) {
-    const section = document.getElementById('viro-interactions-section');
+    const section = document.getElementById('viro-tab-interactions');
     if (!section) return;
 
     // Build both gene→accession and gene→name maps
@@ -477,8 +492,7 @@
       const list = data.interactions || [];
 
       if (list.length === 0) {
-        section.querySelector('p').textContent = 'No experimentally validated host-pathogen interactions found for this virus.';
-        section.querySelector('p').className = 'empty-note';
+        section.innerHTML = '<p class="empty-note">No experimentally validated host-pathogen interactions found for this virus.</p>';
         return;
       }
 
@@ -508,8 +522,7 @@
         });
       });
     } catch(_) {
-      const p = section.querySelector('p');
-      if (p) { p.textContent = 'Interaction data unavailable right now.'; p.className = 'empty-note'; }
+      section.innerHTML = '<p class="empty-note">Interaction data unavailable right now.</p>';
     }
   }
 

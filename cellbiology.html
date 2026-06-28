@@ -256,7 +256,7 @@
       : `<p class="empty-note">No key proteins found for this entry.</p>`;
 
 
-    const saved = isCbBookmarked(goId);
+    const diseases = DISEASE_ASSOCIATIONS[goId] || null;
 
     cardEl.innerHTML = `
       <div class="card">
@@ -272,31 +272,35 @@
         </div>
         <h2 class="entry-name"><span class="gene-tag mono">${esc(name)}</span>${esc(name.charAt(0).toUpperCase() + name.slice(1))}</h2>
         ${synonymHtml}
-        <p class="meta mono" style="margin-bottom:0;">${esc(goId)}</p>
-        <div class="rule"></div>
-        <section class="field">
-          <h3 class="field-label">function</h3>
+        <p class="meta mono" style="margin:0 0 0; padding:0 1.25rem;">${esc(goId)}</p>
+
+        <div class="card-tabs" id="cb-tabs" role="tablist">
+          <button type="button" class="card-tab active" data-tab="overview" role="tab">overview</button>
+          <button type="button" class="card-tab" data-tab="structures" role="tab">structures &amp; proteins</button>
+          ${diseases ? '<button type="button" class="card-tab" data-tab="conditions" role="tab">conditions</button>' : ''}
+        </div>
+
+        <div class="card-tab-panel active" id="cb-tab-overview">
           <p class="field-body clamp" id="cb-function-text">${esc(cleanDef)}</p>
           ${summaryHtml}
           <button type="button" class="link-btn" id="cb-function-toggle" style="margin-top:8px; display:none;">read more</button>
-        </section>
-        <div class="rule"></div>
-        <div class="two-col">
-          <section class="field">
-            <h3 class="field-label">related structures</h3>
-            ${relatedHtml}
-          </section>
-          <section class="field">
-            <h3 class="field-label">key proteins</h3>
-            ${proteinsHtml}
-          </section>
         </div>
-        ${(() => {
-          const diseases = DISEASE_ASSOCIATIONS[goId];
-          if(!diseases) return '';
-          return `<div class="rule"></div>
-        <section class="field">
-          <h3 class="field-label">associated conditions</h3>
+
+        <div class="card-tab-panel" id="cb-tab-structures">
+          <div class="two-col" style="margin:0;">
+            <section class="field" style="padding:0 12px 0 0;">
+              <h3 class="field-label">related structures</h3>
+              ${relatedHtml}
+            </section>
+            <section class="field" style="padding:0;">
+              <h3 class="field-label">key proteins</h3>
+              ${proteinsHtml}
+            </section>
+          </div>
+        </div>
+
+        ${diseases ? `
+        <div class="card-tab-panel" id="cb-tab-conditions">
           <div class="cb-disease-list">
             ${diseases.map(d => `
               <div class="cb-disease-row">
@@ -307,9 +311,20 @@
                 </div>
               </div>`).join('')}
           </div>
-        </section>`;
-        })()}
+        </div>` : ''}
+
       </div>`;
+
+    // Tab switching
+    cardEl.querySelectorAll('.card-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        cardEl.querySelectorAll('.card-tab').forEach(t => t.classList.remove('active'));
+        cardEl.querySelectorAll('.card-tab-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        const panelId = `cb-tab-${tab.dataset.tab}`;
+        document.getElementById(panelId)?.classList.add('active');
+      });
+    });
 
     // Bookmark toggle
     const bmBtn = document.getElementById('cb-bookmark-toggle');
@@ -344,8 +359,13 @@
     // Bind read more toggle
     const fnEl = document.getElementById('cb-function-text');
     const fnToggle = document.getElementById('cb-function-toggle');
-    if(fnEl && fnToggle && fnEl.scrollHeight > fnEl.clientHeight + 2){
-      fnToggle.style.display = 'inline-block';
+    if(fnEl && fnToggle){
+      // Use setTimeout to check after tab panel layout is applied
+      setTimeout(() => {
+        if(fnEl.scrollHeight > fnEl.clientHeight + 2){
+          fnToggle.style.display = 'inline-block';
+        }
+      }, 0);
       fnToggle.addEventListener('click', () => {
         if(fnEl.classList.contains('clamp')){
           fnEl.classList.remove('clamp');
