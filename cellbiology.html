@@ -181,6 +181,54 @@
     'GO:0005886': 'The boundary of the cell. The plasma membrane controls what enters and leaves, receives signals from the environment, and mediates communication with other cells.',
   };
 
+  // ---------- Disease associations by GO ID ----------
+  const DISEASE_ASSOCIATIONS = {
+    'GO:0005739': [
+      { name: 'Mitochondrial myopathy', rarity: 'rare', description: 'Muscle weakness caused by defects in mitochondrial energy production. Affects tissues with high energy demands like muscle and brain.' },
+      { name: 'Leigh syndrome', rarity: 'rare', description: 'Severe early-onset neurological disorder caused by mutations in mitochondrial or nuclear DNA that disrupt ATP synthesis.' },
+      { name: "Parkinson's disease", rarity: 'common', description: 'Mitochondrial dysfunction and oxidative stress in dopaminergic neurons is a key feature of Parkinson\'s pathology.' },
+      { name: 'MELAS syndrome', rarity: 'rare', description: 'Mitochondrial encephalomyopathy, lactic acidosis, and stroke-like episodes — caused by mutations in mitochondrial DNA.' },
+    ],
+    'GO:0005634': [
+      { name: 'Progeria (Hutchinson-Gilford)', rarity: 'rare', description: 'Rapid premature ageing caused by a mutation in lamin A, a key structural protein of the nuclear envelope and lamina.' },
+      { name: 'Various cancers', rarity: 'common', description: 'Mutations affecting nuclear regulation of gene expression — including tumour suppressor genes — are central to most cancers.' },
+    ],
+    'GO:0005764': [
+      { name: 'Gaucher disease', rarity: 'rare', description: 'A lysosomal storage disorder caused by deficiency of the enzyme glucocerebrosidase, leading to lipid accumulation in lysosomes.' },
+      { name: 'Tay-Sachs disease', rarity: 'rare', description: 'Caused by deficiency of hexosaminidase A, leading to GM2 ganglioside accumulation in neurons. Progressive and fatal in infancy.' },
+      { name: "Niemann-Pick disease", rarity: 'rare', description: 'Sphingomyelin accumulates in lysosomes due to enzyme deficiency, causing liver, spleen, and neurological damage.' },
+      { name: "Pompe disease", rarity: 'rare', description: 'Deficiency of acid alpha-glucosidase leads to glycogen accumulation in lysosomes, causing progressive muscle weakness.' },
+    ],
+    'GO:0005783': [
+      { name: "Wolfram syndrome", rarity: 'rare', description: 'ER stress caused by mutations in WFS1 leads to progressive neurodegeneration, diabetes insipidus, and vision loss.' },
+      { name: 'Various cancers', rarity: 'common', description: 'Chronic ER stress and dysregulation of the unfolded protein response is implicated in tumour survival and drug resistance.' },
+    ],
+    'GO:0005856': [
+      { name: 'Lissencephaly', rarity: 'rare', description: 'Caused by mutations in cytoskeletal proteins involved in neuronal migration, resulting in a smooth brain surface and severe disability.' },
+      { name: 'Epidermolysis bullosa simplex', rarity: 'rare', description: 'Mutations in keratin intermediate filaments cause extremely fragile skin that blisters with minor trauma.' },
+    ],
+    'GO:0005876': [
+      { name: 'Taxol-sensitive cancers', rarity: 'common', description: 'Many chemotherapy drugs target microtubule dynamics to prevent cancer cells from completing cell division.' },
+      { name: 'Primary ciliary dyskinesia', rarity: 'rare', description: 'Defects in microtubule motor proteins within cilia cause impaired mucociliary clearance and recurrent respiratory infections.' },
+    ],
+    'GO:0005813': [
+      { name: 'Microcephaly', rarity: 'rare', description: 'Mutations in centrosomal proteins disrupt neuronal division during brain development, resulting in a significantly reduced brain size.' },
+      { name: 'Seckel syndrome', rarity: 'rare', description: 'Caused by mutations in centrosomal and DNA damage response genes, leading to severe growth retardation and microcephaly.' },
+    ],
+    'GO:0005777': [
+      { name: 'Zellweger syndrome', rarity: 'rare', description: 'A peroxisome biogenesis disorder in which peroxisomes fail to form properly, causing severe neurological damage in infants.' },
+      { name: "Adrenoleukodystrophy", rarity: 'rare', description: 'An X-linked disorder in which very long chain fatty acids accumulate due to impaired peroxisomal breakdown, damaging the nervous system and adrenal glands.' },
+    ],
+    'GO:0005886': [
+      { name: 'Cystic fibrosis', rarity: 'common', description: 'Caused by mutations in the CFTR chloride channel in the plasma membrane, leading to thick mucus in the lungs and digestive tract.' },
+      { name: 'Familial hypercholesterolaemia', rarity: 'common', description: 'Mutations in LDL receptor in the plasma membrane prevent cholesterol uptake, causing severely elevated blood cholesterol.' },
+    ],
+    'GO:0031965': [
+      { name: 'Emery-Dreifuss muscular dystrophy', rarity: 'rare', description: 'Caused by mutations in nuclear envelope proteins emerin or lamin A/C, leading to muscle wasting and cardiac defects.' },
+      { name: 'Dilated cardiomyopathy', rarity: 'common', description: 'Mutations in nuclear envelope proteins, particularly lamin A/C, are a significant cause of familial dilated cardiomyopathy.' },
+    ],
+  };
+
   function renderEntry(data, term){
     showResults();
     const { goId, name, structureType, definition, synonyms, children, keyProteins } = data;
@@ -243,6 +291,24 @@
             ${proteinsHtml}
           </section>
         </div>
+        ${(() => {
+          const diseases = DISEASE_ASSOCIATIONS[goId];
+          if(!diseases) return '';
+          return `<div class="rule"></div>
+        <section class="field">
+          <h3 class="field-label">associated conditions</h3>
+          <div class="cb-disease-list">
+            ${diseases.map(d => `
+              <div class="cb-disease-row">
+                <span class="cb-disease-tag cb-disease-tag--${esc(d.rarity)}">${esc(d.rarity)}</span>
+                <div>
+                  <p class="cb-disease-name">${esc(d.name)}</p>
+                  <p class="cb-disease-desc">${esc(d.description)}</p>
+                </div>
+              </div>`).join('')}
+          </div>
+        </section>`;
+        })()}
       </div>`;
 
     // Bookmark toggle

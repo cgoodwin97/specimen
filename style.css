@@ -852,6 +852,81 @@ a:hover{text-decoration-color:var(--moss);}
   gap: 10px;
 }
 
+/* ---------- Disease associations ---------- */
+.cb-disease-list{ display:flex; flex-direction:column; gap:6px; }
+.cb-disease-row{
+  display:flex; align-items:flex-start; gap:10px;
+  padding:9px 11px;
+  background:var(--paper);
+  border:0.5px solid var(--line);
+  border-radius:var(--radius);
+}
+.cb-disease-tag{
+  font-size:10.5px; font-family:'IBM Plex Mono',monospace;
+  padding:2px 8px; border-radius:4px;
+  white-space:nowrap; flex-shrink:0; margin-top:2px;
+}
+.cb-disease-tag--rare{ background:#FAEAE4; color:#7a2e15; }
+.cb-disease-tag--common{ background:#E1F5EE; color:#085041; }
+.cb-disease-name{
+  font-size:13px; font-weight:500; color:var(--ink); margin:0 0 2px;
+}
+.cb-disease-desc{
+  font-size:12px; color:var(--mute); margin:0; line-height:1.5;
+}
+
+/* ---------- Disease associations ---------- */
+.cb-disease-list{ display:flex; flex-direction:column; gap:6px; }
+.cb-disease-row{
+  display:flex; align-items:flex-start; gap:10px;
+  padding:9px 11px;
+  background:var(--paper);
+  border:0.5px solid var(--line);
+  border-radius:var(--radius);
+}
+.cb-disease-tag{
+  font-size:10.5px; font-family:'IBM Plex Mono',monospace;
+  padding:2px 8px; border-radius:4px;
+  white-space:nowrap; flex-shrink:0; margin-top:2px;
+}
+.cb-disease-tag--rare{ background:#FAEAE4; color:#7a2e15; }
+.cb-disease-tag--common{ background:#E1F5EE; color:#085041; }
+.cb-disease-name{
+  font-size:13px; font-weight:500; color:var(--ink); margin:0 0 2px;
+}
+.cb-disease-desc{
+  font-size:12px; color:var(--mute); margin:0; line-height:1.5;
+}
+
+/* ---------- Virology disease profile ---------- */
+.viro-disease-grid{
+  display:grid; grid-template-columns:1fr 1fr; gap:8px;
+}
+.viro-disease-card{
+  background:var(--paper); border:0.5px solid var(--line);
+  border-radius:var(--radius); padding:9px 11px;
+}
+.viro-disease-label{
+  font-size:10px; font-family:'IBM Plex Mono',monospace;
+  color:var(--mute); text-transform:uppercase; letter-spacing:0.05em;
+  margin:0 0 3px;
+}
+.viro-disease-value{
+  font-size:13px; font-weight:500; color:var(--ink); margin:0;
+}
+.viro-disease-sub{
+  font-size:11.5px; color:var(--mute); margin:2px 0 0;
+}
+.viro-pill{
+  display:inline-block; font-size:10.5px;
+  font-family:'IBM Plex Mono',monospace;
+  padding:2px 8px; border-radius:20px;
+  white-space:nowrap;
+}
+.viro-pill--vaccine{ background:#E1F5EE; color:#085041; }
+.viro-pill--novax{ background:#FAEAE4; color:#7a2e15; }
+.viro-pill--treat{ background:#E6EEF8; color:#1a4a7a; }
+
 /* ---------- Footer ---------- */
 .site-footer{
   border-top:1px solid var(--line);

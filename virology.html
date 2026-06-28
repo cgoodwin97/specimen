@@ -244,6 +244,29 @@
     '11269':   'Marburg virus follows a replication cycle nearly identical to Ebola. It enters via macropinocytosis and NPC1-mediated endosomal fusion. Replication and transcription occur in cytoplasmic inclusion bodies. The virus suppresses interferon signalling early in infection, allowing rapid replication before the immune response can mount. High viral loads in blood and organs drive the severe vascular damage and multi-organ failure seen in Marburg disease.',
   };
 
+  const DISEASE_PROFILES = {
+    '2697049': { disease: 'COVID-19', fullName: 'Coronavirus disease 2019', systems: 'Respiratory, cardiovascular, neurological', transmission: 'Respiratory droplets, aerosol, fomite', vaccine: true, treatment: 'Antivirals (Paxlovid, remdesivir)' },
+    '11520':   { disease: 'Influenza', fullName: 'Seasonal and pandemic influenza', systems: 'Respiratory', transmission: 'Respiratory droplets, aerosol', vaccine: true, treatment: 'Antivirals (oseltamivir, zanamivir)' },
+    '11676':   { disease: 'AIDS', fullName: 'Acquired immunodeficiency syndrome', systems: 'Immune system', transmission: 'Sexual contact, blood, vertical', vaccine: false, treatment: 'Antiretrovirals (ART) — not curative' },
+    '128952':  { disease: 'Ebola virus disease', fullName: 'Ebola haemorrhagic fever', systems: 'Multi-organ, vascular', transmission: 'Direct contact with bodily fluids', vaccine: true, treatment: 'Monoclonal antibodies (Inmazeb, Ebanga)' },
+    '10359':   { disease: 'Hepatitis B', fullName: 'Hepatitis B virus infection', systems: 'Liver', transmission: 'Blood, sexual contact, vertical', vaccine: true, treatment: 'Antivirals (tenofovir, entecavir) — not curative' },
+    '11103':   { disease: 'Hepatitis C', fullName: 'Hepatitis C virus infection', systems: 'Liver', transmission: 'Blood contact', vaccine: false, treatment: 'Direct-acting antivirals — curative in >95%' },
+    '11234':   { disease: 'Measles', fullName: 'Rubeola', systems: 'Respiratory, skin, immune', transmission: 'Respiratory droplets, aerosol', vaccine: true, treatment: 'Supportive care only' },
+    '11292':   { disease: 'Rabies', fullName: 'Rabies encephalitis', systems: 'Nervous system', transmission: 'Animal bite (saliva)', vaccine: true, treatment: 'Post-exposure prophylaxis only — fatal once symptomatic' },
+    '12637':   { disease: 'Dengue fever', fullName: 'Dengue haemorrhagic fever', systems: 'Vascular, multi-organ', transmission: 'Aedes mosquito bite', vaccine: true, treatment: 'Supportive care only' },
+    '64320':   { disease: 'Zika virus disease', fullName: 'Zika fever / congenital Zika syndrome', systems: 'Neurological (congenital)', transmission: 'Aedes mosquito, sexual contact, vertical', vaccine: false, treatment: 'Supportive care only' },
+    '10244':   { disease: 'Mpox', fullName: 'Monkeypox disease', systems: 'Skin, lymph nodes, multi-organ', transmission: 'Close skin contact, respiratory', vaccine: true, treatment: 'Tecovirimat (TPOXX)' },
+    '142786':  { disease: 'Viral gastroenteritis', fullName: 'Norovirus gastroenteritis', systems: 'Gastrointestinal', transmission: 'Faecal-oral, contaminated food/water', vaccine: false, treatment: 'Supportive care (rehydration)' },
+    '28875':   { disease: 'Rotavirus gastroenteritis', fullName: 'Rotavirus diarrhoeal disease', systems: 'Gastrointestinal', transmission: 'Faecal-oral', vaccine: true, treatment: 'Supportive care (rehydration)' },
+    '10566':   { disease: 'HPV infection', fullName: 'Human papillomavirus infection / cervical cancer', systems: 'Epithelial, reproductive', transmission: 'Sexual contact, skin contact', vaccine: true, treatment: 'No antiviral — treat lesions/cancers directly' },
+    '10298':   { disease: 'Herpes labialis / genital herpes', fullName: 'HSV-1 infection', systems: 'Skin, mucosa, nervous system', transmission: 'Direct contact with lesions or secretions', vaccine: false, treatment: 'Antivirals (aciclovir) — suppressive, not curative' },
+    '10335':   { disease: 'Chickenpox / shingles', fullName: 'Varicella-zoster infection', systems: 'Skin, nervous system', transmission: 'Respiratory droplets, direct contact', vaccine: true, treatment: 'Antivirals (aciclovir, valaciclovir)' },
+    '12110':   { disease: 'Poliomyelitis', fullName: 'Paralytic poliomyelitis', systems: 'Nervous system, motor neurons', transmission: 'Faecal-oral', vaccine: true, treatment: 'Supportive care only — no antiviral' },
+    '11089':   { disease: 'Yellow fever', fullName: 'Yellow fever haemorrhagic disease', systems: 'Liver, vascular', transmission: 'Aedes/Haemagogus mosquito bite', vaccine: true, treatment: 'Supportive care only' },
+    '11082':   { disease: 'West Nile fever', fullName: 'West Nile neuroinvasive disease', systems: 'Neurological', transmission: 'Culex mosquito bite', vaccine: false, treatment: 'Supportive care only' },
+    '11269':   { disease: 'Marburg virus disease', fullName: 'Marburg haemorrhagic fever', systems: 'Multi-organ, vascular', transmission: 'Direct contact with bodily fluids', vaccine: false, treatment: 'Supportive care — experimental antivirals in trials' },
+  };
+
   function renderEntry(data){
     showResults();
     const {
@@ -314,6 +337,36 @@
           <h3 class="field-label">replication cycle</h3>
           <p class="field-body">${esc(REPLICATION_SUMMARIES[taxonId])}</p>
         </section>` : ''}
+        ${(() => {
+          const dp = DISEASE_PROFILES[taxonId];
+          if(!dp) return '';
+          return `<div class="rule"></div>
+        <section class="field">
+          <h3 class="field-label">disease profile</h3>
+          <div class="viro-disease-grid">
+            <div class="viro-disease-card">
+              <p class="viro-disease-label">disease</p>
+              <p class="viro-disease-value">${esc(dp.disease)}</p>
+              ${dp.fullName !== dp.disease ? `<p class="viro-disease-sub">${esc(dp.fullName)}</p>` : ''}
+            </div>
+            <div class="viro-disease-card">
+              <p class="viro-disease-label">systems affected</p>
+              <p class="viro-disease-value">${esc(dp.systems)}</p>
+            </div>
+            <div class="viro-disease-card">
+              <p class="viro-disease-label">transmission</p>
+              <p class="viro-disease-value">${esc(dp.transmission)}</p>
+            </div>
+            <div class="viro-disease-card">
+              <p class="viro-disease-label">prevention &amp; treatment</p>
+              <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;">
+                ${dp.vaccine ? '<span class="viro-pill viro-pill--vaccine">vaccine available</span>' : '<span class="viro-pill viro-pill--novax">no vaccine</span>'}
+                ${dp.treatment ? `<span class="viro-pill viro-pill--treat" title="${esc(dp.treatment)}">${esc(dp.treatment.split('(')[0].trim())}</span>` : ''}
+              </div>
+            </div>
+          </div>
+        </section>`;
+        })()}
         <div class="rule"></div>
         <section class="field">
           <h3 class="field-label">key proteins</h3>
