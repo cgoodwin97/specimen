@@ -143,6 +143,7 @@
   }
 
   function renderNotFound(term){
+    showResults();
     cardEl.innerHTML = `
       <div class="card empty-card">
         <p>No cell structure found for "<strong>${esc(term)}</strong>".</p>
@@ -153,7 +154,12 @@
           <button type="button" class="chip" data-term="ribosome">ribosome</button>
         </div>
       </div>`;
-    bindChips();
+    cardEl.querySelectorAll('.chip[data-term]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        input.value = btn.dataset.term;
+        runSearch(btn.dataset.term);
+      });
+    });
   }
 
   // ---------- Student-friendly summaries by GO ID ----------
