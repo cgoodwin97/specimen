@@ -263,6 +263,7 @@
 
 
     const diseases = DISEASE_ASSOCIATIONS[goId] || null;
+    const saved = isCbBookmarked(goId);
 
     cardEl.innerHTML = `
       <div class="card">
