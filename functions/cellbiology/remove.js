@@ -1,4 +1,4 @@
-import { corsHeaders, getSessionToken } from '../../_auth_utils.js';
+import { corsHeaders, getSessionToken } from '../_auth_utils.js';
 
 export async function onRequestPost({ request, env }) {
   const token = getSessionToken(request);
