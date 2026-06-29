@@ -354,25 +354,25 @@
               ? `<p class="field-body">${esc(summary)}</p>`
               : `<p class="empty-note">No curated summary available for this virus.</p>`}
           </div>
-          <button type="button" class="card-tab" data-tab="classification">classification <span class="card-tab-chevron">▾</span></button>
-          <div class="card-tab-panel" id="viro-tab-classification">
+          <button type="button" class="card-tab active" data-tab="classification">classification <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel active" id="viro-tab-classification">
             <div style="display:flex; flex-direction:column; gap:8px;">${taxonomyRows || '<p class="empty-note">No classification data available.</p>'}</div>
           </div>
           ${replication ? `
-          <button type="button" class="card-tab" data-tab="replication">replication cycle <span class="card-tab-chevron">▾</span></button>
-          <div class="card-tab-panel" id="viro-tab-replication">
+          <button type="button" class="card-tab active" data-tab="replication">replication cycle <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel active" id="viro-tab-replication">
             <p class="field-body">${esc(replication)}</p>
           </div>` : ''}
-          <button type="button" class="card-tab" data-tab="proteins">key proteins <span class="card-tab-chevron">▾</span></button>
-          <div class="card-tab-panel" id="viro-tab-proteins">
+          <button type="button" class="card-tab active" data-tab="proteins">key proteins <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel active" id="viro-tab-proteins">
             ${proteinsHtml}
           </div>
-          <button type="button" class="card-tab" data-tab="interactions">host-pathogen interactions <span class="card-tab-chevron">▾</span></button>
-          <div class="card-tab-panel" id="viro-tab-interactions">
+          <button type="button" class="card-tab active" data-tab="interactions">host-pathogen interactions <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel active" id="viro-tab-interactions">
             <p class="loading-line mono" style="font-size:12px;" id="viro-interactions-loading">Loading interaction data…</p>
           </div>
-          <button type="button" class="card-tab" data-tab="disease">disease profile <span class="card-tab-chevron">▾</span></button>
-          <div class="card-tab-panel" id="viro-tab-disease">
+          <button type="button" class="card-tab active" data-tab="disease">disease profile <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel active" id="viro-tab-disease">
             ${dpHtml}
           </div>
         </div>
