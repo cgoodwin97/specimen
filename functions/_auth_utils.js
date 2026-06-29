@@ -51,17 +51,10 @@ export function getSessionToken(request) {
 }
 
 // ---------- CORS headers ----------
-const ALLOWED_ORIGINS = [
-  'https://specimen.site',
-  'https://learn.specimen.site',
-];
-
-export function corsHeaders(contentType, request) {
-  const origin = request?.headers?.get('Origin') || '';
-  const allowed = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+export function corsHeaders(contentType) {
   return {
     'Content-Type': contentType,
-    'Access-Control-Allow-Origin': allowed,
+    'Access-Control-Allow-Origin': 'https://specimen.site',
     'Access-Control-Allow-Credentials': 'true',
   };
 }
