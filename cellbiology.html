@@ -288,8 +288,8 @@
             ${summaryHtml}
             <button type="button" class="link-btn" id="cb-function-toggle" style="margin-top:8px; display:none;">read more</button>
           </div>
-          <button type="button" class="card-tab" data-tab="structures">structures &amp; proteins <span class="card-tab-chevron">▾</span></button>
-          <div class="card-tab-panel" id="cb-tab-structures">
+          <button type="button" class="card-tab active" data-tab="structures">structures &amp; proteins <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel active" id="cb-tab-structures">
             <div class="two-col" style="margin:0;">
               <section class="field" style="padding:0 12px 0 0;">
                 <h3 class="field-label">related structures</h3>
@@ -302,8 +302,8 @@
             </div>
           </div>
           ${diseases ? `
-          <button type="button" class="card-tab" data-tab="conditions">conditions <span class="card-tab-chevron">▾</span></button>
-          <div class="card-tab-panel" id="cb-tab-conditions">
+          <button type="button" class="card-tab active" data-tab="conditions">conditions <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel active" id="cb-tab-conditions">
             <div class="cb-disease-list">
               ${diseases.map(d => `
                 <div class="cb-disease-row">
