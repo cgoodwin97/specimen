@@ -49,12 +49,12 @@ function calcLevel(xp) {
 
 function xpForNextLevel(level) {
   if (level >= 10) return null;
-  return LEVEL_THRESHOLDS[level];
+  return LEVEL_THRESHOLDS[level]; // index = level (0-based), so level 1 next = index 1
 }
 
 export async function onRequestPost({ request, env }) {
   const token = getSessionToken(request);
-  if (!token) return unauth(request);
+  if (!token) return unauth();
 
   const session = await env.SPECIMEN_DB.prepare(
     `SELECT s.expires_at, u.id as user_id, u.xp, u.level
@@ -62,14 +62,14 @@ export async function onRequestPost({ request, env }) {
      WHERE s.token = ?`
   ).bind(token).first();
 
-  if (!session || new Date(session.expires_at) < new Date()) return unauth(request);
+  if (!session || new Date(session.expires_at) < new Date()) return unauth();
 
   try {
     const { action, term } = await request.json();
 
     if (!XP_VALUES[action]) {
       return new Response(JSON.stringify({ ok: false, error: 'Unknown action.' }), {
-        status: 400, headers: corsHeaders('application/json', request),
+        status: 400, headers: corsHeaders('application/json'),
       });
     }
 
@@ -82,7 +82,7 @@ export async function onRequestPost({ request, env }) {
       return new Response(JSON.stringify({
         ok: true, xp_awarded: 0, xp: currentXp, level: currentLevel,
         title: LEVEL_TITLES[currentLevel - 1], capped: true,
-      }), { status: 200, headers: corsHeaders('application/json', request) });
+      }), { status: 200, headers: corsHeaders('application/json') });
     }
 
     // For search_term, check if this term was already searched
@@ -95,7 +95,7 @@ export async function onRequestPost({ request, env }) {
         return new Response(JSON.stringify({
           ok: true, xp_awarded: 0, xp: currentXp, level: currentLevel,
           title: LEVEL_TITLES[currentLevel - 1], already_searched: true,
-        }), { status: 200, headers: corsHeaders('application/json', request) });
+        }), { status: 200, headers: corsHeaders('application/json') });
       }
 
       // Record this term
@@ -123,17 +123,17 @@ export async function onRequestPost({ request, env }) {
       title:       LEVEL_TITLES[newLevel - 1],
       level_up:    newLevel > currentLevel,
       next_level_xp: nextLevelXp,
-    }), { status: 200, headers: corsHeaders('application/json', request) });
+    }), { status: 200, headers: corsHeaders('application/json') });
 
   } catch (e) {
     return new Response(JSON.stringify({ ok: false, error: 'Something went wrong.' }), {
-      status: 500, headers: corsHeaders('application/json', request),
+      status: 500, headers: corsHeaders('application/json'),
     });
   }
 }
 
-function unauth(request) {
+function unauth() {
   return new Response(JSON.stringify({ ok: false, error: 'Not signed in.' }), {
-    status: 401, headers: corsHeaders('application/json', request),
+    status: 401, headers: corsHeaders('application/json'),
   });
 }
