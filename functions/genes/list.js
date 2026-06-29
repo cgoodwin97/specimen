@@ -1,8 +1,8 @@
-import { corsHeaders, getSessionToken } from '../_auth_utils.js';
+import { corsHeaders, getSessionToken } from '../../_auth_utils.js';
 
 export async function onRequestGet({ request, env }) {
   const token = getSessionToken(request);
-  if (!token) return unauth();
+  if (!token) return unauth(request);
 
   const session = await env.SPECIMEN_DB.prepare(
     `SELECT s.expires_at, u.id as user_id
@@ -10,7 +10,7 @@ export async function onRequestGet({ request, env }) {
      WHERE s.token = ?`
   ).bind(token).first();
 
-  if (!session || new Date(session.expires_at) < new Date()) return unauth();
+  if (!session || new Date(session.expires_at) < new Date()) return unauth(request);
 
   const { results } = await env.SPECIMEN_DB.prepare(
     `SELECT gene, accession, name, organism, saved_at
@@ -19,12 +19,12 @@ export async function onRequestGet({ request, env }) {
   ).bind(session.user_id).all();
 
   return new Response(JSON.stringify({ ok: true, genes: results || [] }), {
-    status: 200, headers: corsHeaders('application/json'),
+    status: 200, headers: corsHeaders('application/json', request),
   });
 }
 
-function unauth() {
+function unauth(request) {
   return new Response(JSON.stringify({ ok: false, error: 'Not signed in.' }), {
-    status: 401, headers: corsHeaders('application/json'),
+    status: 401, headers: corsHeaders('application/json', request),
   });
 }
