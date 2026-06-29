@@ -236,6 +236,68 @@
     ],
   };
 
+  const PROCESSES = {
+    'GO:0005739': [
+      { name: 'Cellular respiration', desc: 'The process by which cells convert nutrients (glucose, fatty acids) into usable energy in the form of ATP. The mitochondrion is the primary site of aerobic respiration in eukaryotes.' },
+      { name: 'Oxidative phosphorylation', desc: 'The final stage of cellular respiration. Electrons are passed along the inner mitochondrial membrane, generating a proton gradient that drives ATP synthase to produce ATP.' },
+      { name: 'Apoptosis', desc: 'Programmed cell death. The mitochondrion releases cytochrome c into the cytoplasm, triggering the caspase cascade that dismantles the cell in a controlled way.' },
+      { name: 'Fatty acid beta-oxidation', desc: 'The breakdown of fatty acids into acetyl-CoA units inside the mitochondrion, feeding them into the citric acid cycle to generate ATP.' },
+      { name: 'Citric acid cycle', desc: 'Also called the Krebs cycle. A series of chemical reactions in the mitochondrial matrix that extract energy from acetyl-CoA, producing NADH and FADH2 for the electron transport chain.' },
+    ],
+    'GO:0005634': [
+      { name: 'DNA replication', desc: 'The process of copying the cell\'s DNA before division. Occurs in the nucleus during S phase of the cell cycle, producing two identical DNA copies.' },
+      { name: 'Transcription', desc: 'The synthesis of RNA from a DNA template. RNA polymerase reads the DNA sequence in the nucleus and produces messenger RNA that carries the genetic instructions to the ribosome.' },
+      { name: 'Mitosis', desc: 'Cell division that produces two genetically identical daughter cells. The nucleus plays a central role — its envelope breaks down and reforms as chromosomes are separated.' },
+      { name: 'mRNA processing', desc: 'Newly transcribed RNA undergoes splicing, capping, and polyadenylation inside the nucleus before being exported to the cytoplasm for translation.' },
+      { name: 'DNA repair', desc: 'Surveillance and repair of DNA damage occurs continuously in the nucleus. Several pathways exist to correct base mismatches, double-strand breaks, and other lesions.' },
+    ],
+    'GO:0005764': [
+      { name: 'Autophagy', desc: 'The cell\'s self-eating process. Damaged organelles and proteins are enclosed in vesicles (autophagosomes) and delivered to lysosomes for digestion and recycling.' },
+      { name: 'Receptor-mediated endocytosis', desc: 'Receptor-ligand complexes internalised at the plasma membrane are trafficked to lysosomes for degradation, allowing signal termination and receptor turnover.' },
+      { name: 'Immune defence against pathogens', desc: 'Phagocytes such as macrophages engulf bacteria and deliver them to lysosomes, where acid and enzymes destroy the pathogen.' },
+      { name: 'Lysosomal storage and secretion', desc: 'Lysosomes also act as secretory organelles in some cell types, releasing their contents by fusing with the plasma membrane — a process called lysosomal exocytosis.' },
+    ],
+    'GO:0005783': [
+      { name: 'Protein folding and quality control', desc: 'Newly synthesised proteins entering the ER lumen are folded with the help of chaperones. Misfolded proteins are retained and targeted for degradation via ERAD.' },
+      { name: 'Lipid synthesis', desc: 'The smooth ER is the primary site of phospholipid and cholesterol biosynthesis, supplying membranes throughout the cell.' },
+      { name: 'Calcium signalling', desc: 'The ER acts as the cell\'s main calcium store. Controlled release of calcium ions into the cytoplasm triggers processes including muscle contraction and vesicle secretion.' },
+      { name: 'Unfolded protein response (UPR)', desc: 'When misfolded proteins accumulate in the ER, the UPR is triggered — a stress response that reduces protein synthesis and increases folding capacity.' },
+    ],
+    'GO:0005856': [
+      { name: 'Cell division (cytokinesis)', desc: 'Actin and myosin filaments form a contractile ring that pinches the cell in two at the end of mitosis, completing cell division.' },
+      { name: 'Cell migration', desc: 'Actin polymerisation at the leading edge of a cell drives membrane protrusions (lamellipodia, filopodia) that allow directed movement — essential in development and wound healing.' },
+      { name: 'Phagocytosis', desc: 'Actin rearrangements drive the engulfment of large particles and pathogens by extending the cell membrane around them to form a phagosome.' },
+      { name: 'Intracellular transport', desc: 'Microtubules act as highways for motor proteins (kinesin, dynein) carrying vesicles, organelles, and other cargo between cellular compartments.' },
+      { name: 'Maintenance of cell shape', desc: 'Intermediate filaments provide mechanical resistance, while actin and microtubules actively maintain and remodel the cell\'s shape in response to forces.' },
+    ],
+    'GO:0005876': [
+      { name: 'Chromosome segregation', desc: 'During mitosis, microtubules form the spindle apparatus that attaches to and pulls chromosomes apart to opposite ends of the cell.' },
+      { name: 'Cilia and flagella movement', desc: 'Microtubule doublets inside cilia and flagella slide against each other, powered by dynein motors, to generate the bending motion that drives cell or fluid movement.' },
+      { name: 'Vesicle trafficking', desc: 'Microtubules serve as tracks for long-range transport of vesicles between the ER, Golgi, and plasma membrane, directed by kinesin and dynein motor proteins.' },
+    ],
+    'GO:0005813': [
+      { name: 'Mitotic spindle assembly', desc: 'The centrosome nucleates and organises the microtubule spindle during mitosis, ensuring accurate chromosome alignment and separation.' },
+      { name: 'Centriole duplication', desc: 'The centrosome duplicates precisely once per cell cycle. Failure to control duplication leads to multipolar spindles and chromosome instability.' },
+      { name: 'Primary cilia formation', desc: 'In non-dividing cells, the centrosome migrates to the cell surface and acts as a basal body, templating the growth of the primary cilium — a signalling antenna.' },
+    ],
+    'GO:0005777': [
+      { name: 'Fatty acid oxidation', desc: 'Very long chain fatty acids that cannot enter mitochondria are shortened by beta-oxidation in peroxisomes before being handed off to mitochondria for complete oxidation.' },
+      { name: 'Hydrogen peroxide detoxification', desc: 'Peroxisomes generate H₂O₂ as a by-product of oxidative reactions, then rapidly decompose it using catalase — protecting the cell from oxidative damage.' },
+      { name: 'Plasmalogen synthesis', desc: 'Peroxisomes are the exclusive site for the first steps of plasmalogen biosynthesis — a class of phospholipids particularly abundant in heart and brain tissue.' },
+    ],
+    'GO:0005886': [
+      { name: 'Signal transduction', desc: 'Receptor proteins in the plasma membrane detect extracellular signals (hormones, growth factors) and relay them into the cell, triggering responses such as gene expression or metabolism changes.' },
+      { name: 'Selective transport', desc: 'Channel and transporter proteins in the membrane tightly regulate the passage of ions and molecules, maintaining the electrochemical gradients essential for nerve conduction and muscle contraction.' },
+      { name: 'Endocytosis', desc: 'The plasma membrane engulfs extracellular material by inward budding, forming vesicles that deliver cargo to endosomes and lysosomes.' },
+      { name: 'Cell adhesion', desc: 'Adhesion molecules (integrins, cadherins) in the plasma membrane anchor cells to the extracellular matrix and to neighbouring cells, essential for tissue integrity.' },
+    ],
+    'GO:0031965': [
+      { name: 'Nucleocytoplasmic transport', desc: 'Nuclear pore complexes embedded in the nuclear envelope control the bidirectional transport of proteins, RNA, and other molecules between the nucleus and cytoplasm.' },
+      { name: 'Chromatin organisation', desc: 'The nuclear lamina anchors chromatin and contributes to the organisation of transcriptionally active and inactive regions within the nucleus.' },
+      { name: 'Nuclear envelope breakdown and reformation', desc: 'At the start of mitosis the nuclear envelope completely disassembles; at the end it reforms around each daughter nucleus — a tightly regulated process.' },
+    ],
+  };
+
   function renderEntry(data, term){
     showResults();
     const { goId, name, structureType, definition, synonyms, children, keyProteins } = data;
@@ -264,6 +326,7 @@
 
 
     const diseases = DISEASE_ASSOCIATIONS[goId] || null;
+    const processes = PROCESSES[goId] || null;
     const saved = isCbBookmarked(goId);
 
     cardEl.innerHTML = `
@@ -312,6 +375,19 @@
                   <div>
                     <p class="cb-disease-name">${esc(d.name)}</p>
                     <p class="cb-disease-desc">${esc(d.description)}</p>
+                  </div>
+                </div>`).join('')}
+            </div>
+          </div>` : ''}
+          ${processes ? `
+          <button type="button" class="card-tab active" data-tab="processes">processes <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel active" id="cb-tab-processes">
+            <div class="cb-disease-list">
+              ${processes.map(p => `
+                <div class="cb-disease-row">
+                  <div>
+                    <p class="cb-disease-name">${esc(p.name)}</p>
+                    <p class="cb-disease-desc">${esc(p.desc)}</p>
                   </div>
                 </div>`).join('')}
             </div>
