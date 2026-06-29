@@ -75,6 +75,7 @@
       <input type="text" id="viro-search-input" placeholder="SARS-CoV-2, influenza, HIV, ebola…" autocomplete="off" aria-label="Virus name">
       <button type="submit">Search</button>
     </form>
+    <div class="chip-row" id="viro-recent-panel" hidden></div>
   </section>
 
   <section id="viro-browse" aria-label="Common viruses">
@@ -163,6 +164,34 @@
     list.unshift({ taxon_id: taxonId, name, common_name: commonName, genome_type: genomeType, ts: Date.now() });
     saveViroBookmarks(list);
     return true;
+  }
+
+  const VIRO_HISTORY_KEY = 'specimen.viro.history.v1';
+  const VIRO_HISTORY_LIMIT = 8;
+
+  function loadViroHistory(){ try{ return JSON.parse(localStorage.getItem(VIRO_HISTORY_KEY) || '[]'); } catch(e){ return []; } }
+  function saveViroHistory(list){ try{ localStorage.setItem(VIRO_HISTORY_KEY, JSON.stringify(list)); } catch(e){} }
+
+  function addToViroHistory(name, term){
+    let list = loadViroHistory().filter(h => h.term !== term);
+    list.unshift({ name, term, ts: Date.now() });
+    if(list.length > VIRO_HISTORY_LIMIT) list = list.slice(0, VIRO_HISTORY_LIMIT);
+    saveViroHistory(list);
+    renderViroHistory();
+  }
+
+  function renderViroHistory(){
+    const panel = document.getElementById('viro-recent-panel');
+    const list = loadViroHistory();
+    if(!panel || list.length === 0){ if(panel) panel.hidden = true; return; }
+    panel.hidden = false;
+    panel.innerHTML = `<span class="chip-label">recent:</span>${list.map(h =>
+      `<button type="button" class="chip history-chip" data-term="${esc(h.term)}">${esc(h.name)}</button>`
+    ).join('')}<button type="button" class="link-btn" id="viro-clear-history">clear</button>`;
+    panel.querySelectorAll('.history-chip').forEach(btn => {
+      btn.addEventListener('click', () => { input.value = btn.dataset.term; runSearch(btn.dataset.term); });
+    });
+    document.getElementById('viro-clear-history').addEventListener('click', () => { saveViroHistory([]); renderViroHistory(); });
   }
 
   // ---------- XP ----------
@@ -528,6 +557,7 @@
       const data = await res.json();
       if(!data.result){ renderNotFound(term); return; }
       renderEntry(data.result);
+      addToViroHistory(data.result.commonName || data.result.scientificName || term, term);
       awardXp('search_term', term.trim().toLowerCase());
     }catch(e){
       cardEl.innerHTML = `<div class="card empty-card"><p>Couldn't reach the server just now. Please try again.</p></div>`;
@@ -557,6 +587,7 @@
     input.value = initialQuery;
     runSearch(initialQuery);
   }
+  renderViroHistory();
 </script>
 <script src="auth.js"></script>
 </body>

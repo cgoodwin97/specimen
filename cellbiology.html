@@ -37,6 +37,7 @@
       <input type="text" id="cb-search-input" placeholder="mitochondrion, nucleus, ribosome…" autocomplete="off" aria-label="Cell structure or organelle name">
       <button type="submit">Search</button>
     </form>
+    <div class="chip-row" id="cb-recent-panel" hidden></div>
   </section>
 
   <section id="cb-browse" aria-label="Common structures">
@@ -397,6 +398,34 @@
     });
   }
 
+  const CB_HISTORY_KEY = 'specimen.cb.history.v1';
+  const CB_HISTORY_LIMIT = 8;
+
+  function loadCbHistory(){ try{ return JSON.parse(localStorage.getItem(CB_HISTORY_KEY) || '[]'); } catch(e){ return []; } }
+  function saveCbHistory(list){ try{ localStorage.setItem(CB_HISTORY_KEY, JSON.stringify(list)); } catch(e){} }
+
+  function addToCbHistory(name, term){
+    let list = loadCbHistory().filter(h => h.term !== term);
+    list.unshift({ name, term, ts: Date.now() });
+    if(list.length > CB_HISTORY_LIMIT) list = list.slice(0, CB_HISTORY_LIMIT);
+    saveCbHistory(list);
+    renderCbHistory();
+  }
+
+  function renderCbHistory(){
+    const panel = document.getElementById('cb-recent-panel');
+    const list = loadCbHistory();
+    if(!panel || list.length === 0){ if(panel) panel.hidden = true; return; }
+    panel.hidden = false;
+    panel.innerHTML = `<span class="chip-label">recent:</span>${list.map(h =>
+      `<button type="button" class="chip history-chip" data-term="${esc(h.term)}">${esc(h.name)}</button>`
+    ).join('')}<button type="button" class="link-btn" id="cb-clear-history">clear</button>`;
+    panel.querySelectorAll('.history-chip').forEach(btn => {
+      btn.addEventListener('click', () => { input.value = btn.dataset.term; runSearch(btn.dataset.term); });
+    });
+    document.getElementById('cb-clear-history').addEventListener('click', () => { saveCbHistory([]); renderCbHistory(); });
+  }
+
   // ---------- XP ----------
   async function awardXp(action, term) {
     const user = window.SpecimenAuth?.currentUser();
@@ -422,6 +451,7 @@
       const data = await res.json();
       if(!data.result){ renderNotFound(term); return; }
       renderEntry(data.result, term);
+      addToCbHistory(data.result.name || term, term);
       awardXp('search_term', term.trim().toLowerCase());
     }catch(e){
       cardEl.innerHTML = `<div class="card empty-card"><p>Couldn't reach the server just now. Please try again.</p></div>`;
@@ -450,6 +480,7 @@
     input.value = initialQuery;
     runSearch(initialQuery);
   }
+  renderCbHistory();
 </script>
 <script src="auth.js"></script>
 </body>
