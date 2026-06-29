@@ -7,7 +7,7 @@ export async function onRequestPost({ request, env }) {
     const { username, password } = await request.json();
 
     if (!username || !password) {
-      return error(400, 'Username and password are required.');
+      return error(400, 'Username and password are required.', request);
     }
 
     // Look up user
@@ -16,13 +16,13 @@ export async function onRequestPost({ request, env }) {
     ).bind(username).first();
 
     if (!user) {
-      return error(401, 'Incorrect username or password.');
+      return error(401, 'Incorrect username or password.', request);
     }
 
     // Verify password
     const valid = await verifyPassword(password, user.hashed_password);
     if (!valid) {
-      return error(401, 'Incorrect username or password.');
+      return error(401, 'Incorrect username or password.', request);
     }
 
     // Create session
@@ -37,18 +37,18 @@ export async function onRequestPost({ request, env }) {
     return new Response(JSON.stringify({ ok: true, username: user.username }), {
       status: 200,
       headers: {
-        ...corsHeaders('application/json'),
+        ...corsHeaders('application/json', request),
         'Set-Cookie': `specimen_session=${token}; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=${SESSION_DAYS * 86400}`,
       },
     });
   } catch (e) {
-    return error(500, 'Something went wrong. Please try again.');
+    return error(500, 'Something went wrong. Please try again.', request);
   }
 }
 
-function error(status, message) {
+function error(status, message, request) {
   return new Response(JSON.stringify({ ok: false, error: message }), {
     status,
-    headers: corsHeaders('application/json'),
+    headers: corsHeaders('application/json', request),
   });
 }

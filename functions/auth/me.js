@@ -4,7 +4,7 @@ export async function onRequestGet({ request, env }) {
   const token = getSessionToken(request);
   if (!token) {
     return new Response(JSON.stringify({ ok: false }), {
-      status: 200, headers: corsHeaders('application/json'),
+      status: 200, headers: corsHeaders('application/json', request),
     });
   }
 
@@ -16,7 +16,7 @@ export async function onRequestGet({ request, env }) {
 
   if (!row || new Date(row.expires_at) < new Date()) {
     return new Response(JSON.stringify({ ok: false }), {
-      status: 200, headers: corsHeaders('application/json'),
+      status: 200, headers: corsHeaders('application/json', request),
     });
   }
 
@@ -29,6 +29,6 @@ export async function onRequestGet({ request, env }) {
       level:      row.level || 1,
     }
   }), {
-    status: 200, headers: corsHeaders('application/json'),
+    status: 200, headers: corsHeaders('application/json', request),
   });
 }

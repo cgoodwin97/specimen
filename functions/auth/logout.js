@@ -12,7 +12,7 @@ export async function onRequestPost({ request, env }) {
   return new Response(JSON.stringify({ ok: true }), {
     status: 200,
     headers: {
-      ...corsHeaders('application/json'),
+      ...corsHeaders('application/json', request),
       'Set-Cookie': 'specimen_session=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0',
     },
   });
