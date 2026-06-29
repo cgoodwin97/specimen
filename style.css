@@ -854,26 +854,33 @@ a:hover{text-decoration-color:var(--moss);}
 
 /* ---------- Card tabs ---------- */
 .card-tabs{
-  display:flex; gap:0;
-  border-bottom:0.5px solid var(--line);
-  margin:0 0 0;
-  padding:0 1.25rem;
-  overflow-x:auto;
-  scrollbar-width:none;
+  display:flex; flex-direction:column; gap:0;
+  border-top:0.5px solid var(--line);
 }
-.card-tabs::-webkit-scrollbar{ display:none; }
 .card-tab{
-  font-size:11.5px; font-family:'IBM Plex Mono',monospace;
-  color:var(--mute); background:none; border:none;
-  padding:10px 14px; cursor:pointer;
-  border-bottom:2px solid transparent;
-  margin-bottom:-0.5px;
-  white-space:nowrap;
-  transition:color 0.12s, border-color 0.12s;
+  font-size:12px; font-family:'IBM Plex Mono',monospace;
+  color:var(--mute); background:none;
+  border:none; border-bottom:0.5px solid var(--line);
+  padding:11px 1.25rem;
+  cursor:pointer;
+  text-align:left;
+  display:flex; align-items:center; justify-content:space-between;
+  transition:color 0.12s, background 0.12s;
+  width:100%;
 }
-.card-tab:hover{ color:var(--ink); }
-.card-tab.active{ color:var(--moss); border-bottom-color:var(--moss); font-weight:500; }
-.card-tab-panel{ display:none; padding:14px 1.25rem 1.25rem; }
+.card-tab:hover{ color:var(--ink); background:var(--paper); }
+.card-tab.active{ color:var(--moss); font-weight:500; background:var(--paper); }
+.card-tab-chevron{
+  font-size:10px; color:var(--mute);
+  transition:transform 0.2s;
+  flex-shrink:0;
+}
+.card-tab.active .card-tab-chevron{ transform:rotate(180deg); color:var(--moss); }
+.card-tab-panel{
+  display:none;
+  padding:14px 1.25rem 1.25rem;
+  border-bottom:0.5px solid var(--line);
+}
 .card-tab-panel.active{ display:block; }
 
 /* ---------- Disease associations ---------- */

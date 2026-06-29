@@ -347,52 +347,46 @@
         <h2 class="entry-name"><span class="gene-tag mono">${esc(scientificName)}</span>${esc(displayName.charAt(0).toUpperCase() + displayName.slice(1))}</h2>
         ${lineageDisplay ? `<p class="meta mono" style="margin:0; padding:0 1.25rem;">${esc(lineageDisplay)}</p>` : ''}
 
-        <div class="card-tabs" role="tablist">
-          <button type="button" class="card-tab active" data-tab="overview" role="tab">overview</button>
-          <button type="button" class="card-tab" data-tab="classification" role="tab">classification</button>
-          ${replication ? '<button type="button" class="card-tab" data-tab="replication" role="tab">replication</button>' : ''}
-          <button type="button" class="card-tab" data-tab="proteins" role="tab">proteins</button>
-          <button type="button" class="card-tab" data-tab="interactions" role="tab">interactions</button>
-          <button type="button" class="card-tab" data-tab="disease" role="tab">disease</button>
-        </div>
-
-        <div class="card-tab-panel active" id="viro-tab-overview">
-          ${summary
-            ? `<p class="field-body">${esc(summary)}</p>`
-            : `<p class="empty-note">No curated summary available for this virus.</p>`}
-        </div>
-
-        <div class="card-tab-panel" id="viro-tab-classification">
-          <div style="display:flex; flex-direction:column; gap:8px;">${taxonomyRows || '<p class="empty-note">No classification data available.</p>'}</div>
-        </div>
-
-        ${replication ? `
-        <div class="card-tab-panel" id="viro-tab-replication">
-          <p class="field-body">${esc(replication)}</p>
-        </div>` : ''}
-
-        <div class="card-tab-panel" id="viro-tab-proteins">
-          ${proteinsHtml}
-        </div>
-
-        <div class="card-tab-panel" id="viro-tab-interactions">
-          <p class="loading-line mono" style="font-size:12px;" id="viro-interactions-loading">Loading interaction data…</p>
-        </div>
-
-        <div class="card-tab-panel" id="viro-tab-disease">
-          ${dpHtml}
+        <div class="card-tabs">
+          <button type="button" class="card-tab active" data-tab="overview">overview <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel active" id="viro-tab-overview">
+            ${summary
+              ? `<p class="field-body">${esc(summary)}</p>`
+              : `<p class="empty-note">No curated summary available for this virus.</p>`}
+          </div>
+          <button type="button" class="card-tab" data-tab="classification">classification <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel" id="viro-tab-classification">
+            <div style="display:flex; flex-direction:column; gap:8px;">${taxonomyRows || '<p class="empty-note">No classification data available.</p>'}</div>
+          </div>
+          ${replication ? `
+          <button type="button" class="card-tab" data-tab="replication">replication cycle <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel" id="viro-tab-replication">
+            <p class="field-body">${esc(replication)}</p>
+          </div>` : ''}
+          <button type="button" class="card-tab" data-tab="proteins">key proteins <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel" id="viro-tab-proteins">
+            ${proteinsHtml}
+          </div>
+          <button type="button" class="card-tab" data-tab="interactions">host-pathogen interactions <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel" id="viro-tab-interactions">
+            <p class="loading-line mono" style="font-size:12px;" id="viro-interactions-loading">Loading interaction data…</p>
+          </div>
+          <button type="button" class="card-tab" data-tab="disease">disease profile <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel" id="viro-tab-disease">
+            ${dpHtml}
+          </div>
         </div>
 
       </div>`;
 
-    // Tab switching
+    // Accordion toggle — each section opens/closes independently
     cardEl.querySelectorAll('.card-tab').forEach(tab => {
       tab.addEventListener('click', () => {
-        cardEl.querySelectorAll('.card-tab').forEach(t => t.classList.remove('active'));
-        cardEl.querySelectorAll('.card-tab-panel').forEach(p => p.classList.remove('active'));
-        tab.classList.add('active');
         const panelId = `viro-tab-${tab.dataset.tab}`;
-        document.getElementById(panelId)?.classList.add('active');
+        const panel = document.getElementById(panelId);
+        const isOpen = tab.classList.contains('active');
+        tab.classList.toggle('active', !isOpen);
+        if(panel) panel.classList.toggle('active', !isOpen);
       });
     });
 

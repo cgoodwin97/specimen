@@ -281,55 +281,52 @@
         ${synonymHtml}
         <p class="meta mono" style="margin:0 0 0; padding:0 1.25rem;">${esc(goId)}</p>
 
-        <div class="card-tabs" id="cb-tabs" role="tablist">
-          <button type="button" class="card-tab active" data-tab="overview" role="tab">overview</button>
-          <button type="button" class="card-tab" data-tab="structures" role="tab">structures &amp; proteins</button>
-          ${diseases ? '<button type="button" class="card-tab" data-tab="conditions" role="tab">conditions</button>' : ''}
-        </div>
-
-        <div class="card-tab-panel active" id="cb-tab-overview">
-          <p class="field-body clamp" id="cb-function-text">${esc(cleanDef)}</p>
-          ${summaryHtml}
-          <button type="button" class="link-btn" id="cb-function-toggle" style="margin-top:8px; display:none;">read more</button>
-        </div>
-
-        <div class="card-tab-panel" id="cb-tab-structures">
-          <div class="two-col" style="margin:0;">
-            <section class="field" style="padding:0 12px 0 0;">
-              <h3 class="field-label">related structures</h3>
-              ${relatedHtml}
-            </section>
-            <section class="field" style="padding:0;">
-              <h3 class="field-label">key proteins</h3>
-              ${proteinsHtml}
-            </section>
+        <div class="card-tabs" id="cb-tabs">
+          <button type="button" class="card-tab active" data-tab="overview">overview <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel active" id="cb-tab-overview">
+            <p class="field-body clamp" id="cb-function-text">${esc(cleanDef)}</p>
+            ${summaryHtml}
+            <button type="button" class="link-btn" id="cb-function-toggle" style="margin-top:8px; display:none;">read more</button>
           </div>
-        </div>
-
-        ${diseases ? `
-        <div class="card-tab-panel" id="cb-tab-conditions">
-          <div class="cb-disease-list">
-            ${diseases.map(d => `
-              <div class="cb-disease-row">
-                <span class="cb-disease-tag cb-disease-tag--${esc(d.rarity)}">${esc(d.rarity)}</span>
-                <div>
-                  <p class="cb-disease-name">${esc(d.name)}</p>
-                  <p class="cb-disease-desc">${esc(d.description)}</p>
-                </div>
-              </div>`).join('')}
+          <button type="button" class="card-tab" data-tab="structures">structures &amp; proteins <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel" id="cb-tab-structures">
+            <div class="two-col" style="margin:0;">
+              <section class="field" style="padding:0 12px 0 0;">
+                <h3 class="field-label">related structures</h3>
+                ${relatedHtml}
+              </section>
+              <section class="field" style="padding:0;">
+                <h3 class="field-label">key proteins</h3>
+                ${proteinsHtml}
+              </section>
+            </div>
           </div>
-        </div>` : ''}
+          ${diseases ? `
+          <button type="button" class="card-tab" data-tab="conditions">conditions <span class="card-tab-chevron">▾</span></button>
+          <div class="card-tab-panel" id="cb-tab-conditions">
+            <div class="cb-disease-list">
+              ${diseases.map(d => `
+                <div class="cb-disease-row">
+                  <span class="cb-disease-tag cb-disease-tag--${esc(d.rarity)}">${esc(d.rarity)}</span>
+                  <div>
+                    <p class="cb-disease-name">${esc(d.name)}</p>
+                    <p class="cb-disease-desc">${esc(d.description)}</p>
+                  </div>
+                </div>`).join('')}
+            </div>
+          </div>` : ''}
+        </div>
 
       </div>`;
 
-    // Tab switching
+    // Accordion toggle — each tab opens/closes independently
     cardEl.querySelectorAll('.card-tab').forEach(tab => {
       tab.addEventListener('click', () => {
-        cardEl.querySelectorAll('.card-tab').forEach(t => t.classList.remove('active'));
-        cardEl.querySelectorAll('.card-tab-panel').forEach(p => p.classList.remove('active'));
-        tab.classList.add('active');
         const panelId = `cb-tab-${tab.dataset.tab}`;
-        document.getElementById(panelId)?.classList.add('active');
+        const panel = document.getElementById(panelId);
+        const isOpen = tab.classList.contains('active');
+        tab.classList.toggle('active', !isOpen);
+        if(panel) panel.classList.toggle('active', !isOpen);
       });
     });
 
